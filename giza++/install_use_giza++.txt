@@ -1,0 +1,25 @@
+1) Install giaza++:
+	a) git clone https://github.com/lngvietthang/giza-pp.git
+	b) cd giza-pp
+	c) make  
+	d) Will be Created two folders GIZA++-V2 SND MKCLS-V2
+	
+2) Download parallel corpus (contain 2 files [source, dest]):
+	a) link: http://www.statmt.org/europarl/
+
+3) How to use it: 
+	a) cd giza-pp-master; mkdir pararllel_dataset; (put parallel data in this folder contains two files as datasets)
+	b) put run.sh in this folder (cp ~/Downloads/run.sh .)
+	c) sudo chmod +x run.sh
+	d) mkdir out_folder 
+	d) ./run.sh "source_file" "target_file" "out_folder" 
+	e) Output alingment file is "out_folder/Result.A3.final" 
+
+5) Important notes:
+	a) Count of corpuse lines must be greater than 10
+	b) Corpuses must be  equel.
+	c) Corpouses mustn't contain '#'
+  
+
+4) Helping links:
+	a) https://hovinh.github.io/blog/2016-01-27-install-giza-ubuntu/ 
