@@ -32,6 +32,8 @@ In the following, we use this notation:
 
 SLTev is designed to support these modes of operation:
 
-* Evaluate SLT against OSt+TT.
+* Evaluate SLT against OSt+TT. (This is the primary goal of SLTev, evaluate output of SLT systems against time-stamped source + reference translation)
+* Evaluate ASR+SLT agains OSt+TT. (A refined version of the previous, when the SLT system can provide internal details about ASR operation, esp. emission timestamps.)
+* Evaluate IS against OSt+TT. (This is an interesting contrastive use of SLTev, to evaluate human interpreters against manually translated correct transcripts.)
 * Evaluate MT against TT. (This is plain old MT evaluation.)
 * Evaluate ASR against OSt. (This is plain old ASR evaluation, except the segmentation is not prescribed.)
