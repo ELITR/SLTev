@@ -13,3 +13,15 @@ Run SLTev.py as follow:
 		--ref_d: Refers to delay reference type. [0,1,2 refer to 3 types of delay calculation]
 		--align: Refers to alignment files. [contains list of aligns], it's optional. 
                 --b_time: Refers to the slots length time to calculate blue score (default is 200)
+
+# Terminology
+
+In the following, we use this notation:
+
+OS ... original speech (sound or transcript with word-level timestamps)
+IS ... human interpreter's speech (sound or transcript with word-level timestamps)
+TT ... human textual translation, created from transcribed original speech; corresponds sentence-by-sentence to OS
+
+ASR ... unrevised output of speech recognition system; timestamped at the word level
+SLT ... unrevised output of spoken language translation, i.e. sentences in the target language corresponding to sentences in the source language; the source of SLT is OS
+MT  ... unrevised output of text-based translation; the source of MT is ASR (machine-transcribed OS) or OS (human-transcribed OS)
