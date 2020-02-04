@@ -1,13 +1,14 @@
 ---
 Title: SLTev
-authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi(?)
+Authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi(?)
 Date: 02/02/2020
 Acknowledgement: XXX
-
----
+```
 
 # SLTev
 SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language translation.
+
+This tool is designed to evaluate systems in "Non-Native Speech Translation" shared task in IWSLT2020: http://workshop2020.iwslt.org/doku.php?id=non_native_speech_translation
 
 ## Requirements
 
