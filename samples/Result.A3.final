@@ -1,0 +1,24 @@
+# Sentence pair (19) source length 11 target length 10 alignment score : 1.56243e-07
+Like most communities we have our rules and governing body 
+NULL ({ }) Stejně ({ 1 }) jako ({ 2 }) většina ({ 3 }) komunit ({ 4 }) máme ({ 5 }) i ({ 6 }) svá ({ 7 }) pravidla ({ }) a ({ 8 }) řídící ({ 10 }) orgán ({ 9 }) 
+# Sentence pair (20) source length 7 target length 9 alignment score : 4.92001e-09
+The Fridge posts all the latest News and Events 
+NULL ({ 5 }) Lednice ({ 2 }) zveřejňuje ({ 1 }) všechny ({ 3 4 }) nejnovější ({ 6 }) zprávy ({ 7 }) a ({ 8 }) události ({ 9 }) 
+# Sentence pair (21) source length 7 target length 7 alignment score : 2.30378e-06
+Ubuntu is a collection of community blogs 
+NULL ({ }) Planet ({ }) Ubuntu ({ 1 }) je ({ 2 }) sbírka ({ 3 }) komunitních ({ 4 }) blogů ({ 5 }) . ({ 6 7 }) 
+# Sentence pair (22) source length 9 target length 7 alignment score : 2.78128e-05
+Ubuntu is currently funded by Canonical Ltd 
+NULL ({ }) Ubuntu ({ 1 }) je ({ 2 }) v ({ }) současné ({ 3 }) době ({ 4 }) financována ({ 5 }) společností ({ 6 }) Canonical ({ 7 }) Ltd ({ }) 
+# Sentence pair (23) source length 5 target length 4 alignment score : 2.51498e-06
+questions about using Wikipedia 
+NULL ({ }) Zeptejte ({ 1 }) se ({ 3 }) na ({ }) používání ({ 4 }) Wikipedie ({ 2 }) 
+# Sentence pair (24) source length 10 target length 8 alignment score : 5.47923e-12
+Wikipedia related communication in languages other than English 
+NULL ({ }) Pro ({ }) komunikaci ({ 4 }) související ({ 5 }) s ({ }) Wikipedií ({ 7 }) v ({ 8 }) jiných ({ 3 }) jazycích ({ 6 }) než ({ 2 }) angličtině ({ 1 }) 
+# Sentence pair (25) source length 6 target length 6 alignment score : 0.00026904
+This Wikipedia is written in English 
+NULL ({ }) Tato ({ 1 }) Wikipedia ({ 2 }) je ({ 3 }) psána ({ 4 }) v ({ 5 }) angličtině ({ 6 }) 
+# Sentence pair (26) source length 7 target length 10 alignment score : 4.28595e-11
+This picture shows the underside of a female marsh fritillary 
+NULL ({ 4 }) Tento ({ }) obrázek ({ 1 }) ukazuje ({ 2 }) spodní ({ 3 }) stranu ({ 5 }) ženské ({ 6 7 }) bažiny ({ 8 9 10 }) 
