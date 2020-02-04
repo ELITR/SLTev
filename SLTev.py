@@ -4,13 +4,11 @@ import argparse
 import sys
 import nltk
 
-
-
-def read_referrnce(file_name):
+def read_reference(file_name):
     """
     read reference file and save sentences in a list (each sentence splits by space) 
     input: path of reference file like as 'sample/reference'
-    out_put : a list of sentences that split by spacce like as [['i', 'am', '.'], ['you', 'are', '.'] ]
+    out_put : a list of sentences that split by space like as [['i', 'am', '.'], ['you', 'are', '.'] ]
     """
     reference = list()
     with open(file_name, 'r') as in_file:
@@ -20,8 +18,6 @@ def read_referrnce(file_name):
             line = in_file.readline()
     reference = list(filter(lambda a: a != [], reference))
     return reference
-
-
 
 def read_ASR(file_name):
     """
@@ -83,10 +79,6 @@ def read_MT(file_name):
             line = in_file.readline()
     MT = list(filter(lambda a: a != [['.']], MT))
     return MT
-
-
-
-
 
 
 def get_Zero_T(ASR, reference):
@@ -913,7 +905,7 @@ if __name__== "__main__":
     b_time = args.b_time
     for i in args.ref:
         path = ''.join(i)
-        references.append(read_referrnce(path))
+        references.append(read_reference(path))
  
     ASR = read_ASR(args.asr)
     MT = read_MT(args.mt)
@@ -954,4 +946,3 @@ if __name__== "__main__":
     print('bleu score for all sentences is equel to:  ', calc_blue_score_documnet(Ts, MT))
     print('bleu score for sentence-by-sentence is equel to:  ', calc_blue_score_sentence_by_sentence(Ts, MT))
     print('bleu score for document_divided_by_time is equel to:  ', calc_blue_score_sentence_by_time(Ts, MT, b_time))
-  
