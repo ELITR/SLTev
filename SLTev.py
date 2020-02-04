@@ -1,3 +1,12 @@
+#===========================================================
+#  Title:  SLTev
+#  Author: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
+#  Date:   02 Feb 2022
+#  This Project is a part of the framework which is written 
+# to evaluate simoltanius translation systems.
+#  https://github.com/ELITR/
+#===========================================================
+
 #!/usr/bin/env python
 
 import argparse
