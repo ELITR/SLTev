@@ -1,14 +1,12 @@
 ---
 Title: SLTev
-Authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi(?)
+authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
 Date: 02/02/2020
 Acknowledgement: XXX
-```
+---
 
 # SLTev
 SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language translation.
-
-This tool is designed to evaluate systems in "Non-Native Speech Translation" shared task in IWSLT2020: http://workshop2020.iwslt.org/doku.php?id=non_native_speech_translation
 
 ## Requirements
 
@@ -63,20 +61,18 @@ This tool is designed to evaluate systems in "Non-Native Speech Translation" sha
 
 ## Usage
 	Single-Reference: Run SLTev.py as follow:
-		python SLTev.py --asr samples/asr --ref samples/reference --mt samples/mt --ref_d 2 -d 0 --align samples/Result.A3.final --b_time 300
+		python SLTev.py --asr samples/asr --ref samples/reference --mt samples/mt --align samples/Result.A3.final --b_time 300
 
 	Multi-Reference: Run SLTev.py as follow:
-		python SLTev.py --asr samples/asr --ref samples/reference1 samples/reference2  --mt samples/MT --ref_d 2 -d 0 --align samples/Result.A3.final1 samples/Result.A3.final2 --b_time 300
+		python SLTev.py --asr samples/asr --ref samples/reference1 samples/reference2  --mt samples/MT --align samples/Result.A3.final1 samples/Result.A3.final2 --b_time 300
 	
 	
 	parameters:
 		--asr: Refers to ASR (time-stamped transcript) file. 
 		--ref: Refers to reference files. [contains list of references]
 		--mt: Refers to MT file.
-		-d: Refers to delay types. [0,1 two type for dalay calculation, default is 0]
-		--ref_d: Refers to delay reference type. [0,1,2 refer to 3 types of delay calculation]
 		--align: Refers to alignment files. [contains list of aligns], it's optional. 
-	            --b_time: Refers to the slots length time to calculate blue score (default is 200)
+		--b_time: Refers to the slots length time to calculate blue score (default is 200).
 
 ## Terminology
 

@@ -15,9 +15,11 @@ import nltk
 
 def read_reference(file_name):
     """
-    read reference file and save sentences in a list (each sentence splits by space) 
-    input: path of reference file like as 'sample/reference'
-    out_put : a list of sentences that split by space like as [['i', 'am', '.'], ['you', 'are', '.'] ]
+
+    Read the input reference file and save sentences in a list (each sentence splits by space) 
+    Input: path of the reference file like as 'sample/reference'
+    Out_put : a list of sentences that split by space like as [['i', 'am', '.'], ['you', 'are', '.'] ]
+
     """
     reference = list()
     with open(file_name, 'r') as in_file:
@@ -30,9 +32,11 @@ def read_reference(file_name):
 
 def read_ASR(file_name):
     """
-    read ASR (time-stamped transcript) file and save sentences in a list (each sentence contains many segments that split by space)
-    input: path of reference file like as 'sample/ASR'
-    out_put : a list of sentences which each sentence split to many segments. 
+
+    Read ASR (time-stamped transcript) file and save sentences in a list (each sentence contains many segments that split by space)
+    Input: the path of reference file like as 'sample/ASR'
+    Out_put: a list of sentences which each sentence split to many segments. 
+
     """
     ASR = list()
     sentence = []
@@ -64,9 +68,11 @@ def read_ASR(file_name):
 
 def read_MT(file_name):
     """
-    read MT file and save sentences in a list (each sentence contains many segments that split by space)
-    input: path of reference file like as 'sample/OUT_MT'
-    out_put : a list of sentences which each sentence split to many segments. 
+
+    Read MT file and save sentences in a list (each sentence contains many segments that split by space)
+    Input: the path of reference file like as 'sample/OUT_MT'
+    Out_put: a list of sentences which each sentence split to many segments. 
+
     """
     MT = list()
     sentence = []
@@ -92,9 +98,10 @@ def read_MT(file_name):
 
 def get_Zero_T(ASR, reference):
     """
-    this function get ASR (time-stamped transcript) sentences and reference sentences and calculate T matrix:
-    which elemment of T is a dictionary that key is one word of reference and value indicate end time
-    of the  word   
+
+    Receives ASR (time-stamped transcript) sentences and reference sentences and calculate T matrix:
+    which elements of T is a dictionary that key is one word of reference and value is the end time of the word.      
+
     """
     Zero_T = []
     sentence_times = []
@@ -122,7 +129,9 @@ def get_Zero_T(ASR, reference):
 
 def remove_listElement_onOther_list(list1, list2):
     """
-    this function gets two arrays and removes common elements on the first array (list1).  
+
+    Receives two arrays and removes the common elements in the first array (list1).  
+
     """
     for i in list2:
         try:
@@ -133,7 +142,9 @@ def remove_listElement_onOther_list(list1, list2):
 
 def calc_change_words(segment1, segment2):
     """
-    this function gets two segments and calculates the number of times the first segment words have been changed.
+
+    Receives two segments and calculates the number of times the first segment words have been changed.
+
     """
     count =0 
     for word in segment1:
@@ -143,7 +154,9 @@ def calc_change_words(segment1, segment2):
 
 def calc_flicker(MT):
     """
-    this function calculates sum of flickers in all MT sentences (by calculate count of change words).   
+
+    Calculates the sum of the flickers in all MT sentences (by calculating the count of changed words).
+
     """
     flicker_size = 0
     for sentence in MT:
@@ -158,9 +171,9 @@ def calc_flicker(MT):
 
 def get_One_T(ASR, reference, aligns = None):
     """
-    this function gets ASR (time-stamped transcript) and reference sentence and makes the alignment (giza sentence orders) and
-    finally calculates T matrix.  each line of T is a dictionary that key is one word of reference line and the value
-    indicates ending time of that word.  
+
+    Receives ASR (time-stamped transcript) and reference sentence and makes the alignment (giza sentence orders) and finally calculates T matrix. Each line of T is a dictionary which key is one word of reference line and the value is the end time of that word. 
+ 
     """
     
     one_T = []
@@ -223,9 +236,11 @@ def get_One_T(ASR, reference, aligns = None):
 
 def build_A(sentence_segments):
     """
-    this function segments segments sentences and calculates A:
-    A is a dictionary that key is one word of MT sentence and value indicates starting time of the
-    word
+
+    Receives segments of the sentences and calculates A dictionary:
+    A is a dictionary which key is one word of MT sentence and value is the start time of the
+    word.
+
     """
     uniq_words_start_time = {}
     for segment in sentence_segments:
@@ -239,10 +254,11 @@ def build_A(sentence_segments):
 
 
 def build_times(A, Ts, A_start, A_end):
-
     """
-    this function gets A and T and calculates times list:
-    each elemment of times is a list that each element is similar to this: [word_in_T, start_time_in_T]   
+
+    Receives A and T dictionaries and calculates times list:
+    each element of times is a list which its elements are like this [word_in_T, start_time_in_T]  
+	  
     """
     A_keys = list(A.keys())
     count_T = []
@@ -320,7 +336,14 @@ def max_value_in_dict(times_dict):
             value = v
          
     return value
+
 def min_value_is_started(min_value, Ts):
+    """
+   
+    If "min_value" was the start of the one segment, so -1 has been returned, otherwise, the minimum nearest start time has been returned.    
+
+ 
+    """
     lower = []
     is_start = 0
     for T in Ts: 
@@ -343,6 +366,11 @@ def min_value_is_started(min_value, Ts):
         return -1
 
 def max_value_is_started(max_value, Ts):
+    """
+    
+    If "min_value" was the end of the one segment, so -1 has been returned, otherwise, the minimum nearest end time has been returned.  
+    
+    """
     higher = []
     is_start = 0
     for T in Ts: 
@@ -368,7 +396,8 @@ def max_value_is_started(max_value, Ts):
     
 def evaluate(Ts,MT):
     """
-    this function gets MT sentences and T matrix and calculates sum of delays
+
+    Receives MT sentences and T matrix and calculates the sum of delays.
    
     """
     sum_delay = 0
@@ -397,8 +426,10 @@ def evaluate(Ts,MT):
 
 def calc_blue_score_documnet(Ts, MT):
     """
-    this function calculates blue score using the nltk module. when we merege all sentences in MT and reference
-    as a document.   
+
+    Calculates blue score by using the NLTK module. Input is the merge all of the sentences in MT and reference
+    as a document.  
+ 
     """
     from nltk.translate.bleu_score import SmoothingFunction
     smoothie = SmoothingFunction().method4
@@ -422,7 +453,9 @@ def calc_blue_score_documnet(Ts, MT):
 
 def calc_blue_score_sentence_by_sentence(Ts, MT):
     """
-    this function calculates blue score with nltk module, sentence by sentence.  
+
+    Calculates blue score sentence by sentence with NLTK module.
+ 
     """
     import nltk
     from nltk.translate.bleu_score import SmoothingFunction
@@ -490,7 +523,9 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
 
 def calc_blue_score_sentence_by_time(Ts, MT, time_step):
     """
-    this function calculates blue score using the nltk module with time slice strategy.
+
+    Calculates blue score using the NLTK module with time slice strategy.
+
     """
     from nltk.translate.bleu_score import SmoothingFunction
     smoothie = SmoothingFunction().method4
@@ -546,10 +581,11 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
 
 
 def build_times_simple(A, Ts):
-
     """
-    this function gets A and T and calculates times list:
-    each elemment of times is a list that each element is: [word_in_T, start_time_in_T]   
+
+   Receives A and T dictionaries and calculates times list:
+    each element of times is a list which its elements are like this [word_in_T, start_time_in_T]
+  
     """
     A_keys = list(A.keys())
     
@@ -579,7 +615,8 @@ def build_times_simple(A, Ts):
 
 def evaluate_simple(Ts,MT):
     """
-    this function gets MT sentences and T matrix and calculate sum delays
+
+    Receives MT sentences and T matrix and the sum of delays has been calculated.
    
     """
     sum_delay_all = list()
@@ -626,7 +663,9 @@ def evaluate_simple(Ts,MT):
 
 def read_alignment_file(in_file):
     """"
-    this function gets alignment file path as its input and returns a dictionary that indicates matched word in ASR (time-stamped transcript) and refernce. 
+
+    Receives alignment file path as the input and a dictionary that indicates matched word in ASR (time-stamped transcript) and reference has been returned. 
+
     """
 
     in_file = open(in_file)
@@ -674,7 +713,9 @@ def read_alignment_file(in_file):
             
 def calc_change_words1(segment1, segment2):
     """
-    this function gets two segments and so calculates the number of times the first segment words have been changed
+
+    Receives two segments and calculates times that words have been changed. 
+
     """
     words = [] 
     for word in segment1:
@@ -683,7 +724,9 @@ def calc_change_words1(segment1, segment2):
     return words
 def calc_flicker1(MT):
     """
-    this function calculates sum of flickers in all MT sentences.   
+
+    Calculates sum of flickers in all MT sentences.  
+ 
     """
     flicker_size = 0
     for sentence in MT:
@@ -699,8 +742,10 @@ def calc_flicker1(MT):
 
 def segmenter(MT, Ts):
     """
-    in this function first we join MT complete segments in temp_translate
-    and use mwerSegmenter for segmentaion
+
+    MT complete segments have been joined and saved in a temp_translate file.
+    and temp_translate file has been segmented by mwerSegmenter.  
+
     """
     mt_sentences = []
     for i in range(len(MT)):
@@ -756,8 +801,9 @@ def segmenter(MT, Ts):
 
 def build_segmenter_A(MT):
     """
-    in this function, for each MT segment we build 'A' as list.
-    output is a list of A lists.
+
+    In this function, for each MT segment 'A' matrix has been built.
+  
     """
     A_list = []
     for sentence_segments in MT:
@@ -783,7 +829,9 @@ def build_segmenter_A(MT):
 
 def time_segmenter(segmenter_sentence, A_list, MovedWords):
     """
-    this function indeicates each segment in segmenter_sentence contains which segments in MT.
+
+    This function indicates each segment in segmenter_sentence contains which segments in MT.
+
     """
     segment_times = list()
     start = 0 
@@ -813,7 +861,9 @@ def time_segmenter(segmenter_sentence, A_list, MovedWords):
 
 def evaluate_segmenter(Ts, MT, MovedWords):
     """
-    in this function we get Ts and MT and calculate delay time.
+
+    Receives Ts and MT and calculates the delay time.
+
     """
     A_list = build_segmenter_A(MT)
     segmenter_sentence = segmenter(MT, Ts)
@@ -846,7 +896,9 @@ def evaluate_segmenter(Ts, MT, MovedWords):
 
 def calc_average_flickers_per_sentence(MT):
     """
-    this function calculates average of flicker per sentence.    
+
+    Calculates the average of flicker per sentence. 
+  
     """
     
     sentence_flickers = []
@@ -867,7 +919,9 @@ def calc_average_flickers_per_sentence(MT):
 
 def calc_average_flickers_per_document(MT):
     """
-    this function calculates average of flicker per all sentence (documnet).    
+
+    Calculates the average of flicker per all sentence (document).   
+
     """
     flicker_size = 0
     complet_word_count = 0
@@ -885,26 +939,24 @@ def calc_average_flickers_per_document(MT):
 
 
 # initiate the parser
-parser = argparse.ArgumentParser(description="this module gets three files  --asr or -a that gets path of ASR file (time-stamped transcript)  --ref or -r that is the path of Reference file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
-parser.add_argument("-a", "--asr", help="path of ASR file", type=str)
-parser.add_argument("-r", "--ref", help="path of references file", type=list, nargs='+' )
-parser.add_argument("-al", "--align", help="path of aligments file", type=list, nargs='+' )
-parser.add_argument("-m", "--mt", help="path of MT file", type=str )
-parser.add_argument("-d", "--delay", help="type of delay 0,1  ", type=int, default = 0 )
+parser = argparse.ArgumentParser(description="This module receives three files  --asr or -a that receives path of ASR file (time-stamped transcript)  --ref or -r that is the path of Reference file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
+parser.add_argument("-a", "--asr", help="path of the ASR file", type=str)
+parser.add_argument("-r", "--ref", help="path of the references file", type=list, nargs='+' )
+parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
+parser.add_argument("-m", "--mt", help="path of the MT file", type=str )
 parser.add_argument("-b", "--b_time", help="slot time of blue score calculation", type=int, default = 200 )
-parser.add_argument("-t", "--ref_d", help="type of delay calculation by reference 0/1  ", type=int, default = 0 )
 # read arguments from the command line
 args = parser.parse_args()
 
 if args.asr == None:
-    print('please insert ASR (time-stamped transcript) file path')
-    sys.exit(1)
-if  args.ref == None :
-    print('please insert References file path in list')
-    sys.exit(1)
+    print('please insert ASR (time-stamped transcript) file path')
+    sys.exit(1)
+if args.ref == None :
+    print('please insert References file path in list')
+    sys.exit(1)
 if args.mt == None :
-    print('please insert MT file path')
-    sys.exit(1)
+    print('please insert MT file path')
+    sys.exit(1)
 
 
 
@@ -918,21 +970,19 @@ if __name__== "__main__":
  
     ASR = read_ASR(args.asr)
     MT = read_MT(args.mt)
-    delay_type = args.delay
-    reference_type = args.ref_d
-    
+ 
     Ts = []
     for reference in references: 
         T = get_Zero_T(ASR, reference)
         Ts.append(T)
-    print('delay with Zero_T and use times is equel to:  ', evaluate(Ts,MT))
-    print('delay with Zero_T and use mwerSegmenter is equel to:  ', evaluate_segmenter(Ts, MT, MovedWords))
+    print('delay with Zero_T (only Complete segments have been used) and times (use Guess times) is:  ', evaluate(Ts,MT))
+    print('delay with Zero_T (only Complete segments have been used) and mwerSegmenter is:  ', evaluate_segmenter(Ts, MT, MovedWords))
     Ts = []
     for reference in references: 
         T = get_One_T(ASR, reference)
         Ts.append(T)
-    print('delay with one_T and use times and  without align is equel to:  ', evaluate(Ts,MT))
-    print('delay with one_T and  without align and  use mwerSegmenter is equel to:  ', evaluate_segmenter(Ts, MT, MovedWords))
+    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) and without align is:  ', evaluate(Ts,MT))
+    print('delay with one_T (Complete and Partial segments have been used) and without align and  use mwerSegmenter is:  ', evaluate_segmenter(Ts, MT, MovedWords))
     aligns =[]
     for i in args.align:
         path = ''.join(i)
@@ -944,8 +994,8 @@ if __name__== "__main__":
         align = aligns[index]
         T = get_One_T(ASR, reference, align)
         Ts.append(T)
-    print('delay with one_T and with align is equel to:  ', evaluate(Ts,MT))  
-    print('delay with one_T and with align and use mwerSegmenter is equel to:  ', evaluate_segmenter(Ts, MT, MovedWords))
+    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) with align is:  ', evaluate(Ts,MT))  
+    print('delay with one_T (Complete and Partial segments have been used) and use mwerSegmenter and with align is:  ', evaluate_segmenter(Ts, MT, MovedWords))
 
  
     print("flicker with method 'count_changed_words ' is equel to:  ", calc_flicker(MT))
@@ -955,3 +1005,4 @@ if __name__== "__main__":
     print('bleu score for all sentences is equel to:  ', calc_blue_score_documnet(Ts, MT))
     print('bleu score for sentence-by-sentence is equel to:  ', calc_blue_score_sentence_by_sentence(Ts, MT))
     print('bleu score for document_divided_by_time is equel to:  ', calc_blue_score_sentence_by_time(Ts, MT, b_time))
+
