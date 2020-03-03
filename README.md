@@ -12,44 +12,55 @@ SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language t
 
 ### giza++: Follow the below instruction to install and use GIZA++ word alignment tool
 
-	1) Install giza++:
-	
+	1) install GIZA++:
+
 		a) git clone https://github.com/lngvietthang/giza-pp.git
-		
+
 		b) cd giza-pp
+
+		c) make  
+
+		d) it creates two folders GIZA++-V2 AND MKCLS-V2
 		
-		c) make  
-		
-		d) it will create two folders GIZA++-V2 AND MKCLS-V2 in the current directory
+	2) Data preparation:
+
+		For running GIZA++, It requires two files: source and target, which target is the reference (it contains target language sentences) file and the source which is achieved by running the following script on ASR file (number of lines in source and target must be equal).
+		Running script to create Giza++ source file: 
+
+			python transcript_to_source.py ../samples/asr > source_ref
+
+				*) asr is the input time-stamped transcript file which is needed  as the input of SLTev too. 
 	
-	2) Download a parallel corpus (contain 2 files [source, dest]):
-		a) you can use europarl corpus, link: http://www.statmt.org/europarl/
+				**) source_ref is the outputs of the above script and contains only completed sentences in the time-stamped transcript.
+
 	
-	3) How to use it:
+	3)How to use it: 
+
+		a) cd giza-pp-master; mkdir pararllel_dataset; (put parallel data in this folder contains two files (source and target files which built in Data preperation phase))
+
+		b) put run.sh in this folder (cp ~/Downloads/run.sh .)
 	
-		a) cd giza-pp-master; mkdir pararllel_dataset; (copy those two parallel data in this folder)
-	
-		b) put run.sh in this folder (e.g., cp ~/Downloads/run.sh .)
-		
 		c) sudo chmod +x run.sh
-		
+	
 		d) mkdir out_folder 
-		
+	
 		d) ./run.sh "source_file" "target_file" "out_folder" 
-		
-		e) The Output alingment file is "out_folder/Result.A3.final" 
 	
-	5) Important notes:
+		e) Output alingment file is "out_folder/Result.A3.final" 	
 	
-		a) Count of corpuse lines must be greater than 10
-		
-		b) Corpus files should have equal lines must be  equel.
-		
-		c) Corpus must not contain '#'
 	
-	4) More help:
-	
-		a) https://hovinh.github.io/blog/2016-01-27-install-giza-ubuntu/ 
+	4) Important notes:
+
+		a) you can CONCATANATE a bigger parallel corpus (e.g., downloaded from europarl corpus) to the required source-target parallel corpus to improve the accuracy of the trained model.
+
+		b) count of corpuse lines must be greater than 10
+
+		c) corpuses must be  equel.
+
+		d) corpous shouldn't contain '#'
+  
+	5) more help: https://hovinh.github.io/blog/2016-01-27-install-giza-ubuntu/  
+
 
 ### NLTK [1]
 
