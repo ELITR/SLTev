@@ -1013,8 +1013,8 @@ if __name__== "__main__":
 
  
     print("flicker with method 'count_changed_words ' is equel to:  ", calc_flicker(MT))
-    print("flicker with method 'count_changed_content' is equel to:  ", calc_flicker1(MT))
-    print("average of divide flicker per length of each sentence:  ", calc_average_flickers_per_sentence(MT))
+    print("flicker with method 'count_changed_content' is equel to:  ", (calc_flicker1(MT)))
+    print("average of divide flicker per length of each sentence:  ", abs(float(calc_average_flickers_per_sentence(MT))))
     print("divive sum sentence flickers per sum of sentence length:", calc_average_flickers_per_document(MT))
     print('bleu score for all sentences is equel to:  ', calc_blue_score_documnet(Ts, MT))
     print('bleu score for sentence-by-sentence is equel to:  ', calc_blue_score_sentence_by_sentence(Ts, MT))

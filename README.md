@@ -6,71 +6,61 @@ Acknowledgement: XXX
 ---
 
 # SLTev
+
 SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language translation.
+
+##Input files:
+	a) asr file (for source language, e.g. in English (ami_devset.IS1001a.OStt file)) 	
+	b) mt_transalte files (for destination languages, e.g. in Czech and Danish (ami_devset.ref.de.correctOrder, ami_devset.ref.cs.correctOrder))
+	c) reference file (contains sentences in each target languages) 
+
+
 
 ## Requirements
 
-### giza++: Follow the below instruction to install and use GIZA++ word alignment tool
+### giza++
+ To use it, we first need to convert the ASR data to the GIZA++ format with transcript_to_source.py script. After that we need to install and use GIZA++ as follow. In the end of this step "Result.A3.final" file, which is one of the SLTEV script inputs is generated. 
 
-	1) install GIZA++:
+#### Running transcript_to_source.py Script
 
-		a) git clone https://github.com/lngvietthang/giza-pp.git
+	a) python transcript_to_source.py asr_file > source_ref
+		1) asr_file is the input ASR file. 
+		2) source_ref is the output file. 
 
-		b) cd giza-pp
+#### install GIZA++
 
-		c) make  
+	a) git clone https://github.com/lngvietthang/giza-pp.git
+	b) cd giza-pp
+	c) make  
+	d) Will be Created two folders GIZA++-V2 AND MKCLS-V2
 
-		d) it creates two folders GIZA++-V2 AND MKCLS-V2
-		
-	2) Data preparation:
 
-		For running GIZA++, It requires two files: source and target, which target is the reference (it contains target language sentences) file and the source which is achieved by running the following script on ASR file (number of lines in source and target must be equal).
-		Running script to create Giza++ source file: 
+#### Running GIZA++
 
-			python transcript_to_source.py ../samples/asr > source_ref
-
-				*) asr is the input time-stamped transcript file which is needed  as the input of SLTev too. 
-	
-				**) source_ref is the outputs of the above script and contains only completed sentences in the time-stamped transcript.
-
-	
-	3)How to use it: 
-
-		a) cd giza-pp-master; mkdir pararllel_dataset; (put parallel data in this folder contains two files (source and target files which built in Data preperation phase))
-
-		b) put run.sh in this folder (cp ~/Downloads/run.sh .)
-	
-		c) sudo chmod +x run.sh
-	
-		d) mkdir out_folder 
-	
-		d) ./run.sh "source_file" "target_file" "out_folder" 
-	
-		e) Output alingment file is "out_folder/Result.A3.final" 	
-	
-	
-	4) Important notes:
-
-		a) you can CONCATANATE a bigger parallel corpus (e.g., downloaded from europarl corpus) to the required source-target parallel corpus to improve the accuracy of the trained model.
-
-		b) count of corpuse lines must be greater than 10
-
-		c) corpuses must be  equel.
-
-		d) corpous shouldn't contain '#'
-  
-	5) more help: https://hovinh.github.io/blog/2016-01-27-install-giza-ubuntu/  
-
+	a) cd giza-pp; mkdir run_giza; cd run_giza;
+	b) put run.sh in this folder (cp ~/Downloads/run.sh .)
+	c) sudo chmod +x run.sh
+	d) mkdir "cs/de_folder"  (two folder for cs and de (or more per each translation languages))
+	d) ./run.sh "target_ref" "source_ref" "cs/de_folder" 
+	e) Output alingment file is "cs/de_folder/Result.A3.final" 
+	f) Important notes:
+		1) Count of corpuse lines must be greater than 10
+		2) Corpuses must be  equel.
+		3) Corpouses mustn't contain '#'
+		4) Don't put "/" after "cs/de_folder" (cs/de_folder/ is not true)
 
 ### NLTK [1]
 
 	pip install --user -U nltk
 
 ### mwerSegmenter [2]
+	
+	a) Put mwerSegmenter (a compiled file) in the same folder.  
+  	b) sudo chmod +x mwerSegmenter 
 
-	The compiled file in the sub-directory, mwerSegmenter
 
 ## Usage
+
 	Single-Reference: Run SLTev.py as follow:
 		python SLTev.py --asr samples/asr --ref samples/reference --mt samples/mt --align samples/Result.A3.final --b_time 300
 
@@ -84,6 +74,10 @@ SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language t
 		--mt: Refers to MT file.
 		--align: Refers to alignment files. [contains list of aligns], it's optional. 
 		--b_time: Refers to the slots length time to calculate blue score (default is 200).
+
+### Real example
+ 
+	a)  python SLTev.py --asr inputs/ami_devset.IS1001a.OStt --mt inputs/cs_out.mt --ref  inputs/ami_devset.ref.cs.correctOrder --align inputs/cs_Result.A3.final 
 
 ## Terminology
 
@@ -110,5 +104,6 @@ SLTev is designed to support these modes of operation:
 * Evaluate ASR against OSt. (This is plain old ASR evaluation, except the segmentation is not prescribed.)
 
 ## References
+
 	[1] Steven Bird, Ewan Klein, and Edward Loper. 2009. Natural Language Processing with Python, 1st edition. OReilly Media, Inc.
 	[2] Evgeny Matusov, Gregor Leusch, Oliver Bender, and Hermann Ney. 2005b. Evaluating machine translation output with automatic sentence segmentation. In International Workshop on Spoken Language Translation, pages 148–154, Pittsburgh, PA, USA.
