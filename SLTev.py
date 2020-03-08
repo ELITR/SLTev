@@ -22,10 +22,12 @@ def read_reference(file_name):
 
     """
     reference = list()
-    with open(file_name, 'r') as in_file:
+    with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
-        while line: 
-            reference.append(line.strip().split(' '))
+        while line:
+            l = line.strip().split(' ')
+            l.append('.')
+            reference.append(l)
             line = in_file.readline()
     reference = list(filter(lambda a: a != [], reference))
     return reference
@@ -40,7 +42,7 @@ def read_ASR(file_name):
     """
     ASR = list()
     sentence = []
-    with open(file_name, 'r') as in_file:
+    with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
             if 'P ' in line[:3]:
@@ -76,7 +78,7 @@ def read_MT(file_name):
     """
     MT = list()
     sentence = []
-    with open(file_name, 'r') as in_file:
+    with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
             if 'P ' in line[:3]:
@@ -180,20 +182,27 @@ def get_One_T(ASR, reference, aligns = None):
  
     for index in range(len(ASR)):
         sentence = ASR[index]
+        
         #---------set ASR table
         ASR_T = []
         for i in range(len(sentence[-1][2:-1])):
             ASR_T.append(0)
         old_segment = []
         ASR_T_INDEX = 0
+        
         for segment in sentence:
             
             new_words = remove_listElement_onOther_list(segment[2:-1], old_segment)
             old_segment = segment[2:-1]
             segment_start = int(segment[0])
+            
             for i in range(len(new_words)):
-                ASR_T[ASR_T_INDEX] = segment_start + (((int(segment[1])-int(segment[0]))/len(new_words))*(i+1))
-                ASR_T_INDEX += 1
+                if new_words[i] in sentence[-1][2:]:
+                    try:
+                        ASR_T[ASR_T_INDEX] = segment_start + (((int(segment[1])-int(segment[0]))/len(new_words))*(i+1))
+                        ASR_T_INDEX += 1
+                    except:
+                        break
         #------------------------- set reference table
         ref_T = []
      
@@ -228,7 +237,6 @@ def get_One_T(ASR, reference, aligns = None):
                         pass
             one_T.append(T)
     return one_T
-
 
 
 
@@ -494,7 +502,7 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     out.close()
     #------------run segmentation 
     import os
-    text = "./mwerSegmenter -mref temp_ref -hypfile temp_translate &> /dev/null"
+    text = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
     os.system(text)
 
 
@@ -512,7 +520,8 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     mt_sentences = segments[:]
     os.system('rm __segments')  
     blue_scores = []
-    for j in range(len(references_sentences[0])):
+    
+    for j in range(len(references_sentences)):
         l = []
         for i in range(len(references_sentences)):
             BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[i][j]], mt_sentences[j], smoothing_function=smoothie)
@@ -560,14 +569,19 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
     blue_scores = []
     start = 0 
     end = time_step
+    
+
     for t in  range(len(mt_sentences)):
         
         b = []
         for i in range(len(references_sentences[t])):
             l = []
             for j in range(len(references_sentences[t][i])):
-                BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[t][i][j]], mt_sentences[t][i], smoothing_function=smoothie)
-                l.append(BLEUscore)
+                try:
+                    BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[t][i][j]], mt_sentences[t][i], smoothing_function=smoothie)
+                    l.append(BLEUscore)
+                except:
+                    pass
             try:
                 b.append(max(l))
             except:
@@ -770,9 +784,9 @@ def segmenter(MT, Ts):
         out.write(sentence)
         out.write('\n')
     out.close()
-
+    
     out = open('temp_translate', 'w')
-
+    
     for i in mt_sentences:
         sentence = ' '.join(i)
         out.write(sentence)
@@ -784,8 +798,8 @@ def segmenter(MT, Ts):
     os.system(text)
 
 
-    os.system('rm temp_ref')
-    os.system('rm temp_translate')
+    #os.system('rm temp_ref')
+    #os.system('rm temp_translate')
 
     #-------------read segments 
     in_file = open('__segments', 'r')
@@ -939,7 +953,7 @@ def calc_average_flickers_per_document(MT):
 
 
 # initiate the parser
-parser = argparse.ArgumentParser(description="This module receives three files  --asr or -a that receives path of ASR file (time-stamped transcript)  --ref or -r that is the path of Reference file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
+parser = argparse.ArgumentParser(description="This module receives three files  --asr or -a that receives path of ASR file (time-stamped transcript)  --ref or -r that is the path of Reference file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
 parser.add_argument("-a", "--asr", help="path of the ASR file", type=str)
 parser.add_argument("-r", "--ref", help="path of the references file", type=list, nargs='+' )
 parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
