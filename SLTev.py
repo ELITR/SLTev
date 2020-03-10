@@ -116,7 +116,7 @@ def get_Zero_T(ASR, reference):
     
     for sentence in range(len(reference)):
         time_step = start_times[sentence] 
-        step = sentence_times[sentence]/ len(reference[sentence])
+        step = sentence_times[sentence]/ len(reference[sentence][:-1])
         #l = {"##mean_delay##":(time_step/2)}
         l = dict()
         for word in reference[sentence][:-1]:
@@ -185,7 +185,7 @@ def get_One_T(ASR, reference, aligns = None):
         
         #---------set ASR table
         ASR_T = []
-        for i in range(len(sentence[-1][2:-1])):
+        for i in range(len(set(sentence[-1][2:-1]))):
             ASR_T.append(0)
         old_segment = []
         ASR_T_INDEX = 0
@@ -193,22 +193,32 @@ def get_One_T(ASR, reference, aligns = None):
         for segment in sentence:
             
             new_words = remove_listElement_onOther_list(segment[2:-1], old_segment)
-            old_segment = segment[2:-1]
+            old_segment += segment[2:-1]
             segment_start = int(segment[0])
             
+            step = (int(segment[1])-int(segment[0]))/len(segment[2:-1])
+            segment_word_end_time = dict()
+            segment_end = segment_start
+            for word in segment[2:-1]:
+                segment_end = segment_end + step
+                segment_word_end_time[word] = segment_end      
+            
+            
             for i in range(len(new_words)):
+               
                 if new_words[i] in sentence[-1][2:]:
                     try:
-                        ASR_T[ASR_T_INDEX] = segment_start + (((int(segment[1])-int(segment[0]))/len(new_words))*(i+1))
+                        ASR_T[ASR_T_INDEX] = segment_word_end_time[new_words[i]]
                         ASR_T_INDEX += 1
                     except:
                         break
         #------------------------- set reference table
+       
         ref_T = []
      
         T = dict()
         sentence = reference[index]
-        for i in sentence[:-1]:
+        for i in set(sentence[:-1]):
             ref_T.append(0)
     
         for i in range(len(ref_T)):
@@ -221,6 +231,7 @@ def get_One_T(ASR, reference, aligns = None):
             ref_T[i] = ASR_T[int(index_in_ASR)] + temp
         for i in range(len(ref_T)):
             T[sentence[i]] = ref_T[i]
+            
         #--------------------------- use align dictioary
         if aligns == None:
             one_T.append(T)
@@ -230,7 +241,7 @@ def get_One_T(ASR, reference, aligns = None):
            
             for k,v in align.items():
                 if k in T.keys() and v != -1:
-                    temp = round(v*(len(ref_T)/len(ASR_T)))
+                    temp = round((v)*(len(ref_T)/len(ASR_T)))
                     try:
                         T[k] = max([ref_T[temp], T[k]])
                     except:
@@ -241,23 +252,23 @@ def get_One_T(ASR, reference, aligns = None):
 
 
 
-
 def build_A(sentence_segments):
     """
 
-    Receives segments of the sentences and calculates A dictionary:
-    A is a dictionary which key is one word of MT sentence and value is the start time of the
+    Receives segments of the mt sentences and calculates A dictionary:
+    A is a dictionary which key is one word of MT sentence and value is the show time of the
     word.
 
     """
-    uniq_words_start_time = {}
+    uniq_words_show_time = {}
     for segment in sentence_segments:
         for word in segment[3:-1]:
-            if word not in uniq_words_start_time.keys():
-                uniq_words_start_time[word] = int(segment[0])
+            if word not in uniq_words_show_time.keys():
+                uniq_words_show_time[word] = int(segment[0])
     start = sentence_segments[-1][1]
     end = sentence_segments[-1][2]
-    return uniq_words_start_time, int(start), int(end)
+    return uniq_words_show_time, int(start), int(end)
+
 
 
 
@@ -292,7 +303,7 @@ def build_times(A, Ts, A_start, A_end):
     times = []
     times_dict = dict()
     #--- build times as add each word and start times from T (create as ASR) which has start value between 
-    #--- start and time for each complete segment. 
+    #--- end and time for each complete segment. 
     for T in Ts: 
         excit_flag = 0
         for sentence in T:
@@ -510,7 +521,7 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     os.system('rm temp_translate')
     
     #-------------read segments 
-    in_file = open('__segments', 'r')
+    in_file = open('__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
     while line:
@@ -520,15 +531,21 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     mt_sentences = segments[:]
     os.system('rm __segments')  
     blue_scores = []
-    
-    for j in range(len(references_sentences)):
+
+    for j in range(len(references_sentences[0])):
         l = []
         for i in range(len(references_sentences)):
-            BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[i][j]], mt_sentences[j], smoothing_function=smoothie)
-            l.append(BLEUscore)
-        blue_scores.append(max(l))
+            try:
+                BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[i][j]], mt_sentences[j], smoothing_function=smoothie)
+                l.append(BLEUscore)
+            except:
+                pass
+        try:
+            blue_scores.append(max(l))
+        except:
+        
+            blue_scores.append(0)
     return sum(blue_scores)/len(blue_scores)
-
 
 def calc_blue_score_sentence_by_time(Ts, MT, time_step):
     """
@@ -550,6 +567,15 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
         mt_sentences.append(list(dict.fromkeys(l)))
         start +=  time_step
         end += time_step
+        
+    if mt_sentences == []:
+        l = []
+        for i in range(len(MT)):
+            for j in range(len(MT[i])):
+                if float(MT[i][j][1]) >= start and float(MT[i][j][2]) <= end :
+                    l += MT[i][j][3:-1]
+        mt_sentences.append(list(dict.fromkeys(l)))
+        
     references_sentences = []
     start = 0
     end = time_step
@@ -566,10 +592,23 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
         start +=  time_step
         end += time_step
 
+        
+    if references_sentences == []:
+        l = []
+        for i in range(len(Ts)):
+            s= [] 
+            for sentence in Ts[i]:
+                for k,v in sentence.items():
+                    if v >= start and v <= end:
+                        s.append(k)
+            l.append(s)
+        references_sentences.append(l)
+        
+
     blue_scores = []
     start = 0 
     end = time_step
-    
+
 
     for t in  range(len(mt_sentences)):
         
@@ -635,7 +674,7 @@ def evaluate_simple(Ts,MT):
     """
     sum_delay_all = list()
     for i in range(len(MT)):
-        A = build_A(MT[i])
+        A,end,start = build_A(MT[i])
         times_all = build_times_simple(A,Ts)
         
         sum_delay = []
@@ -682,7 +721,7 @@ def read_alignment_file(in_file):
 
     """
 
-    in_file = open(in_file)
+    in_file = open(in_file,  'r', encoding="utf8")
     sentences = []
     line = in_file.readline()
     sentence = []
@@ -749,7 +788,7 @@ def calc_flicker1(MT):
             words = calc_change_words1(first_segment, segment[3:-1])
             for word in words:
                 word_index = first_segment.index(word)
-                temp = len(segment[3:-1]) - word_index -1
+                temp = len(segment[3:-1]) - (len(first_segment) - word_index) -1
                 flicker_size += temp
             first_segment = segment[3:-1]
     return flicker_size
@@ -802,7 +841,7 @@ def segmenter(MT, Ts):
     #os.system('rm temp_translate')
 
     #-------------read segments 
-    in_file = open('__segments', 'r')
+    in_file = open('__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
     while line:
@@ -852,7 +891,9 @@ def time_segmenter(segmenter_sentence, A_list, MovedWords):
     for i in range(len(segmenter_sentence)):
         
         segment = segmenter_sentence[i]
+        
         end = start + len(segment)
+    
         temp = A_list[start:end]
         try:
             write_moved = A_list[end:(end + MovedWords)]
@@ -864,7 +905,8 @@ def time_segmenter(segmenter_sentence, A_list, MovedWords):
             left_moved = []
         
         temp =  left_moved + temp + write_moved
-        strat = end
+        start = end
+     
         #------convert each segment to dictionary-------
         temp1 = dict()
         for i in temp:
@@ -907,7 +949,6 @@ def evaluate_segmenter(Ts, MT, MovedWords):
         sum_delay.append(ref_delay)
     return min(sum_delay)
 
-
 def calc_average_flickers_per_sentence(MT):
     """
 
@@ -923,7 +964,7 @@ def calc_average_flickers_per_sentence(MT):
             words = calc_change_words1(first_segment, segment[3:-1])
             for word in words:
                 word_index = first_segment.index(word)
-                temp = len(segment[3:-1]) - word_index -1
+                temp = len(segment[3:-1]) + (len(first_segment) - word_index) -1
                 sentence_flicker_size += temp
             first_segment = segment[3:-1]
         average = sentence_flicker_size / float(len(sentence[-1][3:-1]))
@@ -945,12 +986,11 @@ def calc_average_flickers_per_document(MT):
             words = calc_change_words1(first_segment, segment[3:-1])
             for word in words:
                 word_index = first_segment.index(word)
-                temp = len(segment[3:-1]) - word_index -1
+                temp = len(segment[3:-1]) - (len(first_segment) - word_index) -1
                 flicker_size += temp
             first_segment = segment[3:-1]
         complet_word_count += float(len(sentence[-1][3:-1]))
     return float(flicker_size) / complet_word_count
-
 
 # initiate the parser
 parser = argparse.ArgumentParser(description="This module receives three files  --asr or -a that receives path of ASR file (time-stamped transcript)  --ref or -r that is the path of Reference file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
