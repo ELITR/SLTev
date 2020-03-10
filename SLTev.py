@@ -1,7 +1,7 @@
 #===========================================================
 #  Title:  SLTev
 #  Author: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
-#  Date:   02 Feb 2022
+#  Date:   11 March 2020
 #  This Project is a part of the framework which is written 
 # to evaluate simoltanius translation systems.
 #  https://github.com/ELITR/
@@ -38,6 +38,7 @@ def read_ASR(file_name):
     Read ASR (time-stamped transcript) file and save sentences in a list (each sentence contains many segments that split by space)
     Input: the path of reference file like as 'sample/ASR'
     Out_put: a list of sentences which each sentence split to many segments. 
+    Note: in each line in the input file, only we have end and start times. (e.g. P 1448 1599 How) 
 
     """
     ASR = list()
@@ -103,7 +104,8 @@ def get_Zero_T(ASR, reference):
 
     Receives ASR (time-stamped transcript) sentences and reference sentences and calculate T matrix:
     which elements of T is a dictionary that key is one word of reference and value is the end time of the word.      
-
+    To calculate the T matrix, first calculate the spent time of the Complete segment in ASR and this time is divided per number of Equivalent sentences in reference.
+    
     """
     Zero_T = []
     sentence_times = []
@@ -175,7 +177,8 @@ def get_One_T(ASR, reference, aligns = None):
     """
 
     Receives ASR (time-stamped transcript) and reference sentence and makes the alignment (giza sentence orders) and finally calculates T matrix. Each line of T is a dictionary which key is one word of reference line and the value is the end time of that word. 
- 
+    To calculate T matrix, for each segment, with functions remove_listElement_onOther_list()  remove the previous segment in that segment and extracting new words which unseen in previous segments (in ASR) and divide segment time per unseen words to build end time of each word and then we create ASR_T. In the next step, we match each word in ASR_T to ref_T (we have two lists and match each element of list1 to list2), 
+     
     """
     
     one_T = []
@@ -277,7 +280,9 @@ def build_times(A, Ts, A_start, A_end):
 
     Receives A and T dictionaries and calculates times list:
     each element of times is a list which its elements are like this [word_in_T, start_time_in_T]  
-	  
+    With this function, we extract elements of outputs of get_one_T() or get_zero_T() which are between start and end times in mt sentences. 
+    Mean_ref number is an integer number which calculates the average count of the number of output dictionaries in multi references
+ 
     """
     A_keys = list(A.keys())
     count_T = []
@@ -412,14 +417,17 @@ def max_value_is_started(max_value, Ts):
     else:
         return -1
     
-    
 def evaluate(Ts,MT):
     """
 
     Receives MT sentences and T matrix and calculates the sum of delays.
+    For do it, per each mt sentence, first  build_A()  function is called and then by  
+    Outputs of this function and call build_times() function the T elements of one/zero_T is extracted and for each word on T if the word is my sentence, the delay is (T[word] - A[word]), otherwise delay is max before delays of the words.  
+    Questions: suppose any words of T in A, so results are 0 while must be a great number.  (we use 0 in any situation)
    
     """
     sum_delay = 0
+    sum_missing_words = 0
     for i in range(len(MT)):
         A,start, end = build_A(MT[i])
         times, mean_ref = build_times(A,Ts,start, end)
@@ -433,15 +441,16 @@ def evaluate(Ts,MT):
                     delays.append(delay)
 
         try:
-            not_in_refer = max(delays)
+            not_in_refer = 0
         except:
             not_in_refer = 0
         for k in range((len(times)-len(delays))):
             delays.append(not_in_refer)
+            sum_missing_words += 1
         delays.sort()    
         sentence_delay = sum(delays[:mean_ref])
         sum_delay += sentence_delay
-    return sum_delay
+    return sum_delay, sum_missing_words
 
 def calc_blue_score_documnet(Ts, MT):
     """
@@ -717,8 +726,9 @@ def evaluate_simple(Ts,MT):
 def read_alignment_file(in_file):
     """"
 
-    Receives alignment file path as the input and a dictionary that indicates matched word in ASR (time-stamped transcript) and reference has been returned. 
+    Receives alignment file path as the input and a dictionary that indicates matched word in ASR (time-stamped transcript) and reference has been returned.
 
+    
     """
 
     in_file = open(in_file,  'r', encoding="utf8")
@@ -788,8 +798,9 @@ def calc_flicker1(MT):
             words = calc_change_words1(first_segment, segment[3:-1])
             for word in words:
                 word_index = first_segment.index(word)
-                temp = len(segment[3:-1]) - (len(first_segment) - word_index) -1
+                temp = len(first_segment) - word_index -1
                 flicker_size += temp
+                break
             first_segment = segment[3:-1]
     return flicker_size
 
@@ -856,6 +867,7 @@ def build_segmenter_A(MT):
     """
 
     In this function, for each MT segment 'A' matrix has been built.
+    The output is a big list as mt sentences words which each element of it is as [word, uniq_words_show_time[word]].
   
     """
     A_list = []
@@ -884,7 +896,8 @@ def time_segmenter(segmenter_sentence, A_list, MovedWords):
     """
 
     This function indicates each segment in segmenter_sentence contains which segments in MT.
-
+    This function get output of build_segmenter_A() and a list of sentences which is output of segmenter() function and a integer number as MovedWords (indicate move number to left and write (default is 1))
+    
     """
     segment_times = list()
     start = 0 
@@ -919,6 +932,7 @@ def evaluate_segmenter(Ts, MT, MovedWords):
     """
 
     Receives Ts and MT and calculates the delay time.
+    First calculates segmenter_sentence, A_list by segmenter() and build_segmenter_A() functions and then build times table with time_segmenter() function, and calculate delay sentence by sentence in T and times. 
 
     """
     A_list = build_segmenter_A(MT)
@@ -926,8 +940,10 @@ def evaluate_segmenter(Ts, MT, MovedWords):
     segment_times = time_segmenter(segmenter_sentence, A_list, MovedWords)
    
     sum_delay = list()
+    sum_missing_words = []
     for T in Ts:
         ref_delay = 0
+        missing_words = 0  
         for i in range(len(segment_times)):
             
             delays = [] 
@@ -938,16 +954,18 @@ def evaluate_segmenter(Ts, MT, MovedWords):
                     if delay > 0:
                         delays.append(delay)
             try:
-                not_in_refer = max(delays)
+                not_in_refer = 0
             except:
                 not_in_refer = 0
             for k in range((len(list(T[i].keys()))-len(delays))):
-                delays.append(not_in_refer)  
+                delays.append(not_in_refer)
+                missing_words += 1
             sentence_delay = sum(delays)
             ref_delay += sentence_delay
             
         sum_delay.append(ref_delay)
-    return min(sum_delay)
+        sum_missing_words.append(missing_words)
+    return min(sum_delay), (sum(sum_missing_words)/len(sum_missing_words))
 
 def calc_average_flickers_per_sentence(MT):
     """
@@ -964,8 +982,9 @@ def calc_average_flickers_per_sentence(MT):
             words = calc_change_words1(first_segment, segment[3:-1])
             for word in words:
                 word_index = first_segment.index(word)
-                temp = len(segment[3:-1]) + (len(first_segment) - word_index) -1
+                temp = (len(first_segment) - word_index) -1
                 sentence_flicker_size += temp
+                break
             first_segment = segment[3:-1]
         average = sentence_flicker_size / float(len(sentence[-1][3:-1]))
         sentence_flickers.append(average)
@@ -986,8 +1005,9 @@ def calc_average_flickers_per_document(MT):
             words = calc_change_words1(first_segment, segment[3:-1])
             for word in words:
                 word_index = first_segment.index(word)
-                temp = len(segment[3:-1]) - (len(first_segment) - word_index) -1
+                temp = (len(first_segment) - word_index) -1
                 flicker_size += temp
+                break
             first_segment = segment[3:-1]
         complet_word_count += float(len(sentence[-1][3:-1]))
     return float(flicker_size) / complet_word_count
@@ -1029,14 +1049,18 @@ if __name__== "__main__":
     for reference in references: 
         T = get_Zero_T(ASR, reference)
         Ts.append(T)
-    print('delay with Zero_T (only Complete segments have been used) and times (use Guess times) is:  ', evaluate(Ts,MT))
-    print('delay with Zero_T (only Complete segments have been used) and mwerSegmenter is:  ', evaluate_segmenter(Ts, MT, MovedWords))
+    delay, missing_words = evaluate(Ts,MT)
+    print('delay with Zero_T (only Complete segments have been used) and times (use Guess times) is:  ',  delay, ' and number of missing words is: ', missing_words)
+    delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
+    print('delay with Zero_T (only Complete segments have been used) and mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
     Ts = []
     for reference in references: 
         T = get_One_T(ASR, reference)
         Ts.append(T)
-    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) and without align is:  ', evaluate(Ts,MT))
-    print('delay with one_T (Complete and Partial segments have been used) and without align and  use mwerSegmenter is:  ', evaluate_segmenter(Ts, MT, MovedWords))
+    delay, missing_words = evaluate(Ts,MT)
+    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) and without align is:  ',  delay, ' and number of missing words is: ', missing_words)
+    delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
+    print('delay with one_T (Complete and Partial segments have been used) and without align and  use mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
     aligns =[]
     for i in args.align:
         path = ''.join(i)
@@ -1048,8 +1072,10 @@ if __name__== "__main__":
         align = aligns[index]
         T = get_One_T(ASR, reference, align)
         Ts.append(T)
-    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) with align is:  ', evaluate(Ts,MT))  
-    print('delay with one_T (Complete and Partial segments have been used) and use mwerSegmenter and with align is:  ', evaluate_segmenter(Ts, MT, MovedWords))
+    delay, missing_words = evaluate(Ts,MT)
+    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) with align is:  ', delay, ' and number of missing words is: ', missing_words )  
+    delay, missing_words =  evaluate_segmenter(Ts, MT, MovedWords)
+    print('delay with one_T (Complete and Partial segments have been used) and use mwerSegmenter and with align is:  ', delay, ' and number of missing words is: ', missing_words)
 
  
     print("flicker with method 'count_changed_words ' is equel to:  ", calc_flicker(MT))
