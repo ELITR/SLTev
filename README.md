@@ -84,7 +84,8 @@ SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language t
 In the following, we use this notation:
 
 * OS  ... original speech (sound)
-* OSt ... original speech manually transcribed with word-level timestamps
+* OSt ... original speech manually transcribed
+* OStt ... original speech manually transcribed with word-level timestamps
 * IS  ... human interpreter's speech (sound)
 * ISt ... IS manually transcribed with word-level timestamps
 * TT ... human textual translation, created from transcribed original speech (OSt); corresponds sentence-by-sentence to OSt
