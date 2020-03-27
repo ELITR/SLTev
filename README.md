@@ -1,11 +1,6 @@
-
-Title: SLTev
-authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
-Date: 23/03/2020
-Acknowledgment: XXX
----
-
-# SLTev
+# SLTev; Spoken Language Translation evaluator
+Authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
+Acknowledgment: http://elitr.eu/
 
 SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language translation.
 
