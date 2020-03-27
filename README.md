@@ -1,89 +1,55 @@
-# SLTev; Spoken Language Translation evaluator
-Authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi  
-Acknowledgment: http://elitr.eu/
+---
+Title: SLTev
+authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
+Date: 02/02/2020
+Acknowledgement: XXX
+---
+
+# SLTev
 
 SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language translation.
 
-## Input files
+##Input files:
 
 	a) asr file (for source language, e.g. in English (ami_devset.IS1001a.OStt file)) 	
-	b) mt file (for destination languages, e.g. in Czech and Danish )
+	b) mt_transalte files (for destination languages, e.g. in Czech and Danish (ami_devset.ref.de.correctOrder, ami_devset.ref.cs.correctOrder))
 	c) reference file (contains sentences in each target languages) 
 
-## Clone project from git 
-
-You can Download project as follow in girhub:
-	a) git clone https://github.com/lngvietthang/SLTev-master.git 
-	b) cd SLTev-master 
 
 
 ## Requirements
 
 ### GIZA++
 
- To use it, we first need to convert the ASR data to the GIZA++ format with transcript_to_source.py script. After that, we need to install and use GIZA++ as follows. At the end of this step "Result.A3.final" file, which is one of the SLTEV script inputs is generated. 
+ To use it, we first need to convert the ASR data to the GIZA++ format with transcript_to_source.py script. After that we need to install and use GIZA++ as follow. In the end of this step "Result.A3.final" file, which is one of the SLTEV script inputs is generated. 
 
 #### Running transcript_to_source.py Script
 
-	a) ) python giza++/transcript_to_source.py asr_file > source_ref 
+	a) python transcript_to_source.py asr_file > source_ref
 		1) asr_file is the input ASR file. 
 		2) source_ref is the output file. 
-	
 
-#### Install GIZA++
+#### install GIZA++
 
 	a) git clone https://github.com/lngvietthang/giza-pp.git
 	b) cd giza-pp
 	c) make  
-	d) cd ../
-	e) Will be Created two folders GIZA++-V2 AND MKCLS-V2
-
-#### Download and use parallel corpus
-
-You can use parallel corpuse to imporove train of GIZA++, so you can download and extract them from http://www.statmt.org/europarl/ address or another sources. In the following you should concatation parallel data with source and reference as follow:
-	a) mkdir concat_data
-	b) cat parallel_ref reference > concat_data/ref_concat
-	c) cat parallel_source source_ref > concat_data/source_concat  
+	d) Will be Created two folders GIZA++-V2 AND MKCLS-V2
 
 
-#### Running GIZA++ with parallel
-	a) cd giza-pp  
-	b) mkdir run_giza
-	c) cd run_giza
-	d) cp ../../giza++/run.sh .
-	e) chmod +x run.sh
-	f) cp ../../source_ref .
-	g) cp ../../concat_data/ref_concat ref_concat
-	h) cp ../../concat_data/source_concat source_concat
-	l) mkdir out_folder
-	m) ./run.sh ref_concat source_concat ./out_folder
- 	m) Run "wc -l source_ref" and calculate the number of source_ref file and multiple by 3 and put in the nex commond (e.g. num_line = 10 --> num_line1 = (10 * 3) = 30 )
-	n) tail -n num_line1 out_folder/Result.A3.final > ../../ref_alignment
-	o) cd ../../
-	p) Important notes:
+#### Running GIZA++
+
+	a) cd giza-pp; mkdir run_giza; cd run_giza;
+	b) put run.sh in this folder (cp ~/Downloads/run.sh .)
+	c) sudo chmod +x run.sh
+	d) mkdir "cs/de_folder"  (two folder for cs and de (or more per each translation languages))
+	d) ./run.sh "target_ref" "source_ref" "cs/de_folder" 
+	e) Output alingment file is "cs/de_folder/Result.A3.final" 
+	f) Important notes:
 		1) Count of corpuse lines must be greater than 10
 		2) Corpuses must be  equel.
 		3) Corpouses mustn't contain '#'
-		4) Don't put "/" after "out_folder" (out_folder/ is not true)
-		5) num_line1 is a integer number which calculate in m section (e.g. 30)
-		
-#### Running GIZA++ without parallel
-	a) cd giza-pp  
-	b) mkdir run_giza
-	c) cd run_giza
-	d) cp ../../giza++/run.sh .
-	e) chmod +x run.sh
-	f) cp ../../source_ref .
-	g) cp ../../reference ref
-	h) mkdir out_folder
-	l) ./run.sh ref source_ref ./out_folder
-	m) cat out_folder/Result.A3.final > ../../ref_alignment
-	n) cd ../../
-	o) Important notes:
-		1) Count of corpuse lines must be greater than 10
-		2) Corpuses must be  equel.
-		3) Corpouses mustn't contain '#'
-		4) Don't put "/" after "out_folder" (out_folder/ is not true)
+		4) Don't put "/" after "cs/de_folder" (cs/de_folder/ is not true)
 
 ### NLTK [1]
 
@@ -91,16 +57,17 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 
 ### mwerSegmenter [2]
 	
-  	a) chmod +x mwerSegmenter 
+	a) Put mwerSegmenter (a compiled file) in the same folder.  
+  	b) sudo chmod +x mwerSegmenter 
 
 
 ## Usage
 
 	Single-Reference: Run SLTev.py as follow:
-		python SLTev.py --asr asr --ref reference --mt mt --align ref_alignment --b_time 300
+		python SLTev.py --asr samples/asr --ref samples/reference --mt samples/mt --align samples/Result.A3.final --b_time 3000
 
 	Multi-Reference: Run SLTev.py as follow:
-		python SLTev.py --asr sasr --ref reference1 reference2  --mt mt --align ref_alignment1 ref_alignment2 --b_time 300
+		python SLTev.py --asr samples/asr --ref samples/reference1 samples/reference2  --mt samples/MT --align samples/Result.A3.final1 samples/Result.A3.final2 --b_time 3000
 	
 	
 	parameters:
@@ -108,30 +75,18 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 		--ref: Refers to reference files. [contains list of references]
 		--mt: Refers to MT file.
 		--align: Refers to alignment files. [contains list of aligns], it's optional. 
-		--b_time: Refers to the slots length time to calculate blue score (default is 200).
+		--b_time: Refers to the slots length time to calculate blue score (default is 3000).
 
+### Real example
+ 
+	a)  python SLTev.py --asr inputs/ami_devset.IS1001a.OStt --mt inputs/cs_out.mt --ref  inputs/ami_devset.ref.cs.correctOrder --align inputs/cs_Result.A3.final 
 
-### Runing Scripts
-
-For run script in simple way you can run two scripts in RunningScripts folder as follow:
-
-	a) Run without parallel data:
-		1) chmod +x ref_alignment/SLTev-without-parallel.sh 
-		2) ./ref_alignment/SLTev-without-parallel.sh asr reference mt
-	b) Run with parallel data:
-		1) chmod +x ref_alignment/SLTev-with-parallel.sh 
-		2) ./ref_alignment/SLTev-with-parallel.sh asr reference mt  parallel_source parallel_ref
-	c) Note:
-		1) Output results save in "result.out".   
-
-		
 ## Terminology
 
 In the following, we use this notation:
 
 * OS  ... original speech (sound)
-* OSt ... original speech manually transcribed
-* OStt ... original speech manually transcribed with word-level timestamps
+* OSt ... original speech manually transcribed with word-level timestamps
 * IS  ... human interpreter's speech (sound)
 * ISt ... IS manually transcribed with word-level timestamps
 * TT ... human textual translation, created from transcribed original speech (OSt); corresponds sentence-by-sentence to OSt

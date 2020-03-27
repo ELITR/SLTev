@@ -634,7 +634,7 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
                 b.append(max(l))
             except:
                 b.append(0)
-        text = 'from '+ str(start) + ' to ' + str(end) +  ' is ' + str((sum(b)/len(b)))
+        text = 'The blue score from time '+ str(start) + ' to time ' + str(end) +  ' is ' + str("{0:.2f}".format(round((sum(b)/len(b)), 3)))
         start += time_step
         end += time_step
         blue_scores.append(text)
@@ -1018,7 +1018,7 @@ parser.add_argument("-a", "--asr", help="path of the ASR file", type=str)
 parser.add_argument("-r", "--ref", help="path of the references file", type=list, nargs='+' )
 parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
 parser.add_argument("-m", "--mt", help="path of the MT file", type=str )
-parser.add_argument("-b", "--b_time", help="slot time of blue score calculation", type=int, default = 200 )
+parser.add_argument("-b", "--b_time", help="slot time of blue score calculation", type=int, default = 3000 )
 # read arguments from the command line
 args = parser.parse_args()
 
@@ -1050,17 +1050,18 @@ if __name__== "__main__":
         T = get_Zero_T(ASR, reference)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('delay with Zero_T (only Complete segments have been used) and times (use Guess times) is:  ',  delay, ' and number of missing words is: ', missing_words)
+    ""
+    print('DELAY with Zero_T calculation (only "C"omplete segments have been used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
     delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
-    print('delay with Zero_T (only Complete segments have been used) and mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
+    print('DELAY with Zero_T calculation (only "C"omplete segments have been used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
     Ts = []
     for reference in references: 
         T = get_One_T(ASR, reference)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) and without align is:  ',  delay, ' and number of missing words is: ', missing_words)
+    print('DELAY with one_T calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
     delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
-    print('delay with one_T (Complete and Partial segments have been used) and without align and  use mwerSegmenter is:  ',  delay, ' and number of missing words is: ', missing_words)
+    print('DELAY with one_T calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter is: ', missing_words)
     aligns =[]
     for i in args.align:
         path = ''.join(i)
@@ -1073,16 +1074,19 @@ if __name__== "__main__":
         T = get_One_T(ASR, reference, align)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('delay with one_T (Complete and Partial segments have been used) and times(use Guess times) with align is:  ', delay, ' and number of missing words is: ', missing_words )  
+    print('DELAY with one_T calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + without mwerSegmenter is:  ', delay, ' and number of missing words is: ', missing_words )  
     delay, missing_words =  evaluate_segmenter(Ts, MT, MovedWords)
-    print('delay with one_T (Complete and Partial segments have been used) and use mwerSegmenter and with align is:  ', delay, ' and number of missing words is: ', missing_words)
+    print('DELAY with one_T calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + with mwerSegmenter is:  ', delay, ' and number of missing words is: ', missing_words)
 
  
-    print("flicker with method 'count_changed_words ' is equel to:  ", calc_flicker(MT))
-    print("flicker with method 'count_changed_content' is equel to:  ", (calc_flicker1(MT)))
-    print("average of divide flicker per length of each sentence:  ", abs(float(calc_average_flickers_per_sentence(MT))))
-    print("divive sum sentence flickers per sum of sentence length:", calc_average_flickers_per_document(MT))
-    print('bleu score for all sentences is equel to:  ', calc_blue_score_documnet(Ts, MT))
-    print('bleu score for sentence-by-sentence is equel to:  ', calc_blue_score_sentence_by_sentence(Ts, MT))
-    print('bleu score for document_divided_by_time is equel to:  ', calc_blue_score_sentence_by_time(Ts, MT, b_time))
+    print("Flicker with method 'count_changed_words ' is equal to:  ",  str("{0:.3f}".format(round(calc_flicker(MT), 3))))
+    print("Flicker with method 'count_changed_content' is equal to:  ",  str("{0:.3f}".format(round((calc_flicker1(MT)), 3))) )
+    print("Average of divide flicker per length of each sentence:  ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
+    print("Divide sum sentence flickers per sum of sentence length:", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))) )
+    print('The blue score for all sentences is equal to:  ', str("{0:.2f}".format(round(calc_blue_score_documnet(Ts, MT), 3))) )
+    print('The blue score for sentence-by-sentence is equal to:  ', str("{0:.3f}".format(round(calc_blue_score_sentence_by_sentence(Ts, MT), 3))) )
+    c_b_s_s_by_time = calc_blue_score_sentence_by_time(Ts, MT, b_time)
+    for x in c_b_s_s_by_time:
+        print(x)
+    #print('The blue score for document divided_by_time is equal to:  ', calc_blue_score_sentence_by_time(Ts, MT, b_time))
 
