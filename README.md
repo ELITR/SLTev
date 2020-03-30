@@ -96,6 +96,10 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 
 	pip install --user -U nltk
 
+### sacrebleu
+
+	pip install sacrebleu
+
 ### mwerSegmenter [2]
 	
   	a) chmod +x mwerSegmenter 
