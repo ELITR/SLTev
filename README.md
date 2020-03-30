@@ -30,7 +30,7 @@ You can Download project as follow in girhub:
 
 #### Running transcript_to_source.py Script
 
-	a) ) python giza++/transcript_to_source.py asr_file > source_ref 
+	a) python giza++/transcript_to_source.py asr_file > source_ref 
 		1) asr_file is the input ASR file. 
 		2) source_ref is the output file. 
 	
@@ -51,7 +51,7 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 	c) cat parallel_source source_ref > concat_data/source_concat  
 
 
-#### Running GIZA++ with parallel
+#### Running GIZA++ with an external parallel corpus
 
 	a) cd giza-pp  
 	b) mkdir run_giza
@@ -73,7 +73,7 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 		4) Don't put "/" after "out_folder" (out_folder/ is not true)
 		5) num_line1 is a integer number which calculate in m section (e.g. 30)
 		
-#### Running GIZA++ without parallel
+#### Running GIZA++ without external parallel corpus
 
 	a) cd giza-pp  
 	b) mkdir run_giza
@@ -122,14 +122,14 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 		--b_time: Refers to the slots length time to calculate blue score (default is 3000).
 
 
-### Runing Scripts
+### Runing Scripts (automatica evaluation from scratch)
 
-For run script in simple way you can run two scripts in RunningScripts folder as follow:
+To run scripts in a simple way, you can run use one of these:
 
-	a) Run without parallel data:
+	a) Run without external parallel data for training:
 		1) chmod +x ref_alignment/SLTev-without-parallel.sh 
 		2) ./ref_alignment/SLTev-without-parallel.sh asr reference mt
-	b) Run with parallel data:
+	b) Run with external parallel data for training:
 		1) chmod +x ref_alignment/SLTev-with-parallel.sh 
 		2) ./ref_alignment/SLTev-with-parallel.sh asr reference mt  parallel_source parallel_ref 
 
