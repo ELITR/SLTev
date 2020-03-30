@@ -131,9 +131,7 @@ For run script in simple way you can run two scripts in RunningScripts folder as
 		2) ./ref_alignment/SLTev-without-parallel.sh asr reference mt
 	b) Run with parallel data:
 		1) chmod +x ref_alignment/SLTev-with-parallel.sh 
-		2) ./ref_alignment/SLTev-with-parallel.sh asr reference mt  parallel_source parallel_ref
-	c) Note:
-		1) Output results save in "result.out".   
+		2) ./ref_alignment/SLTev-with-parallel.sh asr reference mt  parallel_source parallel_ref 
 
 		
 ## Terminology
