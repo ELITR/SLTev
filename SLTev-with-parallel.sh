@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# we suppose that $1 is asr and $2 is reference  $3 is mt and $4 is parallel_source and $5 is  parallel_ref
+# we suppose that $1 is asr and $2 is reference  $3 is mt and $4 is parallel_source and $5 is  parallel_ref $6 is output path 
 
 
 #-------- downnload parallel corpuse from europall in http://www.statmt.org/europarl/ address.
@@ -54,8 +54,8 @@ mkdir out_folder
 var1=$(wc -l source_ref)
 
 num_line="$(cut -d' ' -f1 <<<"$var1")"
-num_line1==$(($num_line * 3))
-tail -n num_line1 out_folder/Result.A3.final > ../../ref_alignment
+num_line1=$(($num_line * 3))
+tail -n $num_line1 out_folder/Result.A3.final > ../../ref_alignment
 
 
 
@@ -66,6 +66,6 @@ chmod +x mwerSegmenter
 
 #-------- run sltev 
 
-python SLTev.py --asr $1 --ref $2 --mt $3 --align ref_alignment --b_time 300 > result.out
+python SLTev.py --asr $1 --ref $2 --mt $3 --align ref_alignment --b_time 300 > $6
 
 
