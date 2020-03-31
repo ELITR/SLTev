@@ -2,10 +2,10 @@
 
 import sys
 
-def read_asr(file_name):
+def read_ostt(file_name):
     """
     
-    Receives ASR file and extracts Completed sentences.  
+    Receives ostt file and extracts Completed sentences.  
     
     """
     
@@ -24,12 +24,12 @@ def read_asr(file_name):
 in_file = sys.argv[1]
 
 if in_file == None:
-    print('please insert asr path')
+    print('please insert ostt path')
     sys.exit(1)
 
 
 #------------------------- read asr file
-out_data = read_asr(in_file)
+out_data = read_ostt(in_file)
 
 
 #------------------------- write in file

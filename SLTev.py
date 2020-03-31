@@ -15,11 +15,11 @@ import nltk
 import sacrebleu
 
 
-def read_reference(file_name):
+def read_tt(file_name):
     """
 
-    Read the input reference file and save sentences in a list (each sentence splits by space) 
-    Input: path of the reference file like as 'sample/reference'
+    Read the input tt file and save sentences in a list (each sentence splits by space) 
+    Input: path of the tt file like 
     Out_put : a list of sentences that split by space like as [['i', 'am', '.'], ['you', 'are', '.'] ]
 
     """
@@ -34,11 +34,11 @@ def read_reference(file_name):
     reference = list(filter(lambda a: a != [], reference))
     return reference
 
-def read_ASR(file_name):
+def read_ostt(file_name):
     """
 
-    Read ASR (time-stamped transcript) file and save sentences in a list (each sentence contains many segments that split by space)
-    Input: the path of reference file like as 'sample/ASR'
+    Read OStt (time-stamped transcript) file and save sentences in a list (each sentence contains many segments that split by space)
+    Input: the path of ostt file like 
     Out_put: a list of sentences which each sentence split to many segments. 
     Note: in each line in the input file, only we have end and start times. (e.g. P 1448 1599 How) 
 
@@ -75,7 +75,7 @@ def read_MT(file_name):
     """
 
     Read MT file and save sentences in a list (each sentence contains many segments that split by space)
-    Input: the path of reference file like as 'sample/OUT_MT'
+    Input: the path of mt file like
     Out_put: a list of sentences which each sentence split to many segments. 
 
     """
@@ -104,9 +104,9 @@ def read_MT(file_name):
 def get_Zero_T(ASR, reference):
     """
 
-    Receives ASR (time-stamped transcript) sentences and reference sentences and calculate T matrix:
+    Receives OStt (time-stamped transcript) sentences and reference sentences and calculate T matrix:
     which elements of T is a dictionary that key is one word of reference and value is the end time of the word.      
-    To calculate the T matrix, first calculate the spent time of the Complete segment in ASR and this time is divided per number of Equivalent sentences in reference.
+    To calculate the T matrix, first calculate the spent time of the Complete segment in Ostt and this time is divided per number of Equivalent sentences in reference.
     
     """
     Zero_T = []
@@ -178,7 +178,7 @@ def calc_flicker(MT):
 def get_One_T(ASR, reference, aligns = None):
     """
 
-    Receives ASR (time-stamped transcript) and reference sentence and makes the alignment (giza sentence orders) and finally calculates T matrix. Each line of T is a dictionary which key is one word of reference line and the value is the end time of that word. 
+    Receives OStt (time-stamped transcript) and tt sentence and makes the alignment (giza sentence orders) and finally calculates T matrix. Each line of T is a dictionary which key is one word of reference line and the value is the end time of that word. 
     To calculate T matrix, for each segment, with functions remove_listElement_onOther_list()  remove the previous segment in that segment and extracting new words which unseen in previous segments (in ASR) and divide segment time per unseen words to build end time of each word and then we create ASR_T. In the next step, we match each word in ASR_T to ref_T (we have two lists and match each element of list1 to list2), 
      
     """
@@ -687,7 +687,7 @@ def build_times_simple(A, Ts):
     """
 
    Receives A and T dictionaries and calculates times list:
-    each element of times is a list which its elements are like this [word_in_T, start_time_in_T]
+   each element of times is a list which its elements are like this [word_in_T, start_time_in_T]
   
     """
     A_keys = list(A.keys())
@@ -1054,34 +1054,34 @@ def calc_average_flickers_per_document(MT):
     return float(flicker_size) / complet_word_count
 
 # initiate the parser
-parser = argparse.ArgumentParser(description="This module receives three files  --asr or -a that receives path of ASR file (time-stamped transcript)  --ref or -r that is the path of Reference file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
-parser.add_argument("-a", "--asr", help="path of the ASR file", type=str)
-parser.add_argument("-r", "--ref", help="path of the references file", type=list, nargs='+' )
+parser = argparse.ArgumentParser(description="This module receives three files  --ostt or -a that receives path of OStt file (time-stamped transcript)  --tt or -r that is the path of tt file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
+parser.add_argument("-a", "--ostt", help="path of the OStt file", type=str)
+parser.add_argument("-r", "--tt", help="path of the tt file", type=list, nargs='+' )
 parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
 parser.add_argument("-m", "--mt", help="path of the MT file", type=str )
 parser.add_argument("-b", "--b_time", help="slot time of blue score calculation", type=int, default = 3000 )
 # read arguments from the command line
 args = parser.parse_args()
 
-if args.asr == None:
-    print('please insert ASR (time-stamped transcript) file path')
+if args.ostt == None:
+    print('please insert OStt (time-stamped transcript) file path')
     sys.exit(1)
-if args.ref == None :
-    print('please insert References file path in list')
+if args.tt == None :
+    print('please insert tt file path in list')
     sys.exit(1)
 if args.mt == None :
     print('please insert MT file path')
     sys.exit(1)
 
 
-def get_number_words(ref_list):
+def get_number_words(tt_list):
     """
     
-    Recived a reference list and calculate number of words.
+    Recived a tt list and calculate number of words.
     
     """
     count = 0
-    for i in ref_list:
+    for i in tt_list:
         count += len(i)
     
     return count
@@ -1091,9 +1091,9 @@ if __name__== "__main__":
     MovedWords = 1
     references =[]
     b_time = args.b_time
-    for i in args.ref:
+    for i in args.tt:
         path = ''.join(i)
-        references.append(read_reference(path))
+        references.append(read_tt(path))
     
     #---------- Calculte number of words
     
@@ -1102,13 +1102,13 @@ if __name__== "__main__":
         number_refs_words.append(get_number_words(ref))
         
     avergae_refs_words = sum(number_refs_words) / len(number_refs_words)
-    print("Number of reference words: ", avergae_refs_words)
-    print("Number of reference sentences: ", len(references[0]))
+    print("Number of tt words: ", avergae_refs_words)
+    print("Number of tt sentences: ", len(references[0]))
     
     
     
     
-    ASR = read_ASR(args.asr)
+    ASR = read_ostt(args.ostt)
     MT = read_MT(args.mt)
     
     #-----------get duration of ASR
@@ -1116,7 +1116,7 @@ if __name__== "__main__":
     end = ASR[-1][-1][1]
     duration = float(end) - float(start)
     duration =  str("{0:.3f}".format(round(duration, 3)))
-    print("Duration of the reference file (in the time scale of OStt file): ", duration)
+    print("Duration of the tt file (in the time scale of OStt file): ", duration)
     
     
     Ts = []
@@ -1125,18 +1125,18 @@ if __name__== "__main__":
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
     ""
-    print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of reference words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))) ,' and number of missing words: ', missing_words)
+    print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))) ,' and number of missing words: ', missing_words)
 
     delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
-    print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of reference words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
     Ts = []
     for reference in references: 
         T = get_One_T(ASR, reference)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of reference words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
     delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of reference words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
     aligns =[]
     for i in args.align:
         path = ''.join(i)
@@ -1149,9 +1149,9 @@ if __name__== "__main__":
         T = get_One_T(ASR, reference, align)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + without mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of reference words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words )  
+    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + without mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words )  
     delay, missing_words =  evaluate_segmenter(Ts, MT, MovedWords)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of reference words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
 
  
  
