@@ -18,6 +18,7 @@ SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language t
 ## Clone project from git 
 
 You can Download project as follow in girhub:
+
 	a) git clone https://github.com/lngvietthang/SLTev-master.git 
 	b) cd SLTev-master 
 
@@ -31,6 +32,7 @@ You can Download project as follow in girhub:
 #### Running transcript_to_source.py Script
 
 	a) python giza++/transcript_to_source.py asr_file > source_ref 
+	
 		1) asr_file is the input ASR file. 
 		2) source_ref is the output file. 
 	
