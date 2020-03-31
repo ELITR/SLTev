@@ -122,17 +122,34 @@ You can use parallel corpuse to imporove train of GIZA++, so you can download an
 		--b_time: Refers to the slots length time to calculate blue score (default is 3000).
 
 
-### Runing Scripts (automatica evaluation from scratch)
+### Run SLTev.py 
 
+	a) python SLTev.py --asr $1 --ref $2 --mt $3 --align cs_alignment --b_time 300 > $4
+
+### Runing Scripts (automatica evaluation from scratch)
 To run scripts in a simple way, you can run use one of these:
 
-	a) Run without external parallel data for training:
-		1) chmod +x ref_alignment/SLTev-without-parallel.sh 
-		2) ./ref_alignment/SLTev-without-parallel.sh asr reference mt
-	b) Run with external parallel data for training:
-		1) chmod +x ref_alignment/SLTev-with-parallel.sh 
-		2) ./ref_alignment/SLTev-with-parallel.sh asr reference mt  parallel_source parallel_ref 
+#### Run SLTev-without-parallel.sh
 
+	a) chmod +x SLTev-without-parallel.sh
+	b) bash SLTev-without-parallel.sh OStt_file ref_file MT_file out_file
+	c) Parameters:
+		1) Ostt_file --> The path of the OStt file. 
+		2) ref_file --> The path of the reference file. 
+		3) Mt_file --> The path of the MT file. 
+		4) out_file --> The path of the output file (results will save there). 
+
+#### Run SLTev-with-parallel.sh
+
+	a) chmod +x SLTev-with-parallel.sh
+	b) bash SLTev-with-parallel.sh OStt_file ref_file MT_file parallel_source_file parallel_ref_file out_file
+	c) Parameters:
+		1) Ostt_file --> The path of the OStt file. 
+		2) ref_file --> The path of the reference file. 
+		3) Mt_file --> The path of the MT file. 
+		4) parallel_source_file --> The path of the parallel source file. 
+		5) parallel_ref_file --> The path of the parallel reference file. 
+		6) out_file --> The path of the output file (results will save there).
 		
 ## Terminology
 
