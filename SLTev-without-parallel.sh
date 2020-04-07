@@ -21,4 +21,4 @@ cd ../../;
 #-------- mwerSegmenter
 chmod +x mwerSegmenter; 
 #-------- run sltev 
-python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 300;
+python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 3000;
