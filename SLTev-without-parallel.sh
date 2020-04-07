@@ -12,7 +12,7 @@ cd run_giza;
 cp ../../giza++/run.sh .;
 chmod +x run.sh;
 cp ../../source_ref .;
-cp ../../$2 ./tt;
+cp $2 ./tt;
 #------- run giza over cs-en
 mkdir out_folder;
 bash run.sh tt source_ref ./out_folder;
@@ -21,4 +21,4 @@ cd ../../;
 #-------- mwerSegmenter
 chmod +x mwerSegmenter; 
 #-------- run sltev 
-python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 300 > $4
+python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 300;
