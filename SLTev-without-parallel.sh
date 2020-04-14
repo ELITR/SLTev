@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 # we suppose that $1 is OStt and $2 is tt  $3 is mt $4 is output path
 #-------- make source 
 python giza++/transcript_to_source.py $1 > source_ref; 

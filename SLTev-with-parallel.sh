@@ -1,4 +1,4 @@
-#! /bin/bash;
+#!/bin/bash;
 python giza++/transcript_to_source.py "$1" > source_ref; 
 #concat source_ref and reference with parallel data;
 mkdir concat_data;
