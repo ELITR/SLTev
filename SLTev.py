@@ -13,7 +13,7 @@ import argparse
 import sys
 import nltk
 import sacrebleu
-
+import subprocess as sp
 
 def read_tt(file_name):
     """
@@ -84,13 +84,17 @@ def read_MT(file_name):
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
-            if 'P ' in line[:3]:
-                l = line.strip().split()[1:]
+            line = line.strip().split()
+            if line[0] != 'P' and line[0] != 'C':
+                line = ['P'] + line[:]
+                
+            if 'P' == line[0]:
+                l = line[1:]
                 l.append('.')
                 sentence.append(l)
 
             else:
-                l = line.strip().split()[1:]
+                l = line[1:]
                 l.append('.')
                 sentence.append(l)
                 MT.append(sentence)
@@ -329,22 +333,30 @@ def build_times(A, Ts, A_start, A_end):
                 break
     
     
-    
+    left_right_words = 0 
     #--------calculate min_value and max_value from upper times_dict 
+    #print('times_dict ', times_dict)
     min_value = min_value_in_dict(times_dict)
+    #print('min_vlaue', min_value)
     max_value = max_value_in_dict(times_dict)
+    #print('max_value', max_value)
     #------if min_vlue not start of the complete sgment, one lower word from T was added. 
     out = min_value_is_started(min_value, Ts)
+    #print('min_value_is_started', out)
     if out != -1:
         times_dict[out[1]] = out[0]
+        left_right_words += 1
     #------if min_vlue not end of the complete sgment, one higher word from T was added. 
     out = max_value_is_started(max_value, Ts)
+    #print('max_value_is_started', out)
     if out != -1:
         times_dict[out[1]] = out[0]
+        left_right_words += 1
         
     for k,v in times_dict.items():
         times.append([k,v])
-    return times, mean_ref
+    #print('times ', times)
+    return times, mean_ref, left_right_words
     
 
 
@@ -432,9 +444,12 @@ def evaluate(Ts,MT):
     sum_missing_words = 0
     for i in range(len(MT)):
         A,start, end = build_A(MT[i])
-        times, mean_ref = build_times(A,Ts,start, end)
-        #print(times)
-        #print(mean_ref)       
+        times, mean_ref, left_right_words = build_times(A,Ts,start, end)
+        #print('A', A)
+        
+        #print('len(times)', len(times))
+        #print('left_right_words', left_right_words)  
+        #print('times', times)
         delays = [] 
         for time in times:
             if time[0] in A.keys():
@@ -446,10 +461,25 @@ def evaluate(Ts,MT):
             not_in_refer = 0
         except:
             not_in_refer = 0
+        old_delays = delays[:]
         for k in range((len(times)-len(delays))):
             delays.append(not_in_refer)
             sum_missing_words += 1
-        delays.sort()    
+        delays.sort()
+        #print('delays', delays)
+        #print('(len(times)-len(delays))', (len(times)-len(delays)))
+        #print('sum_missing_words before', sum_missing_words)
+        if left_right_words > (len(times)-len(old_delays)):
+            sum_missing_words -= ( left_right_words - (len(times)-len(old_delays))  )
+        else:
+            sum_missing_words -= left_right_words #for calc missing words we reduced lef-right-words
+#         if sum_missing_words  < -1:
+#             print('A', A)
+#             print('times', times)
+#             print('delays', delays)
+#             print('left_right_words', left_right_words)
+#             sys.exit(1)
+        
         sentence_delay = sum(delays[:mean_ref])
         sum_delay += sentence_delay
     return sum_delay, sum_missing_words
@@ -514,7 +544,8 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
             l.append(s)
         references_sentences.append(l)
         
-    #------------------write MT in temp_translate file and reference in temp_ref
+    #------------------write MT in temp_translate file and reference in 
+    
     out = open('temp_ref', 'w')
     for i in references_sentences[0]:
         sentence = ' '.join(i)
@@ -532,7 +563,9 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     #------------run segmentation 
     import os
     text = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
-    os.system(text)
+    mWERQuality = sp.getoutput(text)
+    mWERQuality = mWERQuality.split(' ')[-1]
+    mWERQuality = float(mWERQuality)
 
 
     os.system('rm temp_ref')
@@ -550,6 +583,32 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     os.system('rm __segments')  
     blue_scores = []
     sacre_blue_score = []
+    #print('len(references_sentences[0])', len(references_sentences[0]) )
+    #print('len(references_sentences[0])', len(mt_sentences) )
+    #---------------recieve two equally long arrays of sentences 
+    tot_bleu = list()
+    
+    for i in  references_sentences:
+        BLEUscore = nltk.translate.bleu_score.corpus_bleu(i, mt_sentences, smoothing_function=smoothie)
+        tot_bleu.append(BLEUscore)
+    tot_bleu = sum(tot_bleu)/len(tot_bleu)
+    
+    tot_bleu_sacre = list()
+    mt_str_list = []
+    for i in mt_sentences:
+        mt_str_list.append(' '.join(i))
+    
+    for i in references_sentences:
+        ref_str_list = []
+        for j in i:
+            ref_str_list.append(' '.join(j))
+    
+        b_sacre = sacrebleu.corpus_bleu(mt_str_list, [ref_str_list])
+        b_sacre = b_sacre.score
+        tot_bleu_sacre.append(b_sacre)
+    #print('tot_bleu: ',tot_bleu)
+    tot_bleu_sacre = sum(tot_bleu_sacre)/ len(tot_bleu_sacre)
+    #--------------------sentence by sentence----------
     for j in range(len(references_sentences[0])):
         l = []
         s_blue = [] 
@@ -577,7 +636,9 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
         except:
             sacre_blue_score.append(0)
         
-    return (sum(blue_scores)/len(blue_scores)), (sum(sacre_blue_score)/len(sacre_blue_score))
+    return (sum(blue_scores)/len(blue_scores)), (sum(sacre_blue_score)/len(sacre_blue_score)), tot_bleu, tot_bleu_sacre
+
+
 
 def calc_blue_score_sentence_by_time(Ts, MT, time_step):
     """
@@ -590,11 +651,11 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
     start = 0
     end = time_step
     mt_sentences = []
-    while end <=  float(MT[-1][-1][2]):
+    while end <=  float(MT[-1][-1][0]):
         l = []
         for i in range(len(MT)):
             for j in range(len(MT[i])):
-                if float(MT[i][j][1]) >= start and float(MT[i][j][2]) <= end :
+                if float(MT[i][j][0]) >= start and float(MT[i][j][0]) <= end :
                     l += MT[i][j][3:-1]
         mt_sentences.append(list(dict.fromkeys(l)))
         start +=  time_step
@@ -604,14 +665,14 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
         l = []
         for i in range(len(MT)):
             for j in range(len(MT[i])):
-                if float(MT[i][j][1]) >= start and float(MT[i][j][2]) <= end :
+                if float(MT[i][j][0]) >= start and float(MT[i][j][0]) <= end :
                     l += MT[i][j][3:-1]
         mt_sentences.append(list(dict.fromkeys(l)))
         
     references_sentences = []
     start = 0
     end = time_step
-    while end <=  float(MT[-1][-1][2]):
+    while end <=  float(MT[-1][-1][0]):
         l = []
         for i in range(len(Ts)):
             s= [] 
@@ -641,7 +702,8 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
     start = 0 
     end = time_step
 
-
+    BLEU_list = []
+    sacreBLEU_list = []
     for t in  range(len(mt_sentences)):
         s_blue = []
         b = []
@@ -672,14 +734,18 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
                 s_blue.append(max(sacre_l))
             except:
                 s_blue.append(0)
-            
-        text = 'The BleuScore from time '+ format(start, '06') + ' to time ' + format(end, '06') +  ' is: ' + str("{0:.3f}".format(round((sum(b)/len(b)), 3)))
-        text1 = 'The SacreBleu from time '+ format(start, '06') + ' to time ' + format(end, '06') +  ' is: ' + str("{0:.3f}".format(round((sum(s_blue)/len(s_blue)), 3)))
+         
+        text = 'detailed BLEU          span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(((sum(b)/len(b))* 100)) )
+        BLEU_list.append( ( (sum(b)/len(b))*100 ) )
+        text1 = 'detailed sacreBLEU     span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(round((sum(s_blue)/len(s_blue)), 3)))
+        sacreBLEU_list.append((sum(s_blue)/len(s_blue)))
         start += time_step
         end += time_step
         blue_scores.append(text)
         blue_scores.append(text1)
-    return blue_scores
+    avg_BLEU = "avg      BLEU          span*                  " + str("{0:.3f}".format(round((sum(BLEU_list)/len(BLEU_list)), 3))) 
+    avg_SacreBleu = "avg      sacreBLEU     span*                  " + str("{0:.3f}".format(round((sum(sacreBLEU_list)/len(sacreBLEU_list)), 3)))
+    return blue_scores, avg_BLEU, avg_SacreBleu
 
 
 
@@ -886,11 +952,12 @@ def segmenter(MT, Ts):
     #------------run segmentation 
     import os
     text = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
-    os.system(text)
+    mWERQuality = sp.getoutput(text)
+    mWERQuality = mWERQuality.split(' ')[-1]
+    mWERQuality = float(mWERQuality)
 
-
-    #os.system('rm temp_ref')
-    #os.system('rm temp_translate')
+    os.system('rm temp_ref')
+    os.system('rm temp_translate')
 
     #-------------read segments 
     in_file = open('__segments', 'r', encoding="utf8")
@@ -902,7 +969,7 @@ def segmenter(MT, Ts):
 
     mt_sentences = segments[:]
     os.system('rm __segments')
-    return mt_sentences
+    return mt_sentences, mWERQuality
 
 def build_segmenter_A(MT):
     """
@@ -977,7 +1044,7 @@ def evaluate_segmenter(Ts, MT, MovedWords):
 
     """
     A_list = build_segmenter_A(MT)
-    segmenter_sentence = segmenter(MT, Ts)
+    segmenter_sentence, mWERQuality = segmenter(MT, Ts)
     segment_times = time_segmenter(segmenter_sentence, A_list, MovedWords)
    
     sum_delay = list()
@@ -1006,7 +1073,7 @@ def evaluate_segmenter(Ts, MT, MovedWords):
             
         sum_delay.append(ref_delay)
         sum_missing_words.append(missing_words)
-    return min(sum_delay), (sum(sum_missing_words)/len(sum_missing_words))
+    return min(sum_delay), int(sum(sum_missing_words)/len(sum_missing_words)), mWERQuality
 
 def calc_average_flickers_per_sentence(MT):
     """
@@ -1082,9 +1149,10 @@ def get_number_words(tt_list):
     """
     count = 0
     for i in tt_list:
-        count += len(i)
+        count += (len(i)-1)
     
     return count
+    
     
 
 if __name__== "__main__":
@@ -1097,13 +1165,47 @@ if __name__== "__main__":
     
     #---------- Calculte number of words
     
+    #----------------------------------------
+    print("n ... not considering, not using")
+    print("P ... considering Partial segments (in addition to Complete segments)")
+    print("T ... considering source Timestamps supplied with MT output")
+    print("W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)")
+    print("A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)")
+    print("------------------------------------------------------------------------------------------------------------")
+    
+    #-----------------------------------------
     number_refs_words = []
     for ref in references:
         number_refs_words.append(get_number_words(ref))
         
     avergae_refs_words = sum(number_refs_words) / len(number_refs_words)
-    print("Number of tt words: ", avergae_refs_words)
-    print("Number of tt sentences: ", len(references[0]))
+    
+    #print('references: ', references)
+    
+    ref_text = '--       WordCount'
+    count = 1
+    for i in number_refs_words:
+        text = '    tt'  + str(count) + '                    ' + str(int(i))
+        count += 1
+        ref_text = ref_text + ' ' + text
+    print(ref_text) #---- WordCount tt1 1699 tt2 1299 ...
+    
+    
+    print("avg      wordCount     tt*                   ", int(avergae_refs_words)) #---- avg WordCount tt* 12345 
+    #print("Number of tt words: ", avergae_refs_words)
+    
+    count = 0
+    sum_sentences = 0
+    ref_text = '--       SentenceCount'
+    for i in references:
+        text = 'tt'  + str(count) + '                    ' + str(len(i))
+        count += 1
+        ref_text = ref_text + ' ' + text
+        sum_sentences += len(i)
+        
+    print(ref_text) #---- SentenceCount tt1 1699 tt2 1299 ...
+    print("avg      SentenceCount tt*                   ", str(int(sum_sentences/len(references)))) #---- avg SentenceCount tt* 220 
+    #print("Number of tt sentences: ", len(references[0]))
     
     
     
@@ -1116,27 +1218,55 @@ if __name__== "__main__":
     end = ASR[-1][-1][1]
     duration = float(end) - float(start)
     duration =  str("{0:.3f}".format(round(duration, 3)))
-    print("Duration of the tt file (in the time scale of OStt file): ", duration)
-    
+    #print("Duration of the tt file (in the time scale of OStt file): ", duration)
+    print("OStt     Duration      --                    ", duration) #---- OStt Duration -- 88816 
     
     Ts = []
     for reference in references: 
         T = get_Zero_T(ASR, reference)
         Ts.append(T)
-    delay, missing_words = evaluate(Ts,MT)
-    ""
-    print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))) ,' and number of missing words: ', missing_words)
+    
+    # n ... not considering, not using
+    # P ... considering Partial segments (in addition to Complete segments)
+    # T ... considering source Timestamps supplied with MT output
+    # W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)
+    # A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation) 
 
-    delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
-    print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    
+    delay, missing_words = evaluate(Ts,MT)
+    
+    
+    #print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))) ,' and number of missing words: ', missing_words)
+    print("tot      Delay         nTnn                  ", str("{0:.3f}".format(round(delay, 3))))
+    print("avg      Delay         nTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+    print("tot      MissedWords   nTnn                  ", missing_words)
+    
+    delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords)
+    #print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+
+    print("tot      Delay         nnWn                  ", str("{0:.3f}".format(round(delay, 3))))
+    print("avg      Delay         nnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+    print("tot      MissedWords   nnWn                  ", missing_words)
+    print("tot      mWERQuality   nnWn                  ", mWERQuality)
+    
     Ts = []
     for reference in references: 
         T = get_One_T(ASR, reference)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
-    delay, missing_words = evaluate_segmenter(Ts, MT, MovedWords)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print("tot      Delay         PTnn                  ", str("{0:.3f}".format(round(delay, 3))))
+    print("avg      Delay         PTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+    print("tot      MissedWords   PTnn                  ", missing_words)
+    
+    
+    delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords)
+    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print("tot      Delay         PnWn                  ", str("{0:.3f}".format(round(delay, 3))))
+    print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+    print("tot      MissedWords   PnWn                  ", missing_words)
+    print("tot      mWERQuality   PnWn                  ", mWERQuality)
+    
     aligns =[]
     for i in args.align:
         path = ''.join(i)
@@ -1149,27 +1279,48 @@ if __name__== "__main__":
         T = get_One_T(ASR, reference, align)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + without mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words )  
-    delay, missing_words =  evaluate_segmenter(Ts, MT, MovedWords)
-    print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + without mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words )  
+    print("tot      Delay         PTnA                  ", str("{0:.3f}".format(round(delay, 3))))
+    print("avg      Delay         PTnA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+    print("tot      MissedWords   PTnA                  ", missing_words)
 
+    delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords)
+    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+    print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
+    print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+    print("tot      MissedWords   PnWA                  ", missing_words)
+    print("tot      mWERQuality   PnWA                  ", mWERQuality)
  
- 
-    print("Flicker with method 'count_changed_words': ",  str("{0:.3f}".format(round(calc_flicker(MT), 3))))
-    print("Flicker with method 'count_changed_content': ",  str("{0:.3f}".format(round((calc_flicker1(MT)), 3))) )
-    print("Average of divide flicker per length of each sentence: ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
-    print("Divide sum sentence flickers per sum of sentence length: ", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))) )
+    #print("Flicker with method 'count_changed_words': ",  str("{0:.3f}".format(round(calc_flicker(MT), 3))))
+    print("tot      Flicker       count_changed_words   ", int(calc_flicker(MT)))
+    #print("Flicker with method 'count_changed_content': ",  str("{0:.3f}".format(round((calc_flicker1(MT)), 3))) )
+    print("tot      Flicker       count_changed_content ", int(calc_flicker1(MT)))
+    #print("Average of divide flicker per length of each sentence: ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
+    print("microavg Flicker       count_changed_words   ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
+    #print("Divide sum sentence flickers per sum of sentence length: ", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))) )
+    print("macroavg Flicker       count_changed_words   ", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3)))  )
     #print(calc_blue_score_documnet(Ts, MT))
     bleu_score , sacre_score = calc_blue_score_documnet(Ts, MT)
     bleu_score = bleu_score * 100
-    print(bleu_score , sacre_score)
-    print('The BleuScore for all sentences: ', str("{0:.3f}".format(round(bleu_score, 3))) )
-    print('The SacreBleu score for all sentences: ', str("{0:.3f}".format(round(sacre_score, 3))) )
-    bleu_score, sacre_score  = calc_blue_score_sentence_by_sentence(Ts, MT)
+    #print(bleu_score , sacre_score)
+    #print('The BleuScore for all sentences: ', str("{0:.3f}".format(round(bleu_score, 3))) )
+    print("tot      BLEU          docAsAWhole           ", str("{0:.3f}".format(round(bleu_score, 3))))
+    #print('The SacreBleu score for all sentences: ', str("{0:.3f}".format(round(sacre_score, 3))) )
+    print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
+    bleu_score, sacre_score, tot_bleu, tot_bleu_sacre  = calc_blue_score_sentence_by_sentence(Ts, MT)
     bleu_score = bleu_score * 100
-    print('The average BleuScore for sentence-by-sentence using mwerSegmenter: ', str("{0:.3f}".format(round(bleu_score, 3))) )
-    print('The average SacreBleu score for sentence-by-sentence using mwerSegmenter: ', str("{0:.3f}".format(round(sacre_score, 3))) )
-    c_b_s_s_by_time = calc_blue_score_sentence_by_time(Ts, MT, b_time)
+    tot_bleu = tot_bleu * 100
+    #print('The average BleuScore for sentence-by-sentence using mwerSegmenter: ', str("{0:.3f}".format(round(bleu_score, 3))) )
+    print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(bleu_score, 3))) )
+    #print('The average SacreBleu score for sentence-by-sentence using mwerSegmenter: ', str("{0:.3f}".format(round(sacre_score, 3))) )
+    print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
+    
+    print('tot      BLEU          mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu, 3))) )
+    print('tot      sacreBLEU     mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu_sacre, 3))) )
+    c_b_s_s_by_time,  avg_BLEU, avg_SacreBleu = calc_blue_score_sentence_by_time(Ts, MT, b_time)
     for x in c_b_s_s_by_time:
         print(x)
+    print(avg_BLEU)
+    print(avg_SacreBleu)
     #print('The blue score for document divided_by_time is equal to:  ', calc_blue_score_sentence_by_time(Ts, MT, b_time))
+
