@@ -120,6 +120,8 @@ You can use the parallel corpus to improve the train of GIZA++, so you can downl
         --mt: Refers to MT file.
         --align: Refers to alignment files. [contains list of aligns], it's optional. 
         --b_time: Refers to the slots length time to calculate blue score (default is 3000).
+		--asr: A boolean value (True or False, default is False), If "--asr" value is equal to False (default is False), SLTev will run as normal (for mt) and, otherwise if "--asr" is equal to True. SLTev will run as ASR-evaluator. 
+  
 
 
 ### Run SLTev.py 
@@ -142,14 +144,14 @@ To run scripts simply, you can run use one of these:
 #### Run SLTev-with-parallel.sh
 
     a) chmod +x SLTev-with-parallel.sh
-    b) bash SLTev-with-parallel.sh ostt_file tt_file mt_file parallel_source_file parallel_target_file out_file
+    b) bash SLTev-with-parallel.sh ostt_file tt_file mt_file parallel_source_file parallel_target_file
     c) Parameters:
         1) ostt_file --> The path of the OStt file. 
         2) tt_file --> The path of the tt file. 
         3) mt_file --> The path of the mt file. 
         4) parallel_source_file --> The path of the parallel source file. 
         5) parallel_target_file --> The path of the parallel target file. 
-        6) out_file --> The path of the output file (results will save there).
+
         
 ## Terminology
 

@@ -118,9 +118,9 @@ def get_Zero_T(ASR, reference):
     start_times = []
     for sentence in ASR:
 
-        sentence_time = int(sentence[-1][1]) - int(sentence[0][0])
+        sentence_time = float(sentence[-1][1]) - float(sentence[0][0])
         sentence_times.append(sentence_time)
-        start_times.append(int(sentence[0][0]))
+        start_times.append(float(sentence[0][0]))
     
     for sentence in range(len(reference)):
         time_step = start_times[sentence] 
@@ -203,9 +203,9 @@ def get_One_T(ASR, reference, aligns = None):
             
             new_words = remove_listElement_onOther_list(segment[2:-1], old_segment)
             old_segment += segment[2:-1]
-            segment_start = int(segment[0])
+            segment_start = float(segment[0])
             
-            step = (int(segment[1])-int(segment[0]))/len(segment[2:-1])
+            step = (float(segment[1])-float(segment[0]))/len(segment[2:-1])
             segment_word_end_time = dict()
             segment_end = segment_start
             for word in segment[2:-1]:
@@ -273,10 +273,10 @@ def build_A(sentence_segments):
     for segment in sentence_segments:
         for word in segment[3:-1]:
             if word not in uniq_words_show_time.keys():
-                uniq_words_show_time[word] = int(segment[0])
+                uniq_words_show_time[word] = float(segment[0])
     start = sentence_segments[-1][1]
     end = sentence_segments[-1][2]
-    return uniq_words_show_time, int(start), int(end)
+    return uniq_words_show_time, float(start), float(end)
 
 
 
@@ -1094,9 +1094,14 @@ def calc_average_flickers_per_sentence(MT):
                 sentence_flicker_size += temp
                 break
             first_segment = segment[3:-1]
+        if float(len(sentence[-1][3:-1])) == 0:
+            continue
         average = sentence_flicker_size / float(len(sentence[-1][3:-1]))
         sentence_flickers.append(average)
-    return sum(sentence_flickers)/float(len(sentence_flickers))
+    if len(sentence_flickers) == 0:
+        return 0
+    else:
+        return sum(sentence_flickers)/float(len(sentence_flickers))
 
 
 def calc_average_flickers_per_document(MT):
@@ -1123,6 +1128,7 @@ def calc_average_flickers_per_document(MT):
 # initiate the parser
 parser = argparse.ArgumentParser(description="This module receives three files  --ostt or -a that receives path of OStt file (time-stamped transcript)  --tt or -r that is the path of tt file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
 parser.add_argument("-a", "--ostt", help="path of the OStt file", type=str)
+parser.add_argument("--asr", help="a boolean (False or True) value", type=bool, default = False )
 parser.add_argument("-r", "--tt", help="path of the tt file", type=list, nargs='+' )
 parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
 parser.add_argument("-m", "--mt", help="path of the MT file", type=str )
@@ -1226,23 +1232,15 @@ if __name__== "__main__":
         T = get_Zero_T(ASR, reference)
         Ts.append(T)
     
-    # n ... not considering, not using
-    # P ... considering Partial segments (in addition to Complete segments)
-    # T ... considering source Timestamps supplied with MT output
-    # W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)
-    # A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation) 
 
     
     delay, missing_words = evaluate(Ts,MT)
-    
-    
-    #print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))) ,' and number of missing words: ', missing_words)
     print("tot      Delay         nTnn                  ", str("{0:.3f}".format(round(delay, 3))))
     print("avg      Delay         nTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
     print("tot      MissedWords   nTnn                  ", missing_words)
     
     delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords)
-    #print('The sum of the DELAY with Sentence-based Time Estimation calculation (only "C"omplete segments have been used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+
 
     print("tot      Delay         nnWn                  ", str("{0:.3f}".format(round(delay, 3))))
     print("avg      Delay         nnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
@@ -1254,65 +1252,64 @@ if __name__== "__main__":
         T = get_One_T(ASR, reference)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
-    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + without mwerSegmenter: ',  str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+
     print("tot      Delay         PTnn                  ", str("{0:.3f}".format(round(delay, 3))))
     print("avg      Delay         PTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
     print("tot      MissedWords   PTnn                  ", missing_words)
     
     
     delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords)
-    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + without word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
+
     print("tot      Delay         PnWn                  ", str("{0:.3f}".format(round(delay, 3))))
     print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
     print("tot      MissedWords   PnWn                  ", missing_words)
     print("tot      mWERQuality   PnWn                  ", mWERQuality)
     
-    aligns =[]
-    for i in args.align:
-        path = ''.join(i)
-        aligns.append(read_alignment_file(path))
-    Ts = []
+    if args.asr == False:
 
-    for index in range(len(references)): 
-        reference = references[index]
-        align = aligns[index]
-        T = get_One_T(ASR, reference, align)
-        Ts.append(T)
-    delay, missing_words = evaluate(Ts,MT)
-    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + with MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + without mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words )  
-    print("tot      Delay         PTnA                  ", str("{0:.3f}".format(round(delay, 3))))
-    print("avg      Delay         PTnA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-    print("tot      MissedWords   PTnA                  ", missing_words)
+        aligns =[]
+        for i in args.align:
+            path = ''.join(i)
+            aligns.append(read_alignment_file(path))
+        Ts = []
 
-    delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords)
-    #print('The sum of the DELAY with Word-based Time Estimation calculation (only "P"artial information is used) + without MT-output estimation (word occurrence approximation for MT output) + with word reordering (alignment) + with mwerSegmenter: ', str("{0:.3f}".format(round(delay, 3))), ' and average DELAY (divide  DELAY by number of tt words ): ', str("{0:.3f}".format(round((delay/avergae_refs_words), 3))), ' and number of missing words: ', missing_words)
-    print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
-    print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-    print("tot      MissedWords   PnWA                  ", missing_words)
-    print("tot      mWERQuality   PnWA                  ", mWERQuality)
- 
-    #print("Flicker with method 'count_changed_words': ",  str("{0:.3f}".format(round(calc_flicker(MT), 3))))
+        for index in range(len(references)): 
+            reference = references[index]
+            align = aligns[index]
+            T = get_One_T(ASR, reference, align)
+            Ts.append(T)
+        delay, missing_words = evaluate(Ts,MT)
+
+        print("tot      Delay         PTnA                  ", str("{0:.3f}".format(round(delay, 3))))
+        print("avg      Delay         PTnA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+        print("tot      MissedWords   PTnA                  ", missing_words)
+
+        delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords)
+
+        print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
+        print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+        print("tot      MissedWords   PnWA                  ", missing_words)
+        print("tot      mWERQuality   PnWA                  ", mWERQuality)
+
+        
     print("tot      Flicker       count_changed_words   ", int(calc_flicker(MT)))
-    #print("Flicker with method 'count_changed_content': ",  str("{0:.3f}".format(round((calc_flicker1(MT)), 3))) )
+
     print("tot      Flicker       count_changed_content ", int(calc_flicker1(MT)))
-    #print("Average of divide flicker per length of each sentence: ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
+
     print("microavg Flicker       count_changed_words   ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
-    #print("Divide sum sentence flickers per sum of sentence length: ", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))) )
+
     print("macroavg Flicker       count_changed_words   ", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3)))  )
-    #print(calc_blue_score_documnet(Ts, MT))
     bleu_score , sacre_score = calc_blue_score_documnet(Ts, MT)
     bleu_score = bleu_score * 100
-    #print(bleu_score , sacre_score)
-    #print('The BleuScore for all sentences: ', str("{0:.3f}".format(round(bleu_score, 3))) )
+
     print("tot      BLEU          docAsAWhole           ", str("{0:.3f}".format(round(bleu_score, 3))))
-    #print('The SacreBleu score for all sentences: ', str("{0:.3f}".format(round(sacre_score, 3))) )
     print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
     bleu_score, sacre_score, tot_bleu, tot_bleu_sacre  = calc_blue_score_sentence_by_sentence(Ts, MT)
     bleu_score = bleu_score * 100
     tot_bleu = tot_bleu * 100
-    #print('The average BleuScore for sentence-by-sentence using mwerSegmenter: ', str("{0:.3f}".format(round(bleu_score, 3))) )
+
     print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(bleu_score, 3))) )
-    #print('The average SacreBleu score for sentence-by-sentence using mwerSegmenter: ', str("{0:.3f}".format(round(sacre_score, 3))) )
+
     print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
     
     print('tot      BLEU          mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu, 3))) )
@@ -1322,5 +1319,5 @@ if __name__== "__main__":
         print(x)
     print(avg_BLEU)
     print(avg_SacreBleu)
-    #print('The blue score for document divided_by_time is equal to:  ', calc_blue_score_sentence_by_time(Ts, MT, b_time))
+
 
