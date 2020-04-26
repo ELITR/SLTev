@@ -1,6 +1,4 @@
-#===========================================================
-#  Title:  SLTev
-#  Author: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
+#sari, Ondrej Bojar, Mohammad Mahmoudi
 #  Date:   11 March 2020
 #  This Project is a part of the framework which is written 
 # to evaluate simoltanius translation systems.
@@ -14,6 +12,7 @@ import sys
 import nltk
 import sacrebleu
 import subprocess as sp
+import os
 
 def read_tt(file_name):
     """
@@ -33,6 +32,40 @@ def read_tt(file_name):
             line = in_file.readline()
     reference = list(filter(lambda a: a != [], reference))
     return reference
+
+
+def convert_to_asr_format(line):
+    """
+    get a line and convert to our format
+    
+    """
+    if line[0] != 'P' and line[0] != 'C':
+        line.insert(0, 'C')
+    #------------check first number (display number)
+
+    try:
+        if float(line[1]) > -1:
+            pass
+    except:
+        line.insert(1, 0)
+    
+    #----------check second number (gues time 1)
+    try:
+        if float(line[2]) > -1:
+            pass
+    except:
+        line.insert(2, 0)
+    #----------check third number (gues time 2)
+
+    try:
+        if float(line[3]) > -1:
+            pass
+    except:
+        line.insert(3, 0)
+    
+    return line
+
+
 
 def read_ostt(file_name):
     """
@@ -71,7 +104,7 @@ def read_ostt(file_name):
         
     return ASR
 
-def read_MT(file_name):
+def read_MT(file_name, asr_status):
     """
 
     Read MT file and save sentences in a list (each sentence contains many segments that split by space)
@@ -85,6 +118,10 @@ def read_MT(file_name):
         line = in_file.readline()
         while line:
             line = line.strip().split()
+            
+            if asr_status == True and line != []: #-----------convert to asr format if status is ASR=True 
+                line = convert_to_asr_format(line)
+            
             if line[0] != 'P' and line[0] != 'C':
                 line = ['P'] + line[:]
                 
@@ -685,7 +722,8 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
         start +=  time_step
         end += time_step
 
-        
+    #print('references_sentences ', references_sentences)
+    #print('Ts ', Ts)
     if references_sentences == []:
         l = []
         for i in range(len(Ts)):
@@ -697,44 +735,36 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
             l.append(s)
         references_sentences.append(l)
         
-
+    #print('references_sentences ', references_sentences)
     blue_scores = []
     start = 0 
     end = time_step
 
     BLEU_list = []
     sacreBLEU_list = []
+
     for t in  range(len(mt_sentences)):
         s_blue = []
         b = []
         for i in range(len(references_sentences[t])):
-            l = []
-            sacre_l = []
-            for j in range(len(references_sentences[t][i])):
-                try:
-                    BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[t][i][j]], mt_sentences[t][i], smoothing_function=smoothie)
-                    l.append(BLEUscore)
-                except:
-                    pass
-                
-                try:
-                    refs= [[' '.join(references_sentences[t][i][j])]]
-                    sys = [' '.join(mt_sentences[t][i])]
-                    b_sacre = sacrebleu.corpus_bleu(sys, refs)
-                    b_sacre = b_sacre.score
-                    sacre_l.append(b_sacre)
-                except:
-                    pass
             try:
-                b.append(max(l))
+                BLEUscore = nltk.translate.bleu_score.sentence_bleu([references_sentences[t][i]], mt_sentences[t], smoothing_function=smoothie)
+                b.append(BLEUscore)
             except:
                 b.append(0)
-            
+
             try:
-                s_blue.append(max(sacre_l))
+                refs= [[' '.join(references_sentences[t][i])]]
+                sys = [' '.join(mt_sentences[t])]
+
+                b_sacre = sacrebleu.corpus_bleu(sys, refs)
+                b_sacre = b_sacre.score
+                s_blue.append(b_sacre)
             except:
                 s_blue.append(0)
-         
+        if b == [] and s_blue ==[]:
+            b = [0]
+            s_blue = [0]
         text = 'detailed BLEU          span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(((sum(b)/len(b))* 100)) )
         BLEU_list.append( ( (sum(b)/len(b))*100 ) )
         text1 = 'detailed sacreBLEU     span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(round((sum(s_blue)/len(s_blue)), 3)))
@@ -1146,6 +1176,21 @@ if args.mt == None :
     print('please insert MT file path')
     sys.exit(1)
 
+#---------------------check existnest of input files--------------
+if os.path.isfile(args.ostt):
+    pass
+else:
+    print (args.ostt, " not exist")
+    sys.exit(1)
+
+if os.path.isfile(args.mt):
+    pass
+else:
+    print (args.mt, " not exist")
+    sys.exit(1)  
+
+    
+
 
 def get_number_words(tt_list):
     """
@@ -1167,6 +1212,13 @@ if __name__== "__main__":
     b_time = args.b_time
     for i in args.tt:
         path = ''.join(i)
+        #------------check exist file
+        if os.path.isfile(path):
+            pass
+        else:
+            print (path, " not exist")
+            sys.exit(1)
+        #-------------add to refernec list
         references.append(read_tt(path))
     
     #---------- Calculte number of words
@@ -1216,12 +1268,18 @@ if __name__== "__main__":
     
     
     
-    ASR = read_ostt(args.ostt)
-    MT = read_MT(args.mt)
+    OStt = read_ostt(args.ostt)
+    MT = read_MT(args.mt, args.asr)
+    
+    #--------------------check for count of sentence in OStt and tt
+    for i in range(len(references)):
+        if len(references[i]) != len(OStt):
+            print('count of Complete sentence in tt', i, ' and OStt is not equal.')
+            sys.exit(1)
     
     #-----------get duration of ASR
-    start = ASR[0][0][0]
-    end = ASR[-1][-1][1]
+    start = OStt[0][0][0]
+    end = OStt[-1][-1][1]
     duration = float(end) - float(start)
     duration =  str("{0:.3f}".format(round(duration, 3)))
     #print("Duration of the tt file (in the time scale of OStt file): ", duration)
@@ -1229,7 +1287,7 @@ if __name__== "__main__":
     
     Ts = []
     for reference in references: 
-        T = get_Zero_T(ASR, reference)
+        T = get_Zero_T(OStt, reference)
         Ts.append(T)
     
 
@@ -1249,7 +1307,7 @@ if __name__== "__main__":
     
     Ts = []
     for reference in references: 
-        T = get_One_T(ASR, reference)
+        T = get_One_T(OStt, reference)
         Ts.append(T)
     delay, missing_words = evaluate(Ts,MT)
 
@@ -1276,7 +1334,11 @@ if __name__== "__main__":
         for index in range(len(references)): 
             reference = references[index]
             align = aligns[index]
-            T = get_One_T(ASR, reference, align)
+            if len(align) != len(reference):
+                print('len align(', len(align), ') is not equal to len tt (', len(reference), ') it maybe giza++ not good work'  )
+                sys.exit(1)
+                
+            T = get_One_T(OStt, reference, align)
             Ts.append(T)
         delay, missing_words = evaluate(Ts,MT)
 
@@ -1296,9 +1358,9 @@ if __name__== "__main__":
 
     print("tot      Flicker       count_changed_content ", int(calc_flicker1(MT)))
 
-    print("microavg Flicker       count_changed_words   ", str("{0:.3f}".format(round(abs(float(calc_average_flickers_per_sentence(MT))), 3))) )
+    print("microavg Flicker       count_changed_words   ", int(calc_average_flickers_per_sentence(MT)) )
 
-    print("macroavg Flicker       count_changed_words   ", str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3)))  )
+    print("macroavg Flicker       count_changed_words   ", int(calc_average_flickers_per_document(MT))  )
     bleu_score , sacre_score = calc_blue_score_documnet(Ts, MT)
     bleu_score = bleu_score * 100
 

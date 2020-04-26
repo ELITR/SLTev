@@ -20,5 +20,9 @@ cat out_folder/Result.A3.final > ../../ref_alignment;
 cd ../../;
 #-------- mwerSegmenter
 chmod +x mwerSegmenter; 
-#-------- run sltev 
-python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 3000;
+#-------- run sltev
+#echo $1;
+python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 3000 > $4;
+rm ref_alignment;
+rm source_ref;
+rm -r giza-pp/run_giza/;

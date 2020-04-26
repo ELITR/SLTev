@@ -5,6 +5,38 @@ import subprocess as sp
 from mosestokenizer import *
 import argparse
 import sys
+import os
+
+def convert_to_asr_format(line):
+    """
+    get a line and convert to our format
+    
+    """
+    if line[0] != 'P' and line[0] != 'C':
+        line.insert(0, 'C')
+    #------------check first number (display number)
+
+    try:
+        if float(line[1]) > -1:
+            pass
+    except:
+        line.insert(1, 0)
+    
+    #----------check second number (gues time 1)
+    try:
+        if float(line[2]) > -1:
+            pass
+    except:
+        line.insert(2, 0)
+    #----------check third number (gues time 2)
+
+    try:
+        if float(line[3]) > -1:
+            pass
+    except:
+        line.insert(3, 0)
+    
+    return line
 
 
 def text_preprocessing(text):
@@ -17,6 +49,36 @@ def text_preprocessing(text):
     text = text.lower().translate(str.maketrans('', '', string.punctuation))
     text = re.sub(' +', ' ', text)
     return text
+
+def read_asr(file_name):
+    """
+
+    Read asr file 
+    Input: the path of the ASR file 
+    Out_put: a list of sentences which each sentence split to many segments. 
+    in OStt and ASR file only we want C segments. 
+
+    """
+  
+    sentences = []
+    with open(file_name, 'r', encoding="utf8") as in_file:
+        line = in_file.readline()
+        while line:
+            line = line.strip().split()
+            if line == []:
+                continue
+            line = convert_to_asr_format(line) #--convert to asr format
+            if line[0] != 'P' and line[0] != 'C':
+                sentences.append(line)
+                
+            elif 'C' == line[0]:
+                l = line[4:]
+                sentences.append(l)
+
+
+            line = in_file.readline()
+    sentences = list(filter(lambda a: a != [], sentences))
+    return sentences
 
 def read_ostt(file_name):
     """
@@ -220,13 +282,28 @@ if args.asr == None :
     print('please insert ASR file path ')
     sys.exit(1)
 
+    
+    
+#---------------------check existnest of input files--------------
+if os.path.isfile(args.ostt):
+    pass
+else:
+    print (args.ostt, " not exist")
+    sys.exit(1)
+
+if os.path.isfile(args.asr):
+    pass
+else:
+    print (args.asr, " not exist")
+    sys.exit(1)  
+    
 
 ostt_file = args.ostt
 
 asr_file = args.asr
 
 ostt = read_ostt(ostt_file)
-asr = read_ostt(asr_file)
+asr = read_asr(asr_file)
 
 
 #----------
