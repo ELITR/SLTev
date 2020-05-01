@@ -1,4 +1,6 @@
-#sari, Ondrej Bojar, Mohammad Mahmoudi
+#===========================================================
+#  Title:  SLTev
+#  Author: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
 #  Date:   11 March 2020
 #  This Project is a part of the framework which is written 
 # to evaluate simoltanius translation systems.
@@ -119,8 +121,8 @@ def read_MT(file_name, asr_status):
         while line:
             line = line.strip().split()
             
-            if asr_status == True and line != []: #-----------convert to asr format if status is ASR=True 
-                line = convert_to_asr_format(line)
+            #if asr_status == True and line != []: #-----------convert to asr format if status is ASR=True 
+            line = convert_to_asr_format(line)
             
             if line[0] != 'P' and line[0] != 'C':
                 line = ['P'] + line[:]
@@ -1189,8 +1191,10 @@ else:
     print (args.mt, " not exist")
     sys.exit(1)  
 
-    
-
+#----------------check empty files
+if os.stat(args.mt).st_size == 0:
+    print (args.mt, " is empty")
+    sys.exit(1)
 
 def get_number_words(tt_list):
     """
@@ -1271,6 +1275,11 @@ if __name__== "__main__":
     OStt = read_ostt(args.ostt)
     MT = read_MT(args.mt, args.asr)
     
+    
+    #----------check C 
+    if MT == []:
+        print (args.mt, " not contain any C (complete)")
+        sys.exit(1) 
     #--------------------check for count of sentence in OStt and tt
     for i in range(len(references)):
         if len(references[i]) != len(OStt):

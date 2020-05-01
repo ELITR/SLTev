@@ -300,11 +300,22 @@ else:
 
 ostt_file = args.ostt
 
+
+
+#----------------check empty files
+if os.stat(args.asr).st_size == 0:
+    print (args.asr, " is empty")
+    sys.exit(1)
+    
 asr_file = args.asr
 
 ostt = read_ostt(ostt_file)
 asr = read_asr(asr_file)
 
+#----------check C 
+if asr == []:
+    print (args.asr, " not contain any C (complete)")
+    sys.exit(1) 
 
 #----------
 print("-------------------------------------------------------------")
