@@ -1367,9 +1367,9 @@ if __name__== "__main__":
 
     print("tot      Flicker       count_changed_content ", int(calc_flicker1(MT)))
 
-    print("microavg Flicker       count_changed_words   ", int(calc_average_flickers_per_sentence(MT)) )
+    print("macroavg Flicker       count_changed_content ", int(calc_average_flickers_per_sentence(MT)) )
 
-    print("macroavg Flicker       count_changed_words   ", int(calc_average_flickers_per_document(MT))  )
+    print("microavg Flicker       count_changed_content ", int(calc_average_flickers_per_document(MT))  )
     bleu_score , sacre_score = calc_blue_score_documnet(Ts, MT)
     bleu_score = bleu_score * 100
 
@@ -1379,7 +1379,7 @@ if __name__== "__main__":
     bleu_score = bleu_score * 100
     tot_bleu = tot_bleu * 100
 
-    print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(bleu_score, 3))) )
+    print("avg      BLEU          --                    ", str("{0:.3f}".format(round(bleu_score, 3))) )
 
     print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
     
