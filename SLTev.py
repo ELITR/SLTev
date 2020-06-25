@@ -15,7 +15,44 @@ import nltk
 import sacrebleu
 import subprocess as sp
 import os
+from mosestokenizer import *
 
+def tokenizer(input_file, output_file):
+    """
+    use moses tokenizer and put output in file
+    
+    """
+    global language
+    tokenize = MosesTokenizer(language)
+    out_file = open(output_file, 'w')
+    with open(input_file, 'r', encoding="utf8") as in_file:
+        line = in_file.readline()
+        while line:
+            tokens = ' '.join(tokenize(line))
+            out_file.write(tokens)
+            out_file.write('\n')
+            line = in_file.readline()
+    out_file.close()
+    
+    
+def detokenizer(input_file, output_file):
+    """
+    use moses detokenizer and put output in file
+    
+    """
+    global language
+    tokenize = MosesDetokenizer(language)
+    out_file = open(output_file, 'w')
+    with open(input_file, 'r', encoding="utf8") as in_file:
+        line = in_file.readline()
+        while line:
+            tokens = line.strip().split(' ')
+            tokens = tokenize(tokens)
+            out_file.write(tokens)
+            out_file.write('\n')
+            line = in_file.readline()
+    out_file.close()  
+    
 def read_tt(file_name):
     """
 
@@ -534,6 +571,7 @@ def calc_blue_score_documnet(Ts, MT):
     smoothie = SmoothingFunction().method4
    
     merge_mt_sentences = []
+    #print('MT', MT)
     for i in range(len(MT)):
         mt = MT[i][-1][3:-1]
         merge_mt_sentences += mt
@@ -550,6 +588,8 @@ def calc_blue_score_documnet(Ts, MT):
     for i in range(len(merge_references_sentences)):
         refs= [[' '.join(merge_references_sentences[i])]]
         sys = [' '.join(merge_mt_sentences[:])]
+        #print('refs', refs)
+        #print('sys', sys)
         b_sacre = sacrebleu.corpus_bleu(sys, refs)
         b_sacre = b_sacre.score
         BLEUscore = nltk.translate.bleu_score.sentence_bleu([merge_references_sentences[i]], merge_mt_sentences, smoothing_function=smoothie)
@@ -560,7 +600,8 @@ def calc_blue_score_documnet(Ts, MT):
 def calc_blue_score_sentence_by_sentence(Ts, MT):
     """
 
-    Calculates blue score sentence by sentence with NLTK module.
+    Calculates blue score sentence by sentence with NLTK and sacrebleu module.
+    using moses tokenizer befor using mwersegmenter
  
     """
     import nltk
@@ -601,8 +642,13 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     out.close()
     #------------run segmentation 
     import os
-    text = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
-    mWERQuality = sp.getoutput(text)
+    #-------------tokenize tt and MT
+    tokenizer('./temp_ref', './tokenize_temp_ref')
+    tokenizer('./temp_translate', './tokenize_temp_translate')
+    cmd = "./mwerSegmenter -mref tokenize_temp_ref -hypfile tokenize_temp_translate"
+    mWERQuality = sp.getoutput(cmd)
+    detokenizer('./__segments', './detokenize__segments')
+
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
 
@@ -611,7 +657,7 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
     os.system('rm temp_translate')
     
     #-------------read segments 
-    in_file = open('__segments', 'r', encoding="utf8")
+    in_file = open('detokenize__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
     while line:
@@ -619,7 +665,12 @@ def calc_blue_score_sentence_by_sentence(Ts, MT):
         line = in_file.readline()
         
     mt_sentences = segments[:]
-    os.system('rm __segments')  
+    os.system('rm __segments')
+    #-------remove temp files
+    os.system('rm tokenize_temp_ref')
+    os.system('rm tokenize_temp_translate')
+    os.system('rm detokenize__segments')
+    
     blue_scores = []
     sacre_blue_score = []
     #print('len(references_sentences[0])', len(references_sentences[0]) )
@@ -983,8 +1034,13 @@ def segmenter(MT, Ts):
     out.close()
     #------------run segmentation 
     import os
-    text = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
-    mWERQuality = sp.getoutput(text)
+    #-------------tokenize tt and MT
+    tokenizer('./temp_ref', './tokenize_temp_ref')
+    tokenizer('./temp_translate', './tokenize_temp_translate')
+    cmd = "./mwerSegmenter -mref tokenize_temp_ref -hypfile tokenize_temp_translate"
+    mWERQuality = sp.getoutput(cmd)
+    detokenizer('./__segments', './detokenize__segments')
+
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
 
@@ -992,7 +1048,7 @@ def segmenter(MT, Ts):
     os.system('rm temp_translate')
 
     #-------------read segments 
-    in_file = open('__segments', 'r', encoding="utf8")
+    in_file = open('detokenize__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
     while line:
@@ -1001,6 +1057,11 @@ def segmenter(MT, Ts):
 
     mt_sentences = segments[:]
     os.system('rm __segments')
+    #-------remove temp files
+    os.system('rm tokenize_temp_ref')
+    os.system('rm tokenize_temp_translate')
+    os.system('rm detokenize__segments')
+
     return mt_sentences, mWERQuality
 
 def build_segmenter_A(MT):
@@ -1214,11 +1275,16 @@ if __name__== "__main__":
     MovedWords = 1
     references =[]
     b_time = args.b_time
+    language = 'en'
     for i in args.tt:
         path = ''.join(i)
         #------------check exist file
         if os.path.isfile(path):
-            pass
+            if '.TTde' in path:
+                language = 'de'
+            elif '.TTcs1' in path or '.TTcs2' in path:
+                language = 'cs'
+            
         else:
             print (path, " not exist")
             sys.exit(1)
@@ -1390,5 +1456,6 @@ if __name__== "__main__":
         print(x)
     print(avg_BLEU)
     print(avg_SacreBleu)
+
 
 

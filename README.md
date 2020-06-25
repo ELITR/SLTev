@@ -97,13 +97,16 @@ You can use the parallel corpus to improve the train of GIZA++, so you can downl
 
     pip install --user -U nltk
 
-### Sacre Bleu
-
-    pip install sacrebleu
-
 ### mwerSegmenter [2]
     
-      a) chmod +x mwerSegmenter 
+    chmod +x mwerSegmenter 
+
+### mosestokenizer [3]
+    pip install mosestokenizer
+
+### Sacre Bleu [4]
+
+    pip install sacrebleu
 
 ## Usage
 
@@ -182,3 +185,6 @@ SLTev is designed to support these modes of operation:
 
     [1] Steven Bird, Ewan Klein, and Edward Loper. 2009. Natural Language Processing with Python, 1st edition. OReilly Media, Inc.
     [2] Evgeny Matusov, Gregor Leusch, Oliver Bender, and Hermann Ney. 2005b. Evaluating machine-translation output with automatic sentence segmentation. In International Workshop on Spoken Language Translation, pages 148–154, Pittsburgh, PA, USA.
+    [3] Philipp Koehn, Hieu Hoang, Alexandra Birch, Chris Callison-Burch, Marcello Federico, Nicola Bertoldi, Brooke Cowan, Wade Shen, Christine Moran, Richard Zens, Chris Dyer, Ondřej Bojar, Alexandra Constantin and Evan Herbst. 2007. Proceedings of the ACL (Association for Computational Linguistics).
+    [4] Post, Matt. 2018. Association for Computational Linguistics, pages 186-191. 
+ 
