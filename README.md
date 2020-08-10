@@ -137,12 +137,13 @@ To run scripts simply, you can run use one of these:
 #### Run SLTev-without-parallel.sh
 
     a) chmod +x SLTev-without-parallel.sh
-    b) bash SLTev-without-parallel.sh ostt_file tt_file mt_file out_file
+    b) bash SLTev-without-parallel.sh ostt_file tt_file mt_file asr_state out_file
     c) Parameters:
         1) ostt_file --> The path of the OStt file. 
         2) tt_file --> The path of the tt file. 
         3) mt_file --> The path of the mt file. 
-        4) out_file --> The path of the output file (results will save there). 
+	4) asr_state --> State of ASR (False for run over MT files and True for run over ASR file)
+        5) out_file --> The path of the output file (results will save there). 
 
 #### Run SLTev-with-parallel.sh
 

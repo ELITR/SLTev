@@ -22,7 +22,7 @@ cd ../../;
 chmod +x mwerSegmenter; 
 #-------- run sltev
 #echo $1;
-python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 3000 > $4;
+python SLTev.py --ostt $1 --tt $2 --mt $3 --align ref_alignment --b_time 3000 --asr $4 > $5;
 rm ref_alignment;
 rm source_ref;
 rm -r giza-pp/run_giza/;
