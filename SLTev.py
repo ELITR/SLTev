@@ -1,11 +1,11 @@
 #===========================================================
 #  Title:  SLTev
 #  Author: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
-#  Date:   11 March 2020
+#  Date:   18 October 2020
 #  This Project is a part of the framework which is written 
 # to evaluate simoltanius translation systems.
 #  https://github.com/ELITR/
-#===========================================================
+#====
 
 #!/usr/bin/env python
 
@@ -507,6 +507,31 @@ def max_value_is_started(max_value, Ts):
     else:
         return -1
     
+def build_A_Time_Based(sentence_segments):
+    """
+
+    Receives segments of the mt sentences and calculates A dictionary:
+    A is a dictionary which key is one word of MT sentence and value is the show time of the
+    word.
+
+    """
+    uniq_words_show_time = {}
+    uniq_words_estimate_time = {} 
+    for segment in sentence_segments:
+        words = segment[3:-1] 
+        step = (float(segment[2])-float(segment[1]))/len(words)
+        for word in segment[3:-1]:
+            if word not in uniq_words_show_time.keys() and word in sentence_segments[-1][3:-1]:
+                uniq_words_show_time[word] = float(segment[0])
+                uniq_words_estimate_time[word] = float(float(segment[1]) + ((words.index(word)+1)*step))
+    start = sentence_segments[-1][1]
+    end = sentence_segments[-1][2]
+    return uniq_words_show_time, uniq_words_estimate_time
+
+
+    
+
+    
 def evaluate(Ts,MT):
     """
 
@@ -518,47 +543,81 @@ def evaluate(Ts,MT):
     """
     sum_delay = 0
     sum_missing_words = 0
+    mt_words= []
+    display_times = []
+    estimat_times = []
     for i in range(len(MT)):
-        A,start, end = build_A(MT[i])
-        times, mean_ref, left_right_words = build_times(A,Ts,start, end)
-        #print('A', A)
+        A, estimat_T = build_A_Time_Based(MT[i])
+        for k,v in A.items():
+            mt_words.append(k)
+            display_times.append(v)
+            estimat_times.append(estimat_T[k])
         
-        #print('len(times)', len(times))
-        #print('left_right_words', left_right_words)  
-        #print('times', times)
-        delays = [] 
-        for time in times:
-            if time[0] in A.keys():
-                delay = A[time[0]] - time[1] 
-                if delay > 0:
-                    delays.append(delay)
+    delays = []
+    mising_words = []
+    for ind in range(len(Ts[0])):
+        sentence_delays = []
+        mis_words = []
+        for T in Ts: 
+            times_dict = {}
+            sentence = T[ind]
+            min_times = 10000000000000
+            max_times = 0
+            
+            try:
+                start = min(sentence.values())
+            except:
+                start = 0
+            try:
+                end = max(sentence.values())
+            except:
+                end = 0 
+            for i in range(len(estimat_times)):
+                if estimat_times[i] >= start and estimat_times[i] <= end:
+                    times_dict[mt_words[i]] = display_times[i]
+                    if estimat_times[i] < min_times:
+                        min_times = estimat_times[i]
+                        
+                    if estimat_times[i] > max_times:
+                        max_times = estimat_times[i]
+            #------------------------left word
+            left_words = []
+            for i in range(len(estimat_times)):
+                if estimat_times[i] < min_times:
+                    left_words.append([estimat_times[i], display_times[i], mt_words[i]])
+            left_words.sort()
+            if left_words != []:
+                times_dict[left_words[0][2]] = left_words[0][1]
+            #--------------------right word 
+            right_words = []
+            for i in range(len(estimat_times)):
+                if estimat_times[i] < max_times:
+                    right_words.append([estimat_times[i], display_times[i], mt_words[i]])
+            right_words.sort()
+            if right_words != []:
+                times_dict[right_words[-1][2]] = right_words[-1][1]
+            
+            delay = 0
+            mis = 0
 
-        try:
-            not_in_refer = 0
-        except:
-            not_in_refer = 0
-        old_delays = delays[:]
-        for k in range((len(times)-len(delays))):
-            delays.append(not_in_refer)
-            sum_missing_words += 1
-        delays.sort()
-        #print('delays', delays)
-        #print('(len(times)-len(delays))', (len(times)-len(delays)))
-        #print('sum_missing_words before', sum_missing_words)
-        if left_right_words > (len(times)-len(old_delays)):
-            sum_missing_words -= ( left_right_words - (len(times)-len(old_delays))  )
-        else:
-            sum_missing_words -= left_right_words #for calc missing words we reduced lef-right-words
-#         if sum_missing_words  < -1:
-#             print('A', A)
-#             print('times', times)
-#             print('delays', delays)
-#             print('left_right_words', left_right_words)
-#             sys.exit(1)
+            for k,v in sentence.items():
+                if k in times_dict.keys():
+                    d = times_dict[k] - v
+                    if d > 0:
+                        delay += d
+                else:
+                    mis += 1
+            sentence_delays.append(delay)
+            mis_words.append(mis)
+        delays.append(max(sentence_delays))
+        mising_words.append(max(mis_words))
+
+
         
-        sentence_delay = sum(delays[:mean_ref])
-        sum_delay += sentence_delay
-    return sum_delay, sum_missing_words
+       
+    return sum(delays), sum(mising_words)
+
+
 
 def calc_blue_score_documnet(Ts, MT):
     """
@@ -1456,6 +1515,7 @@ if __name__== "__main__":
         print(x)
     print(avg_BLEU)
     print(avg_SacreBleu)
+
 
 
 
