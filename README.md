@@ -102,11 +102,14 @@ You can download the project as follow in Github:
         --offline: offline cache files are using. (if not, the needed files will downloaded)  
         Notes:
             - e.g. python SLTev.py -e iwslt-antrecorp -i ./submision/ --offline --outdir ./test/
-  
-#### Other parameters
+
+  #### Other parameters
 
     --clean: clean all cache files (SLTev-cache directory) 
 
+#### How can we run our data without eliter-test?
+
+If you do not want to using the elitr-testset repository (https://github.com/ELITR/elitr-testset/), you should put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in to the ./SLTev-cache/OStt-tt-files path, and in evaluating phase using --offline parameter. 
 
 ## Notes
     - Default temporary directory name is "SLTev-cache" (it make automaticly after first runing)
@@ -163,7 +166,7 @@ SLTev is designed to support these modes of operation:
 
 #### Instructions
 
-	a) clone the repo ($ git clone https://github.com/ELITR/elitr-testset)
+	a) clone the repo ($ git clone https://github.com/ELITR/elitr-testset/)
 	b) make a new folder in "elitr-testset/documents/" path and put all fils there (*.OSt, *.OStt, *.TTde/cs, *.mp3 )
 	c) make an indice file in "elitr-testset/indices/" path (make surce you put all path files in "elitr-testset/documents/<your_directory>/" in it.) 
 	d) add all files to repo ($ cd eliter-testset; git add *;)
@@ -203,7 +206,7 @@ The giza++ is a tool for make alignment between source (OSt) files and target (t
         2) source_ref is the output file. 
     
 
-#### Runing giza++ without parallel data (only using ost and tt files)
+#### Running giza++ without parallel data (only using ost and tt files)
     
     python run-giza.py -s <OSt_file> -t <tt_file> -o <ouput_dir> --ncpus <number_of_cpus>
     parameters:
@@ -216,7 +219,12 @@ The giza++ is a tool for make alignment between source (OSt) files and target (t
 
 #### Download and use parallel corpus
 
-You can use the parallel corpus to improve the train of giza++, so you can download and extract them from https://www.statmt.org/europarl/ address or another source. 
+You can use the parallel corpus to improve the train of giza++, so you can download and extract them from https://www.statmt.org/europarl/ address or another source.
+
+##### Downloading parallel corpues with wget
+
+	wget <parallel_corpuse_link>
+	
 
 #### Running giza++ with an external parallel corpus
 
