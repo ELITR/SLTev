@@ -10,7 +10,7 @@ SLTev is a tool for the comprehensive evaluation of (simultaneous) spoken langua
 
 ## Clone project from git 
 
-You can download the project as follow in Github:
+You can download the project as follow from Github:
 
     a) git clone https://github.com/lngvietthang/SLTev-master.git 
     b) cd SLTev-master 
@@ -49,12 +49,12 @@ You can download the project as follow in Github:
 
 ### SLT format
 
-    - OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. de or cs) + .slt
+    - OSt file name without .OSt (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. de or cs) + .slt
     - e.g. 03_botel-proti-proudu.en.cs.slt, 03_botel-proti-proudu.en.de.slt
     
 ### ASR format
 
-    - OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. en) + .asr
+    - OSt file name without .OSt (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. en) + .asr
     - e.g. 03_botel-proti-proudu.en.en.asr
 
 
@@ -63,14 +63,15 @@ You can download the project as follow in Github:
 
 ### Generate ELITER files based on the ELITER-Index-Name 
 
-    python SLTev.py -g <elitr_index_name> -o <output_directory> --audio
+    SLTev -g <elitr_index_name> -o <output_directory> --audio
     parameters:
         -g: generating ELITER files based on the ELITER-Index-Name 
         -o: output directory path
-        --audio: audios files only generated 
+        --audio: audios files just will be downoaded
+		--noaudio: text files just will be downoaded. 
     Notes:
         - Index-names are placed in the "https://github.com/ELITR/elitr-testset/tree/master/indices". e.g. iwslt-antrecorp
-        - e.g. e.g. python SLTev.py -g iwslt-consecutive -o ./test/ --audio 
+        - e.g. e.g. ./SLTev -g iwslt-consecutive -o ./test/ --audio 
     
         
 ### Evaluate ASR and SLT files based on the ELITER files
@@ -78,22 +79,22 @@ You can download the project as follow in Github:
 
 #### Single file
 
-    python SLTev.py -e <elitr_index_name> -f <elitr_file_name> -t <segment_time> 
+    SLTev -e <elitr_index_name> -i <elitr_file_name> -t <segment_time> 
     parameters:
         -e: evaluating input file based on the ELITER files
-        -f: file path for evaluating
+        -i: file path for evaluating
         -t: time of each segment for calculate BLEU score
         -alignment: alignment files (manual alignment) are using instead of the ELITER files
         -outfile: outfile (standard output writing there)
         --offline: offline cache files are using. (if not, the needed files will downloaded) 
         Notes:
-            - the number of the inputs in -alignment must be equal with tt files (for some files and languages, there are 
+            - The number of the inputs in -alignment must be equal with tt files (for some files and languages, there are 
             multiple tt files)
-            - e.g. python SLTev.py -e iwslt-antrecorp -f ./submision/03_botel-proti-proudu.en.asr --offline
+            - e.g. ./SLTev -e iwslt-antrecorp -i ./submision/03_botel-proti-proudu.en.asr
 
 #### Multiple files
 
-    python SLTev.py -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory> 
+    SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory> 
     parameters:
         -e: evaluating input files based on the ELITER files. 
         -i: ditrectory path for evaluating
@@ -101,22 +102,20 @@ You can download the project as follow in Github:
         --outdir: output directory path
         --offline: offline cache files are using. (if not, the needed files will downloaded)  
         Notes:
-            - e.g. python SLTev.py -e iwslt-antrecorp -i ./submision/ --offline --outdir ./test/
+            - e.g. ./SLTev -e iwslt-antrecorp -i ./submision/ --outdir ./test/
 
   #### Other parameters
 
     --clean: clean all cache files (SLTev-cache directory) 
 
-#### How can we run our data without eliter-test?
 
-If you do not want to using the elitr-testset repository (https://github.com/ELITR/elitr-testset/), you should put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in to the ./SLTev-cache/OStt-tt-files path, and in evaluating phase using --offline parameter. 
 
 ## Notes
     - Default temporary directory name is "SLTev-cache" (it make automaticly after first runing)
     - You can use Giza++ alignments if they are missed in <elitr-testset> (detail placed in the appendix)
     - The first line of each output is commit ID.
     - For some filse which have more than one tt files, SLTev works as multireference evaluator. (e.g. 03_botel-proti-proudu have two tt files for cs language (03_botel-proti-proudu.TTcs1, 03_botel-proti-proudu.TTcs2))
-    - If don't use --oflline parameter, the needed files download automatically. 
+    - If don't use --oflline parameter, the needed files download automatically (If commit-id was be changed). 
 
     
     
@@ -157,6 +156,12 @@ SLTev is designed to support these modes of operation:
  
 ## Appendix
 
+### Run SLTev locally
+
+	a) make a folder by name <your_indice> in ./SLTev-cache/OStt-tt-files/ path (if ./SLTev-cache/OStt-tt-files/ is not exist please make it)
+	b) put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in <your_indice> folder
+	c) in evaluating phase using --offline parameter
+		e.g. ./SLTev -e <your_indice> -i ./submision/ --offline --outdir ./test/ 
 
 ### Make a new Indices
 
@@ -199,7 +204,7 @@ The giza++ is a tool for make alignment between source (OSt) files and target (t
         -  The number of lines in OSt and tt must be equal. 
         - The number of lines in source parallel and target parallel must be equal. 
 
-#### Running transcript_to_source.py Script
+#### Convert OStt file to OSt
 
     python giza++/transcript_to_source.py ostt_file > source_ref 
         1) ostt_file is the input OStt file. 
@@ -208,13 +213,13 @@ The giza++ is a tool for make alignment between source (OSt) files and target (t
 
 #### Running giza++ without parallel data (only using ost and tt files)
     
-    python run-giza.py -s <OSt_file> -t <tt_file> -o <ouput_dir> --ncpus <number_of_cpus>
+    run-giza -s <OSt_file> -t <tt_file> -o <ouput_dir> --ncpus <number_of_cpus>
     parameters:
         -s: path of the OSt file
         -t: path of the tt file
         -o: path of the output directory (deafult is ./)
 		--ncpus: number of cpus (deafult is 4)
-    e.g. python run-giza.py -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
+    e.g. ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
 
 
 #### Download and use parallel corpus
@@ -228,7 +233,7 @@ You can use the parallel corpus to improve the train of giza++, so you can downl
 
 #### Running giza++ with an external parallel corpus
 
-    python run-giza.py -s <OSt_file> -t <tt_file> -o <ouput_dir> -ps <source_parallel> -pt <target_parallel> --ncpus <number_of_cpus>
+    run-giza -s <OSt_file> -t <tt_file> -o <ouput_dir> -ps <source_parallel> -pt <target_parallel> --ncpus <number_of_cpus>
     parameters:
         -s: path of the OSt file
         -t: path of the tt file
@@ -236,12 +241,12 @@ You can use the parallel corpus to improve the train of giza++, so you can downl
         -ps: path of the source parallel corpus (languege of OSt and source parallel corpus is the same.) 
         -pt: path of the target parallel corpus (languege of tt and target parallel corpus is the same.)
 		--ncpus: number of cpus (deafult is 4)
-    e.g. python run-giza.py -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/ -ps ./test/europarl-v7.cs-en.en -pt ./test/europarl-v7.cs-en.cs 
+    e.g. ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/ -ps ./test/europarl-v7.cs-en.en -pt ./test/europarl-v7.cs-en.cs 
     
 #### The output 
 
 After running giza++, a file (tt_file_name + .align), generated in the output directory path. for using output, you must put the alignment in the relevent folder. 
 For example: 
-    -command: python run-giza.py -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
+    -command: ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
     -output: ./test/polish.TTcs.align
 

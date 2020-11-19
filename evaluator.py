@@ -804,7 +804,7 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
         l = []
         for i in range(len(MT)):
             for j in range(len(MT[i])):
-                if float(MT[i][j][0]) >= start and float(MT[i][j][0]) <= end :
+                if float(MT[i][j][1]) >= start and float(MT[i][j][2]) <= end :
                     l += MT[i][j][3:-1]
         mt_sentences.append(list(dict.fromkeys(l)))
         start +=  time_step
@@ -814,14 +814,14 @@ def calc_blue_score_sentence_by_time(Ts, MT, time_step):
         l = []
         for i in range(len(MT)):
             for j in range(len(MT[i])):
-                if float(MT[i][j][0]) >= start and float(MT[i][j][0]) <= end :
+                if float(MT[i][j][1]) >= start and float(MT[i][j][2]) <= end :
                     l += MT[i][j][3:-1]
         mt_sentences.append(list(dict.fromkeys(l)))
         
     references_sentences = []
     start = 0
     end = time_step
-    while end <=  float(MT[-1][-1][0]):
+    while end <=  float(MT[-1][-1][2]):
         l = []
         for i in range(len(Ts)):
             s= [] 
@@ -1515,6 +1515,7 @@ if __name__== "__main__":
         print(x)
     print(avg_BLEU)
     print(avg_SacreBleu)
+
 
 
 
