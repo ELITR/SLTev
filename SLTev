@@ -97,8 +97,8 @@ if args.g != False:
                     print(file_path , " downloaded.")
                 else:
                     print(file_path , " not found.")
-
-                    
+    sys.exit(1)
+    
 def readCommitFile(commit_file):
     out = ''
     try:
@@ -145,7 +145,7 @@ if args.e != False and args.offline == False:
                         print(file_path , " downloaded.")
                     else:
                         print(file_path , " not found.")
-
+    
 # #----------------download giza-outs
 # gizaouts_git_path = "https://github.com/ELITR/elitr-testset/tree/master/indices" 
 # if args.e != False and args.offline == False:
