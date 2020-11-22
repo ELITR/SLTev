@@ -1,0 +1,103 @@
+C 0 0 0 So we have the question.
+C 0 0 0 Divan is going to make three shelves for her father.
+C 0 0 0 She has a piece of lumber that is twelve feet long.
+C 0 0 0 She wants the top shelf to be half a foot shorter than the middle shelf.
+C 0 0 0 Let me do some different colors.
+C 0 0 0 She wants the top shelf, the top shelf to be half a foot shorter than the middle shell.
+C 0 0 0 So I'll just let us read the whole thing first.
+C 0 0 0 And the bottom shelf to be half a foot shorter than twice the length of the top shelf.
+C 0 0 0 I mean that in a different color than blue, the bottom, the bottom shelf to be half a foot shorter than twice the length of the top shelf.
+C 0 0 0 How long will each shelf be if she uses the entire twelve feet of wood?
+C 0 0 0 So let's find some variables for our different shells, because that's where we have to figure out we have the top shelf, the middle shelf and the bottom shelf.
+C 0 0 0 So let's say that t is equal to length of top shelf teeth for top of top shelf.
+C 0 0 0 Let's make M. let's make m equal the length, the length of the middle shelf.
+C 0 0 0 The middle shelf am for middle, and then let's make b.
+C 0 0 0 Let's make b equal to the length of the bottom shelf b for bottom bottom shells.
+C 0 0 0 Let's see what these different statements tell us.
+C 0 0 0 So this first statement, she says she wants the top shelf now, doing that same color she wants the top shelf to be half a foot shorter than the middle shelf.
+C 0 0 0 So she wants the length of the Topset shelf, the top shelf to be so this is equal to half a foot shorter than the middle shelf, middle shelf.
+C 0 0 0 So for doing everything and feet is going to be the middle, the length of the middle shelf and feet, minus one half minus one half feet.
+C 0 0 0 So that's what that sentence in orange is telling us.
+C 0 0 0 The top shelf needs to be half a foot shorter than the length of the middle shelf.
+C 0 0 0 Now was the next statement.
+C 0 0 0 Tell us and the bottom shelf to be so the bottom shelf needs to be equal to half a foot shorter than so.
+C 0 0 0 It's half a foot shorter, half a shorter than twice the length of the top shelf.
+C 0 0 0 So it's half a foot shorter than twice the length of the top shelf.
+C 0 0 0 So these are the two.
+C 0 0 0 This.
+C 0 0 0 These are the two statements interpreted in equal equation form the top shelf's length has to be equal to the middle shelf length of minus one, half its one half foot shorter than the middle shelf.
+C 0 0 0 And the bottom shelf needs to be half a foot shorter than twice the length of the top shelf.
+C 0 0 0 And so how do we solve this?
+C 0 0 0 Well, you can't just solve it, just with these two constraints.
+C 0 0 0 But she can give us more information.
+C 0 0 0 They tell us they tell us how long will each shelf be if she uses the entire twelve feet of wood?
+C 0 0 0 So the lengths of all of the shelves have to add up to twelve feet.
+C 0 0 0 She's using all of it.
+C 0 0 0 So tea plus m plus b needs to be equal to twelve feet.
+C 0 0 0 That's the length of each of them.
+C 0 0 0 She's using all of all twelve feet of the wood so that the lengths have to add to twelve.
+C 0 0 0 So what can we do here?
+C 0 0 0 Well, we can get everything here in terms of one variable.
+C 0 0 0 Maybe.
+C 0 0 0 We'Ll do it in terms of m and then substitute.
+C 0 0 0 So we already have p in terms of M. we already have tea in terms of M. we could everywhere where we see a tea, we can substitute with m minus one half.
+C 0 0 0 But here we have be in terms of tea.
+C 0 0 0 So how can we put this in terms of am?
+C 0 0 0 Well, we know that tea is equal to m minus one half.
+C 0 0 0 So let's take everywhere we see a tea.
+C 0 0 0 Let's substitute it with this thing right here.
+C 0 0 0 That is what tea is equal to.
+C 0 0 0 So we can rewrite this blue equation as the length of the Bob himself is two times the length of the top shelf T. but we know that tea is equal to m minus one half.
+C 0 0 0 So am minus one.
+C 0 0 0 Half minus one half minus one half.
+C 0 0 0 And if we wanted to simplify that a little bit, this would be that the bottom shelf, the bottom shelf, is equal to let's distribute the two two times m is two m two times negative.
+C 0 0 0 One half is negative one, and then minus another one half.
+C 0 0 0 Or we could rewrite this as b.
+C 0 0 0 Is equal to two times a middle shelf, minus three halves, right?
+C 0 0 0 One half is two halves, minus another half is negative.
+C 0 0 0 Or three hats just like that.
+C 0 0 0 So now we have everything in terms of m, and we can substitute back here.
+C 0 0 0 So the top shelf, the top shelf instead of putting a tea there, we could put m minus one half.
+C 0 0 0 So we put m minus one half, plus the length of the middle shelf, plus the length of the middle shelf, plus the length of the bottom shelf.
+C 0 0 0 Well, we already put that in terms of M. that's what we just did.
+C 0 0 0 This is the length of the bottom shelf in terms of Ms. Instead of writing b there, we could write two m minus three halves, plus two m minus three halves.
+C 0 0 0 And that is equal to twelve.
+C 0 0 0 All we did is substitute for tea.
+C 0 0 0 We wrote tea in terms of m, and we wrote b in terms of M. now let's let's combine the m terms in the constant terms.
+C 0 0 0 So if we have, we have one am here.
+C 0 0 0 We have another m there, and we have a two m there.
+C 0 0 0 They'Re all positive.
+C 0 0 0 So one plus one plus two is four M. so we have four M. and then what are our constant terms?
+C 0 0 0 Tell us we have a negative one half and that we have a negative three halves.
+C 0 0 0 So negative one half minus three halves.
+C 0 0 0 That is negative four halves or negative two.
+C 0 0 0 So we have four am minus two.
+C 0 0 0 And of course we still have that equals twelve.
+C 0 0 0 Now we want to isolate just the m variable on one side of the equations.
+C 0 0 0 So let's add to, to boat size, to get rid of this two on the left hand side.
+C 0 0 0 So if we add two to both sides of this equation, the left hand side were just left with four M. these guys cancel out is equal to is equal to fourteen.
+C 0 0 0 Now divide both sides by four, divide both sides by four.
+C 0 0 0 We get m is equal to fourteen over four.
+C 0 0 0 Or we could call that seven halves seven halves feet.
+C 0 0 0 Because we're doing everything and feet.
+C 0 0 0 So we've solved for M. but now we still have to solve for tea and b.
+C 0 0 0 So let's do that.
+C 0 0 0 Assault for tea t is equal to m minus one half.
+C 0 0 0 So it's equal to our m is seven halves minus one half, which is equal to six halves or three feet.
+C 0 0 0 Everything is in fees.
+C 0 0 0 So that's how we know its feet there.
+C 0 0 0 So that's the top shelf, is three feet.
+C 0 0 0 The middle shelf is seven half feet, which is the same thing as three and a half.
+C 0 0 0 Three and a half feet.
+C 0 0 0 And then the bottom shelf is two times the top shelf, minus one half.
+C 0 0 0 So what's that going to be equal to?
+C 0 0 0 That's going to be equal to two times three feet.
+C 0 0 0 That's what the length of the top shelf is minus one half, which is equal to six, minus one half or five and a half feet.
+C 0 0 0 Five and a half feet.
+C 0 0 0 And we're done.
+C 0 0 0 And you can verify that.
+C 0 0 0 These definitely do add up to twelve.
+C 0 0 0 Five and a half plus three, and a half is nine plus three is twelve feet, and it meets all the other constraints.
+C 0 0 0 The top shelf is half a foot shorter than the middle shelf, and the bottom shelf is half a foot shorter than two times.
+C 0 0 0 The top shelf and we are done.
+C 0 0 0 We know, homie, how the lengths of the shelves that divan needs to make 

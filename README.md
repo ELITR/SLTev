@@ -1,47 +1,25 @@
 
-Title: SLTev
-authors: Ebrahim Ansari, Ondrej Bojar, Mohammad Mahmoudi
-Date: 27/10/2020
-...
-
 # SLTev
 
-SLTev is a tool for the comprehensive evaluation of (simultaneous) spoken language translation.
+SLTev is an open-source tool for assessing the quality of spoken language translation in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, THETOOL reports the quality, delay and stability of a given SLT candidate output.
 
-## Clone project from git 
+## Requirements Modules
 
-You can download the project as follow from Github:
+- python3.5 or Higher
 
-    a) git clone https://github.com/lngvietthang/SLTev-master.git 
-    b) cd SLTev-master 
+- NLTK [1]
 
-
-## Requirements
-
-### NLTK [1]
-
-    pip install --user -U nltk
-
-### mwerSegmenter [2]
+- mwerSegmenter [2]
     
-    chmod +x mwerSegmenter 
+- mosestokenizer [3]
 
-### mosestokenizer [3]
-    pip install mosestokenizer
-
-### Sacre Bleu [4]
-
-    pip install sacrebleu
+- Sacre Bleu [4]
     
-### requests 
-    pip install requests
+- requests 
     
-### gitpython 
-    pip install gitpython
-    
-### gitdir 
-    pip install gitdir
+- gitpython 
 
+- gitdir 
 
 
 ## Input SLT and ASR name format
@@ -49,77 +27,141 @@ You can download the project as follow from Github:
 
 ### SLT format
 
-    - OSt file name without .OSt (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. de or cs) + .slt
-    - e.g. 03_botel-proti-proudu.en.cs.slt, 03_botel-proti-proudu.en.de.slt
+- OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. de or cs) + .slt
+- e.g. 03_botel-proti-proudu.en.cs.slt, 03_botel-proti-proudu.en.de.slt
     
 ### ASR format
 
-    - OSt file name without .OSt (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. en) + .asr
-    - e.g. 03_botel-proti-proudu.en.en.asr
+- OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. en) + .asr
+- e.g. 03_botel-proti-proudu.en.en.asr
 
 
-## Usage
+## Installation
 
+- If you using virtual environment, source your enviornment by the following command:
+
+``` {r, engine='bash'} 
+$ source path/to/virtualenv/bin/activate
+```
+
+- install needed modules by pip in your enviornment:
+
+``` {r, engine='bash'} 
+(your-env)$ pip install --upgrade -r requirements.txt
+```
+
+## Clone project from git 
+
+You can download the project as follow in Github:
+``` {r, engine='bash'} 
+$ git clone https://github.com/lngvietthang/SLTev-master.git 
+$ cd SLTev-master 
+```
+
+## Package Overview
+
+- SLTev-scripts: Contains scripts for running SLTev and ASRev
+- examples: Contains examples of inputs files which contains slt-asr-samples and input-files 
+- data-preperation: Contains scripts to prepere data for SLTev script such as MGIZA  
+
+## Getting Started with SLTev
+
+Please prepare your data (using data-preperation/elitr-testset-prep.md help), and run scripts as follow:
+
+``` {r, engine='bash'}
+(your-env)$ cd SLTev-scripts 
+```
 
 ### Generate ELITER files based on the ELITER-Index-Name 
 
-    SLTev -g <elitr_index_name> -o <output_directory> --audio
+``` {r, engine='bash'}
+(your-env)$ mkdir <output_directory>
+(your-env)$ ./SLTev -g <elitr_index_name> -o <output_directory> --audio
+```
+
     parameters:
         -g: generating ELITER files based on the ELITER-Index-Name 
         -o: output directory path
-        --audio: audios files just will be downoaded
-		--noaudio: text files just will be downoaded. 
+        --audio: audios files only generated 
+		--noaudio: just text files generated
     Notes:
         - Index-names are placed in the "https://github.com/ELITR/elitr-testset/tree/master/indices". e.g. iwslt-antrecorp
-        - e.g. e.g. ./SLTev -g iwslt-consecutive -o ./test/ --audio 
-    
-        
-### Evaluate ASR and SLT files based on the ELITER files
+        - e.g. e.g. mkdir ./test; ./SLTev -g khanacademy-for-SLTev -o ./test/ --audio; 
+  
+### Evaluate ASR and SLT files based on the ELITER files (Running SLTev)
 
 
 #### Single file
 
-    SLTev -e <elitr_index_name> -i <elitr_file_name> -t <segment_time> 
+``` {r, engine='bash'}
+(your-env)$ ./SLTev -e <elitr_index_name> -i <elitr_file_name> -t <segment_time> 
+```
+    
     parameters:
         -e: evaluating input file based on the ELITER files
-        -i: file path for evaluating
-        -t: time of each segment for calculate BLEU score
+        -f: file path for evaluating
+        -t: time of each segment for calculate BLEU score (deafult is 3000)
         -alignment: alignment files (manual alignment) are using instead of the ELITER files
         -outfile: outfile (standard output writing there)
         --offline: offline cache files are using. (if not, the needed files will downloaded) 
-        Notes:
-            - The number of the inputs in -alignment must be equal with tt files (for some files and languages, there are 
+    Notes:
+        - The number of the inputs in -alignment must be equal with tt files (for some files and languages, there are 
             multiple tt files)
-            - e.g. ./SLTev -e iwslt-antrecorp -i ./submision/03_botel-proti-proudu.en.asr
+        - e.g. ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples/kaccNlwi6lUCEM.en.cs.slt
 
 #### Multiple files
 
-    SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory> 
+``` {r, engine='bash'}
+(your-env)$ mkdir <result_output_directory>
+(your-env)$ ./SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory>
+```
+     
     parameters:
         -e: evaluating input files based on the ELITER files. 
         -i: ditrectory path for evaluating
         -t: time of each segment for calculate BLEU score
         --outdir: output directory path
         --offline: offline cache files are using. (if not, the needed files will downloaded)  
-        Notes:
-            - e.g. ./SLTev -e iwslt-antrecorp -i ./submision/ --outdir ./test/
+    Notes:
+            - e.g. mkdir test1; ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples/ --outdir ./test1/;
 
-  #### Other parameters
+#### Other parameters
 
-    --clean: clean all cache files (SLTev-cache directory) 
+    
+- --clean: clean all cache files (SLTev-cache directory) 
 
+## How can we run our data locally?
+
+If you want to use your files locally, please do as follow:
+1. make a folder by name <your_indice> in ./SLTev-cache/OStt-tt-files/ path (if ./SLTev-cache/OStt-tt-files/ is not exist please make it)                                                                       
+2. put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in <your_indice> folder                                                               
+3. in evaluating phase using --offline parameter                                                                                                                                    
+- e.g. ./SLTev -e <your_indice> -i ./submision/ --offline --outdir ./test/ 
+
+
+## Evaluta asr files based on the WER score (Running ASRev)
+
+``` {r, engine='bash'}
+(your-env)$ ./ASRev --ost <ost_file_path> -asr <asr_file_path>
+```
+     
+    parameters:
+        - --ost: OSt file path 
+        - --asr: ASR file path
+
+    Notes:
+            - e.g. ./ASRev --ost ../examples/input-files/kaccNlwi6lUCEM.en.OSt --asr ../examples/slt-asr-samples/kaccNlwi6lUCEM.en.en.asr
 
 
 ## Notes
-    - Default temporary directory name is "SLTev-cache" (it make automaticly after first runing)
-    - You can use Giza++ alignments if they are missed in <elitr-testset> (detail placed in the appendix)
-    - The first line of each output is commit ID.
-    - For some filse which have more than one tt files, SLTev works as multireference evaluator. (e.g. 03_botel-proti-proudu have two tt files for cs language (03_botel-proti-proudu.TTcs1, 03_botel-proti-proudu.TTcs2))
-    - If don't use --oflline parameter, the needed files download automatically (If commit-id was be changed). 
+
+- Default temporary directory name is "SLTev-cache" (it make automaticly after first SLTev runing)
+- You can use Giza++ alignments if they are missed in <elitr-testset> (detail placed in the data-preperation/elitr-testset-prep.md)
+- The first line of each output is commit ID.
+- For some filse which have more than one tt files, SLTev works as multireference evaluator. (e.g. 03_botel-proti-proudu have two tt files for cs language (03_botel-proti-proudu.TTcs1, 03_botel-proti-proudu.TTcs2))
+- If don't use --oflline parameter, the needed files download automatically. 
 
     
-    
-
 ## Terminology
 
 In the following, we use this notation:
@@ -152,101 +194,3 @@ SLTev is designed to support these modes of operation:
     [3] Philipp Koehn, Hieu Hoang, Alexandra Birch, Chris Callison-Burch, Marcello Federico, Nicola Bertoldi, Brooke Cowan, Wade Shen, Christine Moran, Richard Zens, Chris Dyer, Ondřej Bojar, Alexandra Constantin and Evan Herbst. 2007. Proceedings of the ACL (Association for Computational Linguistics).
     [4] Post, Matt. 2018. Association for Computational Linguistics, pages 186-191. 
     
-    
- 
-## Appendix
-
-### Run SLTev locally
-
-	a) make a folder by name <your_indice> in ./SLTev-cache/OStt-tt-files/ path (if ./SLTev-cache/OStt-tt-files/ is not exist please make it)
-	b) put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in <your_indice> folder
-	c) in evaluating phase using --offline parameter
-		e.g. ./SLTev -e <your_indice> -i ./submision/ --offline --outdir ./test/ 
-
-### Make a new Indices
-
-####  Requirements
-
-	a) git (sudo apt install git-all)
-
-#### Instructions
-
-	a) clone the repo ($ git clone https://github.com/ELITR/elitr-testset/)
-	b) make a new folder in "elitr-testset/documents/" path and put all fils there (*.OSt, *.OStt, *.TTde/cs, *.mp3 )
-	c) make an indice file in "elitr-testset/indices/" path (make surce you put all path files in "elitr-testset/documents/<your_directory>/" in it.) 
-	d) add all files to repo ($ cd eliter-testset; git add *;)
-	e) commit all files ($ git commit -m "<your change notes>")
-	f) push files ($ git push)
-	
-### GIZA++
-
-The giza++ is a tool for make alignment between source (OSt) files and target (tt) files. 
-
-#### Requirements
-
-##### python3 (it installed on Ubuntu 16.04 or higher as the default.)
-
-	sudo apt-get install python3.6
-	
-##### cmake
-	
-	sudo apt install cmake
-	
-##### libboost
-
-	sudo apt-get install libboost-all-dev
-
-#### Input  files 
-
-    - OSt file (or OStt file and convert it to OSt with giza++/transcript_to_source.py script)
-    - tt file (e.g. *.TTde, *.TTcs)
-    - Note:
-        -  The number of lines in OSt and tt must be equal. 
-        - The number of lines in source parallel and target parallel must be equal. 
-
-#### Convert OStt file to OSt
-
-    python giza++/transcript_to_source.py ostt_file > source_ref 
-        1) ostt_file is the input OStt file. 
-        2) source_ref is the output file. 
-    
-
-#### Running giza++ without parallel data (only using ost and tt files)
-    
-    run-giza -s <OSt_file> -t <tt_file> -o <ouput_dir> --ncpus <number_of_cpus>
-    parameters:
-        -s: path of the OSt file
-        -t: path of the tt file
-        -o: path of the output directory (deafult is ./)
-		--ncpus: number of cpus (deafult is 4)
-    e.g. ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
-
-
-#### Download and use parallel corpus
-
-You can use the parallel corpus to improve the train of giza++, so you can download and extract them from https://www.statmt.org/europarl/ address or another source.
-
-##### Downloading parallel corpues with wget
-
-	wget <parallel_corpuse_link>
-	
-
-#### Running giza++ with an external parallel corpus
-
-    run-giza -s <OSt_file> -t <tt_file> -o <ouput_dir> -ps <source_parallel> -pt <target_parallel> --ncpus <number_of_cpus>
-    parameters:
-        -s: path of the OSt file
-        -t: path of the tt file
-        -o: path of the output directory (deafult is ./)
-        -ps: path of the source parallel corpus (languege of OSt and source parallel corpus is the same.) 
-        -pt: path of the target parallel corpus (languege of tt and target parallel corpus is the same.)
-		--ncpus: number of cpus (deafult is 4)
-    e.g. ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/ -ps ./test/europarl-v7.cs-en.en -pt ./test/europarl-v7.cs-en.cs 
-    
-#### The output 
-
-After running giza++, a file (tt_file_name + .align), generated in the output directory path. for using output, you must put the alignment in the relevent folder. 
-For example: 
-    -command: ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
-    -output: ./test/polish.TTcs.align
-

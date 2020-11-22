@@ -1,0 +1,7 @@
+nltk
+requests
+gitpython
+mosestokenizer
+sacrebleu
+gitdir
+jiwer

@@ -1,0 +1,152 @@
+so we have the question devon is going to make 3 shelves for
+her father
+she has a piece of lumber that is 12 feet long
+she wants the top shelf to be half a foot shorter than the
+middle shelf
+so let me do this in different colors
+she wants the top shelf to be half a foot shorter than the
+middle shelf
+so ill just lets just read the whole thing first and the
+bottom shelf to be half a foot shorter than twice the length
+of the top shelf
+let me do that in a different color
+ill do that in blue
+the bottom shelf to be half a foot shorter than twice the
+length of the top shelf
+how long will each shelf be if she uses the
+entire 12 feet of wood
+so lets define some variables for our different shelves
+because thats what we have to figure out
+we have the top shelf the middle shelf
+and the bottom shelf
+so lets say that t is equal to length of top shelf t for
+top of top shelf
+lets make m equal the length of the middle shelf
+m for middle
+and then lets make b equal to the length of the bottom
+shelf b for bottom bottom shelf
+so lets see what these different statements tell us
+so this first statement she says she wants the top shelf
+and ill do it in that same color she wants the top
+shelf to be 12 a foot shorter than the middle shelf
+so she wants the length of the top shelf to be so this is
+equal to 12 a foot shorter than the middle shelf
+so if were doing everything in feet its going to be the
+length of the middle shelf in feet minus
+12 minus 12 feet
+so thats what that sentence in orange is telling us
+the top shelf needs to be 12 a foot shorter than the length
+of the middle shelf
+now what does the next statement tell us
+and the bottom shelf to be so the bottom shelf needs to
+be equal to 12 a foot shorter than so its 12 a foot
+shorter than twice the length of the top shelf
+so its 12 a foot shorter than twice the
+length of the top shelf
+these are the two statements interpreted in
+equal equation form
+the top shelfs length has to be equal to the middle shelfs
+length minus 12
+its 12 foot shorter than the middle shelf
+and the bottom shelf needs to be 12 a foot shorter than
+twice the length of the top shelf
+and so how do we solve this
+well you cant just solve it just with these two
+constraints but they gave us more information
+they tell us how long will each shelf be if she uses the
+entire 12 feet of wood
+so the length of all of the shelves have to
+add up to 12 feet
+shes using all of it
+so t plus m plus b needs to be equal to 12 feet
+thats the length of each of them
+shes using all 12 feet of the wood
+so the lengths have to add to 12
+so what can we do here
+well we can get everything here in terms of one variable
+maybe well do it in terms of m and then substitute
+so we already have t in terms of m
+we could everywhere we see a t we could substitute
+with m minus 12
+but here we have b in terms of t
+so how can we put this in terms of m
+well we know that t is equal to m minus 12
+so lets take everywhere we see a t lets substitute it
+with this thing right here
+that is what t is equal to
+so we can rewrite this blue equation as the length of the
+bottom shelf is 2 times the length of the top shelf t
+but we know that t is equal to m minus 12
+and if we wanted to simplify that a little bit this would
+be that the bottom shelf is equal to lets distribute
+the 2 2 times m is 2m
+2 times negative 12 is negative 1
+and then minus another 12
+or we could rewrite this as b is equal to 2 times the middle
+shelf minus 32
+right
+12 is 22 minus another 12 is negative
+32 just like that
+so now we have everything in terms of m and we can
+substitute back here
+so the top shelf instead of putting a t there we could
+put m minus 12
+so we put m minus 12 plus the length of the middle
+shelf plus the length of the bottom shelf
+well we already put that in terms of m
+thats what we just did
+this is the length of the bottom shelf in terms of m
+so instead of writing b there we could write 2m minus 32
+plus 2m minus 32 and that is equal to 12
+all we did is substitute for t
+we wrote t in terms of m and we wrote b in terms of m
+now lets combine the m terms and the constant terms so if
+we have we have one m here we have another m there and
+then we have a 2m there
+theyre all positive
+so 1 plus 1 plus 2 is 4m
+so we have 4m
+and then what do our constant terms tell us
+we have a negative 12 and then we have a negative 32
+so negative 12 minus 32 that is negative 42 or
+negative 2
+so we have 4m minus 2
+and of course we still have that equals 12
+now we want to isolate just the m variable on one side of
+the equation
+so lets add 2 to both sides to get rid of this 2 on the
+lefthand side
+so if we add 2 to both sides of this equation the
+lefthand side were just left with 4m these guys
+cancel out is equal to 14
+now divide both sides by 4 we get m is equal to 14 over
+4 or we could call that 72 feet because were doing
+everything in feet
+so we solved for m but now we still have to
+solve for t and b
+so lets do that
+lets solve for t
+t is equal to m minus 12
+so its equal to our m is 72 minus 12 which is equal
+to 62 or 3 feet
+everything is in feet so thats how we
+know its feet there
+so thats the top shelf is 3 feet
+the middle shelf is 72 feet which is the same thing as 3
+and 12 feet
+and then the bottom shelf is 2 times the top
+shelf minus 12
+so whats that going to be equal to
+thats going to be equal to 2 times 3 feet thats what the
+length of the top shelf is minus 12 which is equal to 6
+minus 12 or 5 and 12 feet
+and were done
+and you can verify that these definitely do add up to 12
+5 and 12 plus 3 and 12 is 9 plus 3 is 12 feet and it
+meets all of the other constraints
+the top shelf is 12 a foot shorter than the middle shelf
+and the bottom shelf is 12 a foot shorter than 2
+times the top shelf
+and we are done
+we know the lengths of the shelves that
+devon needs to make
