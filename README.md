@@ -3,7 +3,7 @@
 
 SLTev is an open-source tool for assessing the quality of spoken language translation in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, THETOOL reports the quality, delay and stability of a given SLT candidate output.
 
-## Requirements Modules
+## Required Modules
 
 - python3.5 or Higher
 
