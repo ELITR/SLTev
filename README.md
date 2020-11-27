@@ -3,7 +3,7 @@
 
 SLTev is an open-source tool for assessing the quality of spoken language translation in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, THETOOL reports the quality, delay and stability of a given SLT candidate output.
 
-## Required Modules
+## Requirements Modules
 
 - python3.5 or Higher
 
@@ -88,7 +88,7 @@ Please prepare your data (using data-preperation/elitr-testset-prep.md help), an
         - Index-names are placed in the "https://github.com/ELITR/elitr-testset/tree/master/indices". e.g. iwslt-antrecorp
         - e.g. e.g. mkdir ./test; ./SLTev -g khanacademy-for-SLTev -o ./test/ --audio; 
   
-### Evaluate ASR and SLT files based on the ELITER files (Running SLTev)
+### Evaluate ASR and SLT files based on the ELITER files
 
 
 #### Single file
@@ -125,6 +125,21 @@ Please prepare your data (using data-preperation/elitr-testset-prep.md help), an
     Notes:
             - e.g. mkdir test1; ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples/ --outdir ./test1/;
 
+#### Evaluta asr files based on the WER score (Running ASRev)
+
+``` {r, engine='bash'}
+(your-env)$ ./ASRev --ost <ost_file_path> -asr <asr_file_path>
+```
+     
+    parameters:
+        -e: evaluating input files based on the ELITER files. 
+        -i: ditrectory_path/file_path for evaluating
+        --outdir: output directory path
+        --ASRev (i exist calculte WER score)
+    Notes:
+            - e.g. ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples --outdir ./test/ --ASRev
+
+
 #### Other parameters
 
     
@@ -139,18 +154,6 @@ If you want to use your files locally, please do as follow:
 - e.g. ./SLTev -e <your_indice> -i ./submision/ --offline --outdir ./test/ 
 
 
-## Evaluta asr files based on the WER score (Running ASRev)
-
-``` {r, engine='bash'}
-(your-env)$ ./ASRev --ost <ost_file_path> -asr <asr_file_path>
-```
-     
-    parameters:
-        - --ost: OSt file path 
-        - --asr: ASR file path
-
-    Notes:
-            - e.g. ./ASRev --ost ../examples/input-files/kaccNlwi6lUCEM.en.OSt --asr ../examples/slt-asr-samples/kaccNlwi6lUCEM.en.en.asr
 
 
 ## Notes

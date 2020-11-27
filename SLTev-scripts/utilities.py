@@ -75,11 +75,6 @@ def makettIndexing(root):
                 except:
                     tt_dict[la] = [file_path]
                     
-            elif file_type == 'OSt':
-                try:
-                    tt_dict['en'].append(file_path)
-                except:
-                    tt_dict['en'] = [file_path]
     return tt_dict
 
 # def makettIndexing(root):
@@ -95,15 +90,52 @@ def makettIndexing(root):
 #                 tt_dict['en'].append(file_path)
 #     return tt_dict
 
+def readCommitFile(commit_file):
+    out = ''
+    try:
+        out = open(commit_file, 'r').readline()
+    except:
+        pass
+    return out 
+
+def check_input(in_file):
+    lines = open(in_file, 'r').readlines()
+    state = 0 
+    for i in range(len(lines)):
+        line = lines[i].strip().split(' ')
+        if line[0] != 'C' and line[0] != 'P':
+            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
+            state = 1
+            print(text)
+            break
+        try:
+            if int(line[1]) > -1 and int(line[2]) > -1 and int(line[3]) > -1:
+                continue
+        except:
+            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
+            state = 1
+            print(text)
+            break
+            
+    return  state 
 
 def makeosttIndexing(root):
     ostt_list = []
     for root, dirs, files in os.walk(root):   
         for f in files:
             file_path = os.path.join(root, f)
-            if '.OStt' in file_path:
+            if '.OStt' == file_path[-5:]:
                 ostt_list.append(file_path)
     return ostt_list
+
+def makeostIndexing(root):
+    ost_list = []
+    for root, dirs, files in os.walk(root):   
+        for f in files:
+            file_path = os.path.join(root, f)
+            if '.OSt' == file_path[-4:]:
+                ost_list.append(file_path)
+    return ost_list
 
 
 def getAlign(names, language, align_dict):
@@ -113,9 +145,16 @@ def getAlign(names, language, align_dict):
             if name in i and i not in out:
                 out.append(i)
     return out
-def getostt(name,ostt_list):
+def getostt(name, ostt_list):
     out = []
     for i in ostt_list:
+        if name in i:
+            out.append(i)
+    return out
+
+def getost(name, ost_list):
+    out = []
+    for i in ost_list:
         if name in i:
             out.append(i)
     return out

@@ -71,3 +71,6 @@ _T=20201122_22:44:39_2200770	 rm ASRev-README.md
 _T=20201122_22:44:40_2200770	 LS
 _T=20201122_22:44:43_2200770	 LS
 _T=20201122_22:44:46_2200770	 ls
+_T=20201127_09:09:22_3089957	 cp ~/personal_work_ms/Mohammad/new-SLTev/SLTev-scripts/utilities.py .
+_T=20201127_09:09:35_3089957	 cp ~/personal_work_ms/Mohammad/new-SLTev/SLTev-scripts/SLTev .
+_T=20201127_09:09:46_3089957	 cp ~/personal_work_ms/Mohammad/new-SLTev/SLTev-scripts/ASRev .

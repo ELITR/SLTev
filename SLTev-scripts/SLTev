@@ -15,6 +15,7 @@ parser = argparse.ArgumentParser(description="generate and evaluate slt/asr file
 parser.add_argument("-g", help="eliter index name for download files ", const=False, default=False, nargs='?', type=str)
 parser.add_argument("-o", help="path of the output dir (default is ./ )", default = "./", type=str)
 parser.add_argument("--audio", help="if exist just audios saved ", const=True, default=False, nargs='?')
+parser.add_argument("--ASRev", help="if exist ASRev running ", const=True, default=False, nargs='?')
 parser.add_argument("--noaudio",  help="if exist just download text files", const=True, default=False, nargs='?')
 parser.add_argument("--clean", "-clean", help="if exist clean all files in the ./SLTev-cache/", const=True, default=False, nargs='?')
 parser.add_argument("-e", help="eliter index name for evaluate files ", const=False, default=False, nargs='?', type=str)
@@ -99,13 +100,9 @@ if args.g != False:
                     print(file_path , " not found.")
     sys.exit(1)
     
-def readCommitFile(commit_file):
-    out = ''
-    try:
-        out = open(commit_file, 'r').readline()
-    except:
-        pass
-    return out 
+
+     
+            
 #---------------Download OStt and tt files per indice id and save in the  ./SLTev-cache/OStt-tt-files/ folder. 
 if args.e != False and args.offline == False:
     git_path = "https://raw.githubusercontent.com/ELITR/elitr-testset/master/"
@@ -146,15 +143,8 @@ if args.e != False and args.offline == False:
                     else:
                         print(file_path , " not found.")
     
-# #----------------download giza-outs
-# gizaouts_git_path = "https://github.com/ELITR/elitr-testset/tree/master/indices" 
-# if args.e != False and args.offline == False:
-#     cmd = "gitdir " + gizaouts_git_path
-#     os.system(cmd)
-#     cmd = "rm -r ./SLTev-cache/giza-outs/"
-#     os.system(cmd)
-#     cmd = "mv ./giza-outs/ ./SLTev-cache/"
-#     os.system(cmd)
+#------------------download giza-outs
+
     
 align_root_path = "./SLTev-cache/OStt-tt-files/"  + args.e + '/'
 ostt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
@@ -162,10 +152,73 @@ tt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
 
 align_dict = makeAlignIndexing(align_root_path)
 ostt_list = makeosttIndexing(ostt_root_path)
+ost_list = makeostIndexing(ostt_root_path)
 tt_dict = makettIndexing(tt_root_path)
 input_status = 'file'
 if os.path.isdir(args.i):
     input_status = 'dir'
+
+    
+#-------------check input file/files format
+if input_status == 'file':
+    state = check_input(args.i)
+    if state == 1:
+        sys.exit(1)
+else:
+    slt_files = getSLT(args.i)
+    for slt_file in slt_files:
+        state = check_input(slt_file)
+        if state == 1:
+            sys.exit(1)
+    
+    
+# #----------------------------run ASRev
+if  args.e != False and input_status == 'file' and args.ASRev == True: 
+    name, language, asr_status  = getNameLanguageStatus(args.i)
+    #------check the input file
+
+    if os.path.isfile(args.i):
+        pass
+    else:
+        print(args.i, " is not exist.")
+        sys.exit(1)
+    if asr_status != 'asr':
+        text = args.i + " is not a asr file."
+        print(text)
+        sys.exit(1)
+   
+    ost_file = getost(name, ost_list)
+    text = "Evaluating the file " +  args.i + " in terms of  WER score against " + ' '.join(ost_file)
+    print(text)
+    
+    cmd = "./ASRev --ost " + ' '.join(ost_file) + ' --asr ' + args.i
+    os.system(cmd)
+    sys.exit(1)
+
+elif args.e != False and input_status == 'dir' and args.ASRev == True:     
+    
+    slt_files = getSLT(args.i)
+    for slt_file in slt_files: 
+        name, language, asr_status  = getNameLanguageStatus(slt_file)
+        if asr_status != 'asr':
+            text =  slt_file + " is not a asr file."
+            print(text)
+            continue
+            
+        ost_file = getost(name, ost_list)    
+        text = "Evaluating the file " +  slt_file + " in terms of  WER score against " + ' '.join(ost_file)
+        print(text)
+        
+        out_name = args.outdir + name + '.' + language + '.ASRev.asr.out'
+        with open(out_name, 'w') as f:
+            sys.stdout = f
+            print("commit id is ", commit_id)
+            sys.stdout = original_stdout
+        cmd = "./ASRev --ost " + ' '.join(ost_file) + ' --asr ' + slt_file + " >> " + out_name
+        os.system(cmd)
+    sys.exit(1)    
+        
+
 #--------------- evaluate per all cache files    
 if  args.e != False and input_status == 'file': 
     name, language, asr_status  = getNameLanguageStatus(args.i)
@@ -177,18 +230,19 @@ if  args.e != False and input_status == 'file':
         sys.exit(1)
 
     #---------- get OStt files
-    ostt_file = getostt(name, ostt_list)
-    tt_file = gettt(name, language, tt_dict) 
-    
+    ostt_file = getostt(name, ostt_list) 
+    ost_file = getost(name, ost_list)
     #-----------check OStt and tt files (for exist)
     if len(ostt_file) == 0:
         print("commit id is ", commit_id)
         print("OStt file does not exist.")
         sys.exit(1)
-    if len(tt_file) == 0:
-        print("commit id is ", commit_id)
-        print("tt file does not exist.")
-        sys.exit(1)
+    if  asr_status != 'asr': 
+        tt_file = gettt(name, language, tt_dict)
+        if len(tt_file) == 0:
+            print("commit id is ", commit_id)
+            print("tt file does not exist.")
+            sys.exit(1)
     #------- get align file
     align_file = None
     if asr_status != 'asr':
@@ -203,21 +257,23 @@ if  args.e != False and input_status == 'file':
             for i in args.alignment:
                 align_file.append(''.join(i))
     #--------evaluation
-    
-    text = "Evaluating the file " +  args.i + " in terms of translation quality against " + ' '.join(tt_file)
+    if asr_status != 'asr':
+        text = "Evaluating the file " +  args.i + " in terms of translation quality against " + ' '.join(tt_file)
+    else:
+        text = "Evaluating the file " +  args.i + " in terms of translation quality against " + ' '.join(ost_file)
     print(text)
     if asr_status == 'asr':
        
         if args.outfile == False:
             print("commit id is ", commit_id) 
-            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t)
+            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t)
             os.system(cmd)
         else:
             with open(args.outfile, 'w') as f:
                 sys.stdout = f
                 print("commit id is ", commit_id)
                 sys.stdout = original_stdout
-            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t) + " >> " + args.outfile
+            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t) + " >> " + args.outfile
             os.system(cmd)
             
             
@@ -260,16 +316,15 @@ elif args.e != False and input_status == 'dir':
         #---------- get OStt file
   
         ostt_file = getostt(name, ostt_list)
-        tt_file = gettt(name, language, tt_dict)
+        ost_file = getost(name, ost_list)
         
-        text = "Evaluating the file " + slt_file + " in terms of translation quality against " + ' '.join(tt_file)
-        print(text)
+
         #------------check OStt and tt files (check for existing)
         if asr_status != 'asr':
             out_name = args.outdir + name + '.' + language + '.slt.out'
         else:
             out_name = args.outdir + name +'.'+ language +'.asr.out'
-            
+        
         if len(ostt_file) == 0:
             with open(out_name, 'w') as f:
                 sys.stdout = f
@@ -277,14 +332,21 @@ elif args.e != False and input_status == 'dir':
                 print("OStt file does not exist.")
                 sys.stdout = original_stdout
                 continue
-        if len(tt_file) == 0:
-            with open(out_name, 'w') as f:
-                sys.stdout = f
-                print("commit id is ", commit_id)
-                print("tt file does not exist.")
-                sys.stdout = original_stdout
-                continue
-        
+        if asr_status != 'asr':       
+            tt_file = gettt(name, language, tt_dict)
+            if len(tt_file) == 0:
+                with open(out_name, 'w') as f:
+                    sys.stdout = f
+                    print("commit id is ", commit_id)
+                    print("tt file does not exist.")
+                    sys.stdout = original_stdout
+                    continue
+                    
+        if asr_status != 'asr': 
+            text = "Evaluating the file " + slt_file + " in terms of translation quality against " + ' '.join(tt_file)
+        else:
+            text = "Evaluating the file " + slt_file + " in terms of translation quality against " + ' '.join(ost_file)
+        print(text)
         #------- get align file
         align_file = None
         if asr_status != 'asr':
@@ -305,8 +367,8 @@ elif args.e != False and input_status == 'dir':
                 sys.stdout = f
                 print("commit id is ", commit_id)
                 sys.stdout = original_stdout
-            if len(ostt_file) != 0 and len(tt_file) != 0:         
-                cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + slt_file + " --asr True " + " --b_time " + str(args.t) + " >> " + out_name
+            if len(ostt_file) != 0 and len(ost_file) != 0:         
+                cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + slt_file + " --asr True " + " --b_time " + str(args.t) + " >> " + out_name
                 os.system(cmd)     
         else:
             if len(tt_file) != len(align_file):
