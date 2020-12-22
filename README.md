@@ -82,6 +82,7 @@ If you want to use elitr-testset repository, first you need to download elitr-te
 
     parameters:
         -g: generating ELITER files based on the ELITER-Index-Name 
+        --commitid: checkout git repo according to the commitid (deafult is HEAD)
 
     Notes:
         - Index-names are placed in the "https://github.com/ELITR/elitr-testset/tree/master/indices". e.g. iwslt-antrecorp
