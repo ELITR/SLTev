@@ -49,7 +49,11 @@ $ source path/to/virtualenv/bin/activate
 ``` {r, engine='bash'} 
 (your-env)$ pip install --upgrade -r requirements.txt
 ```
+- To activate an environment where packages are already installed
 
+``` {r, engine='bash'}
+$ source bashsource.sh
+```
 ## Clone project from git 
 
 You can download the project as follow in Github:
