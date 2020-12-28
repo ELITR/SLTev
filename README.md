@@ -78,19 +78,19 @@ Please prepare your data (using data-preperation/elitr-testset-prep.md help), an
 
 ### Generate ELITER files based on the ELITER-Index-Name 
 
+If you want to use elitr-testset repository, first you need to download elitr-testset repo. You can use SLTev with -g parameter for cloning and downloading elitr-testset repo. Also index files will put in the ./SLTev-cache/OStt-tt-files/ 
 ``` {r, engine='bash'}
 (your-env)$ mkdir <output_directory>
-(your-env)$ ./SLTev -g <elitr_index_name> -o <output_directory> --audio
+(your-env)$ ./SLTev -g <elitr_index_name> 
 ```
 
     parameters:
         -g: generating ELITER files based on the ELITER-Index-Name 
-        -o: output directory path
-        --audio: audios files only generated 
-		--noaudio: just text files generated
+        --commitid: checkout git repo according to the commitid (deafult is HEAD)
+
     Notes:
         - Index-names are placed in the "https://github.com/ELITR/elitr-testset/tree/master/indices". e.g. iwslt-antrecorp
-        - e.g. e.g. mkdir ./test; ./SLTev -g khanacademy-for-SLTev -o ./test/ --audio; 
+        - e.g. ./SLTev -g khanacademy-for-SLTev
   
 ### Evaluate ASR and SLT files based on the ELITER files
 

@@ -5,7 +5,67 @@ from os import getcwd
 from urllib.request import urlopen
 import subprocess as sp
 import shutil
+import logging
 
+def runCMD(cmd):
+    import os
+    try:
+        os.system(cmd)
+        logging.info(cmd)
+    except:
+        logging.error('Error occurred ' + cmd)
+        
+def removeExtraSpaces(text):
+    text = text.replace("\t", "")
+    text = text.replace(" ", "")
+    return text
+
+
+        
+def getIndices(indice_file_path, target_path):   
+    if indice_file_path[-5:] == '.link' or indice_file_path[-4:] == '.url':
+        indice = removeExtraSpaces(indice_file_path)
+        with open(indice) as link_f:
+            link_files = link_f.readlines()
+            for file in link_files:
+                cmd = 'cp ' + file + ' ' + target_path
+                runCMD(cmd)    
+    else:
+        indice = removeExtraSpaces(indice_file_path)
+        cmd = 'cp ' + indice + ' ' + target_path
+        runCMD(cmd)
+        
+def populate(indice_file_path, target_path):
+    with open(indice_file_path) as f:
+        lines = f.readlines()
+        lines = [i.strip() for i in lines if i.strip() != '']
+    indices = []
+    
+    for line in lines:
+        #TODO RECURRENT #INCLUDE 
+        if line[:9] == '#include ':
+            indice = removeExtraSpaces(line[9:])
+            indice_path = "./elitr-testset/indices/" + indice
+            with open(indice_path) as f:
+                sub_lines = f.readlines()
+                sub_lines = [i.strip() for i in sub_lines if i.strip() != '']
+            indices += sub_lines
+        else:
+            indices.append(line)
+            
+    for indice in indices:
+        if indice[0] == '#':
+            logging.info('skip this line')
+        else:
+            print(indice)
+            getIndices(indice, target_path)
+def gitLock():
+    cmd = "touch " + "./elitr-testset/.git/index.lock"
+    runCMD(cmd)
+def gitUnLock():
+    cmd = "rm " + "./elitr-testset/.git/index.lock"
+    runCMD(cmd)
+    
 def downloadGitFile(url, filename):
     try:
         filedata = urlopen(url)
