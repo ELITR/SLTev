@@ -132,7 +132,7 @@ If you want to use elitr-testset repository, first you need to download elitr-te
 #### Evaluta asr files based on the WER score (Running ASRev)
 
 ``` {r, engine='bash'}
-(your-env)$ ./ASRev --ost <ost_file_path> -asr <asr_file_path>
+(your-env)$ ./SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory> --ASRev
 ```
      
     parameters:
@@ -154,8 +154,8 @@ If you want to use elitr-testset repository, first you need to download elitr-te
 If you want to use your files locally, please do as follow:
 1. make a folder by name <your_indice> in ./SLTev-cache/OStt-tt-files/ path (if ./SLTev-cache/OStt-tt-files/ is not exist please make it)                                                                       
 2. put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in <your_indice> folder                                                               
-3. in evaluating phase using --offline parameter                                                                                                                                    
-- e.g. ./SLTev -e <your_indice> -i ./submision/ --offline --outdir ./test/ 
+3. do not use -a parameter, just run as follow:                                                                                                                                 
+- e.g. ./SLTev -e <your_indice> -i ./submision/  --outdir ./test/ 
 
 
 
@@ -166,7 +166,6 @@ If you want to use your files locally, please do as follow:
 - You can use Giza++ alignments if they are missed in <elitr-testset> (detail placed in the data-preperation/elitr-testset-prep.md)
 - The first line of each output is commit ID.
 - For some filse which have more than one tt files, SLTev works as multireference evaluator. (e.g. 03_botel-proti-proudu have two tt files for cs language (03_botel-proti-proudu.TTcs1, 03_botel-proti-proudu.TTcs2))
-- If don't use --oflline parameter, the needed files download automatically. 
 
     
 ## Terminology

@@ -1025,15 +1025,18 @@ def read_alignment_file(in_file):
             
 def calc_change_words1(segment1, segment2):
     """
-
-    Receives two segments and calculates times that words have been changed. 
-
+    Receives two segments (p1, p2) and calculates the distance between the first unmatched word until p1 length. 
     """
-    words = [] 
-    for word in segment1:
-        if word not in segment2:
-            words.append(word) 
-    return words
+    f = 0 
+    for i in range (len(segment1)):
+        if len(segment2) <= i: 
+            f = len(segment1) - i
+            break
+        elif segment1[i] != segment2[i]:
+            f = len(segment1) - i
+            break 
+    return f
+
 def calc_flicker1(MT):
     """
 
@@ -1044,12 +1047,8 @@ def calc_flicker1(MT):
     for sentence in MT:
         first_segment = sentence[0][3:-1]
         for segment in sentence[1:]:
-            words = calc_change_words1(first_segment, segment[3:-1])
-            for word in words:
-                word_index = first_segment.index(word)
-                temp = len(first_segment) - word_index -1
-                flicker_size += temp
-                break
+            f = calc_change_words1(first_segment, segment[3:-1])
+            flicker_size += f
             first_segment = segment[3:-1]
     return flicker_size
 
@@ -1239,12 +1238,8 @@ def calc_average_flickers_per_sentence(MT):
         sentence_flicker_size = 0
         first_segment = sentence[0][3:-1]
         for segment in sentence[1:]:
-            words = calc_change_words1(first_segment, segment[3:-1])
-            for word in words:
-                word_index = first_segment.index(word)
-                temp = (len(first_segment) - word_index) -1
-                sentence_flicker_size += temp
-                break
+            f = calc_change_words1(first_segment, segment[3:-1])
+            sentence_flicker_size += f
             first_segment = segment[3:-1]
         if float(len(sentence[-1][3:-1])) == 0:
             continue
@@ -1267,12 +1262,8 @@ def calc_average_flickers_per_document(MT):
     for sentence in MT:
         first_segment = sentence[0][3:-1]
         for segment in sentence[1:]:
-            words = calc_change_words1(first_segment, segment[3:-1])
-            for word in words:
-                word_index = first_segment.index(word)
-                temp = (len(first_segment) - word_index) -1
-                flicker_size += temp
-                break
+            f = calc_change_words1(first_segment, segment[3:-1])
+            flicker_size += f
             first_segment = segment[3:-1]
         complet_word_count += float(len(sentence[-1][3:-1]))
     return float(flicker_size) / complet_word_count
