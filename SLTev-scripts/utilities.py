@@ -36,29 +36,29 @@ def getIndices(indice_file_path, target_path):
         runCMD(cmd)
         
 def populate(indice_file_path, target_path):
-    with open(indice_file_path) as f:
-        lines = f.readlines()
-        lines = [i.strip() for i in lines if i.strip() != '']
-    indices = []
-    
-    for line in lines:
-        #TODO RECURRENT #INCLUDE 
-        if line[:9] == '#include ':
-            indice = removeExtraSpaces(line[9:])
-            indice_path = "./elitr-testset/indices/" + indice
-            with open(indice_path) as f:
-                sub_lines = f.readlines()
-                sub_lines = [i.strip() for i in sub_lines if i.strip() != '']
-            indices += sub_lines
-        else:
-            indices.append(line)
+    indices = [indice_file_path]
+    indices_lines = []
+    while indices != []:
+        indice_file_path = indices.pop()
+        with open(indice_file_path) as f:
+            lines = f.readlines()
+            lines = [i.strip() for i in lines if i.strip() != '']
+        for line in lines:
+            #TODO RECURRENT #INCLUDE 
+            if line[:9] == '#include ':
+                indice = removeExtraSpaces(line[9:])
+                indice_path = "./elitr-testset/indices/" + indice
+                indices.append(indice_path)
+            else:
+                indices_lines.append(line)
             
-    for indice in indices:
+    for indice in indices_lines:
         if indice[0] == '#':
             logging.info('skip this line')
         else:
-            print(indice)
+            print(indice + ' copied to ' + target_path)
             getIndices(indice, target_path)
+            
 def gitLock():
     cmd = "touch " + "./elitr-testset/.git/index.lock"
     runCMD(cmd)
