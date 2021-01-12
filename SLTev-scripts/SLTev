@@ -67,11 +67,13 @@ if args.g != False:
     #if elitr-testset repo exist pull it and otherwise clone it
     git_path = "https://github.com/ELITR/elitr-testset.git"
     if os.path.isdir('./elitr-testset'):
-        cmd = "git pull"
-        runCMD(cmd)
-    else:
         cmd = "cd ./elitr-testset"
         runCMD(cmd)
+        cmd = "git pull"
+        runCMD(cmd)
+        cmd = "cd .."
+        runCMD(cmd)
+    else:
         cmd = "git clone " + git_path
         runCMD(cmd)
         #-------checkout 
