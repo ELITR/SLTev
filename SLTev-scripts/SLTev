@@ -1,248 +1,331 @@
+#!/usr/bin/env python 
+
 import os
 import sys
+import argparse
 import requests
 from os import getcwd
 from urllib.request import urlopen
 import subprocess as sp
 import shutil
+from utilities import *
 import logging
 
-def runCMD(cmd):
-    import os
-    try:
-        os.system(cmd)
-        logging.info(cmd)
-    except:
-        logging.error('Error occurred ' + cmd)
-        
-def removeExtraSpaces(text):
-    text = text.replace("\t", "")
-    text = text.replace(" ", "")
-    return text
+# initiate the parser
+parser = argparse.ArgumentParser(description="generate and evaluate slt/asr files.")
+parser.add_argument("-g", help="eliter index name for download files ", const=False, default=False, nargs='?', type=str)
+# parser.add_argument("-o", help="path of the output dir (default is ./ )", default = "./", type=str)
+parser.add_argument("--audio", help="if exist just audios saved ", const=True, default=False, nargs='?')
+parser.add_argument("--ASRev", help="if exist ASRev running ", const=True, default=False, nargs='?')
+parser.add_argument("--noaudio",  help="if exist just download text files", const=True, default=False, nargs='?')
+parser.add_argument("--clean", "-clean", help="if exist clean all files in the ./SLTev-cache/", const=True, default=False, nargs='?')
+parser.add_argument("-e", help="eliter index name for evaluate files ", const=False, default=False, nargs='?', type=str)
+parser.add_argument("--outdir", help="slt output results directory (output of the SLTev) ", default= "./outdir/", type=str)
+parser.add_argument("--offline", "-offline", help="if exist just using cache folder ", const=True, default=False, nargs='?')
+parser.add_argument("-outfile", help="if exist,standard evaluate output saved in a file.", default=False, nargs='?', type=str)
+parser.add_argument("-i", help="eliter file name or dir", type=str)
+parser.add_argument("-alignment", help="path of the alignment file", type=list, nargs='+' )
+parser.add_argument("-t", help="length times for the bleu  calculation per time ", default = 3000, type=int)
+parser.add_argument("--commitid", help="commitid for eliter-testset repo) ", default= "HEAD", type=str)
+# read arguments from the command line
+args = parser.parse_args()
+
+# initialize the log settings
+
+#------- make a temp directory 
 
 
-        
-def getIndices(indice_file_path, target_path):   
-    if indice_file_path[-5:] == '.link' or indice_file_path[-4:] == '.url':
-        indice = removeExtraSpaces(indice_file_path)
-        with open(indice) as link_f:
-            link_files = link_f.readlines()
-            for file in link_files:
-                cmd = 'cp ' + file + ' ' + target_path
-                runCMD(cmd)    
-    else:
-        indice = removeExtraSpaces(indice_file_path)
-        cmd = 'cp ' + indice + ' ' + target_path
+#-------actine mwerSegmenter
+cmd = "chmod +x mwerSegmenter"
+os.system(cmd)
+
+cache_path = "./SLTev-cache/"
+ostt_other_path = "./SLTev-cache/OStt-tt-files/"
+
+if args.clean == True and os.path.isdir(cache_path):
+    shutil.rmtree(cache_path)
+
+if os.path.isdir(ostt_other_path):
+    pass
+else:
+    cmd = "mkdir -p " + ostt_other_path
+    os.system(cmd)
+
+
+#----------------get commit id
+try:
+    url = "https://github.com/ELITR/elitr-testset"
+    cmd =  "git ls-remote " + url + " HEAD"
+    commit_id = sp.getoutput(cmd).split('\t')[0]
+except:
+    commit_id = "no commit id, you are using offline mode"
+original_stdout = sys.stdout
+ 
+
+
+if args.g != False:
+    #if elitr-testset repo exist pull it and otherwise clone it
+    git_path = "https://github.com/ELITR/elitr-testset.git"
+    if os.path.isdir('./elitr-testset'):
+        cmd = "git pull"
         runCMD(cmd)
-        
-def populate(indice_file_path, target_path):
-    with open(indice_file_path) as f:
-        lines = f.readlines()
-        lines = [i.strip() for i in lines if i.strip() != '']
-    indices = []
-    
-    for line in lines:
-        #TODO RECURRENT #INCLUDE 
-        if line[:9] == '#include ':
-            indice = removeExtraSpaces(line[9:])
-            indice_path = "./elitr-testset/indices/" + indice
-            with open(indice_path) as f:
-                sub_lines = f.readlines()
-                sub_lines = [i.strip() for i in sub_lines if i.strip() != '']
-            indices += sub_lines
-        else:
-            indices.append(line)
-            
-    for indice in indices:
-        if indice[0] == '#':
-            logging.info('skip this line')
-        else:
-            print(indice)
-            getIndices(indice, target_path)
-def gitLock():
-    cmd = "touch " + "./elitr-testset/.git/index.lock"
+    else:
+        cmd = "cd ./elitr-testset"
+        runCMD(cmd)
+        cmd = "git clone " + git_path
+        runCMD(cmd)
+        #-------checkout 
+        cmd = "git checkout " + args.commitid
+        runCMD(cmd)
+        cmd = "cd .."
+        runCMD(cmd)
+
+    gitLock() # lock the repo
+    indice_file_path = "./elitr-testset/indices/" + args.g
+    target_path = ostt_other_path + args.g
+    # check target existence
+    cmd = " mkdir " + target_path
     runCMD(cmd)
-def gitUnLock():
-    cmd = "rm " + "./elitr-testset/.git/index.lock"
-    runCMD(cmd)
+    populate(indice_file_path, target_path)
+    gitUnLock() #unlock the repo    
+    sys.exit(1)
+#------------------download giza-outs
+
     
-def downloadGitFile(url, filename):
-    try:
-        filedata = urlopen(url)
-        datatowrite = filedata.read()
+align_root_path = "./SLTev-cache/OStt-tt-files/"  + args.e + '/'
+ostt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
+tt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
 
-        with open(filename, 'wb') as f:
-            f.write(datatowrite)
-        return True
-    except:
-        return False
+align_dict = makeAlignIndexing(align_root_path)
+ostt_list = makeosttIndexing(ostt_root_path)
+ost_list = makeostIndexing(ostt_root_path)
+tt_dict = makettIndexing(tt_root_path)
+input_status = 'file'
+if os.path.isdir(args.i):
+    input_status = 'dir'
+
     
-def readIndice(file_path):
-    out = []
-    with open(file_path, 'r') as f:
-        out = f.readlines()
-        out = ['/'.join(ele.strip().split('/')[1:]) for ele in out if ele.strip() != ''] 
-    return out
+#-------------check input file/files format
+if input_status == 'file':
+    state = check_input(args.i)
+    if state == 1:
+        sys.exit(1)
+else:
+    slt_files = getSLT(args.i)
+    for slt_file in slt_files:
+        state = check_input(slt_file)
+        if state == 1:
+            sys.exit(1)
+    
+    
+# #----------------------------run ASRev
+if  args.e != False and input_status == 'file' and args.ASRev == True: 
+    name, language, asr_status  = getNameLanguageStatus(args.i)
+    #------check the input file
 
-def removeDigits(string):
-    result = ''.join([i for i in string if not i.isdigit()])
-    return result
-
-def makeAlignIndexing(root):
-    align_dict = {}
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            try:
-                file_path = os.path.join(root, f)
-                split_name = f.split('.')
-                file_type = split_name[-1]
-                language = split_name[-2]
-                if file_type == 'align' and language[:2] == 'TT':
-                    la = removeDigits(language[2:])
-                    try:
-                        align_dict[la].append(file_path)
-                    except:
-                        align_dict[la] = [file_path]
-            except:
-                pass
-    return align_dict
-
-# def makeAlignIndexing(root):
-#     align_dict = {'cs':[], 'de':[]}
-#     for root, dirs, files in os.walk(root):   
-#         for f in files:
-#             file_path = os.path.join(root, f)
-#             split_name = f.split('.')
-#             file_type = split_name[-1]
-#             language = split_name[-2]
-#             if '.TTcs' in file_path and '.align' == file_path[-6:]:
-#                 align_dict['cs'].append(file_path)
-#             elif '.TTde' in file_path and '.align' == file_path[-6:]:
-#                 align_dict['de'].append(file_path)
-#     return align_dict
-
-def makettIndexing(root):
-    tt_dict = {}
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            split_name = f.split('.')
-            file_type = split_name[-1]
-            if file_type[:2] == 'TT':
-                la = removeDigits(file_type[2:])
-                try:
-                    tt_dict[la].append(file_path)
-                except:
-                    tt_dict[la] = [file_path]
-                    
-    return tt_dict
-
-# def makettIndexing(root):
-#     tt_dict = {'cs':[], 'de':[], 'en':[]}
-#     for root, dirs, files in os.walk(root):   
-#         for f in files:
-#             file_path = os.path.join(root, f)
-#             if '.TTcs' in file_path and '.align' != file_path[-6:]:
-#                 tt_dict['cs'].append(file_path)
-#             elif '.TTde' in file_path and '.align' != file_path[-6:]:
-#                 tt_dict['de'].append(file_path)
-#             elif '.OSt' in file_path and '.OStt' not in file_path and '.align' != file_path[-6:]:
-#                 tt_dict['en'].append(file_path)
-#     return tt_dict
-
-def readCommitFile(commit_file):
-    out = ''
-    try:
-        out = open(commit_file, 'r').readline()
-    except:
+    if os.path.isfile(args.i):
         pass
-    return out 
+    else:
+        print(args.i, " is not exist.")
+        sys.exit(1)
+    if asr_status != 'asr':
+        text = args.i + " is not a asr file."
+        print(text)
+        sys.exit(1)
+   
+    ost_file = getost(name, ost_list)
+    text = "Evaluating the file " +  args.i + " in terms of  WER score against " + ' '.join(ost_file)
+    print(text)
+    
+    cmd = "./ASRev --ost " + ' '.join(ost_file) + ' --asr ' + args.i
+    os.system(cmd)
+    sys.exit(1)
 
-def check_input(in_file):
-    lines = open(in_file, 'r').readlines()
-    state = 0 
-    for i in range(len(lines)):
-        line = lines[i].strip().split(' ')
-        if line[0] != 'C' and line[0] != 'P':
-            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
-            state = 1
+elif args.e != False and input_status == 'dir' and args.ASRev == True:     
+    
+    slt_files = getSLT(args.i)
+    for slt_file in slt_files: 
+        name, language, asr_status  = getNameLanguageStatus(slt_file)
+        if asr_status != 'asr':
+            text =  slt_file + " is not a asr file."
             print(text)
-            break
-        try:
-            if int(line[1]) > -1 and int(line[2]) > -1 and int(line[3]) > -1:
-                continue
-        except:
-            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
-            state = 1
-            print(text)
-            break
+            continue
             
-    return  state 
+        ost_file = getost(name, ost_list)    
+        text = "Evaluating the file " +  slt_file + " in terms of  WER score against " + ' '.join(ost_file)
+        print(text)
+        
+        out_name = args.outdir + name + '.' + language + '.ASRev.asr.out'
+        with open(out_name, 'w') as f:
+            sys.stdout = f
+            print("commit id is ", commit_id)
+            sys.stdout = original_stdout
+        cmd = "./ASRev --ost " + ' '.join(ost_file) + ' --asr ' + slt_file + " >> " + out_name
+        os.system(cmd)
+    sys.exit(1)    
+        
 
-def makeosttIndexing(root):
-    ostt_list = []
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            if '.OStt' == file_path[-5:]:
-                ostt_list.append(file_path)
-    return ostt_list
+#--------------- evaluate per all cache files    
+if  args.e != False and input_status == 'file': 
+    name, language, asr_status  = getNameLanguageStatus(args.i)
+    #------check the input file
+    if os.path.isfile(args.i):
+        pass
+    else:
+        print(args.i, " is not exist.")
+        sys.exit(1)
 
-def makeostIndexing(root):
-    ost_list = []
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            if '.OSt' == file_path[-4:]:
-                ost_list.append(file_path)
-    return ost_list
+    #---------- get OStt files
+    ostt_file = getostt(name, ostt_list) 
+    ost_file = getost(name, ost_list)
+    #-----------check OStt and tt files (for exist)
+    if len(ostt_file) == 0:
+        print("commit id is ", commit_id)
+        print("OStt file does not exist.")
+        sys.exit(1)
+    if  asr_status != 'asr': 
+        tt_file = gettt(name, language, tt_dict)
+        if len(tt_file) == 0:
+            print("commit id is ", commit_id)
+            print("tt file does not exist.")
+            sys.exit(1)
+    #------- get align file
+    align_file = None
+    if asr_status != 'asr':
+        if args.alignment == None:
+            a_name = [k.split('/')[-1] for k in tt_file]
+            align_file = getAlign(a_name, language, align_dict)
+            if align_file == None:
+                print("The alignment is not exist for ", args.i, ", you can use -alignment for manual alignment" )
+                sys.exit(1)
+        else:
+            align_file = []
+            for i in args.alignment:
+                align_file.append(''.join(i))
+    #--------evaluation
+    if asr_status != 'asr':
+        text = "Evaluating the file " +  args.i + " in terms of translation quality against " + ' '.join(tt_file)
+    else:
+        text = "Evaluating the file " +  args.i + " in terms of translation quality against " + ' '.join(ost_file)
+    print(text)
+    if asr_status == 'asr':
+       
+        if args.outfile == False:
+            print("commit id is ", commit_id) 
+            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t)
+            os.system(cmd)
+        else:
+            with open(args.outfile, 'w') as f:
+                sys.stdout = f
+                print("commit id is ", commit_id)
+                sys.stdout = original_stdout
+            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t) + " >> " + args.outfile
+            os.system(cmd)
+            
+            
+    else:
+        if len(tt_file) != len(align_file):
+            print("count of tt files and align files not equel.")
+            sys.exit(1)
+        if args.outfile == False:
+            print("commit id is ", commit_id)
+            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --align " + ' '.join(align_file) + " --b_time " + str(args.t)
+            os.system(cmd)
+        else:
+            with open(args.outfile, 'w') as f:
+                sys.stdout = f
+                print("commit id is ", commit_id)
+                sys.stdout = original_stdout
+            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --align " + ' '.join(align_file) + " --b_time " + str(args.t) + " >> " + args.outfile
+            os.system(cmd)
+    
+    
+elif args.e != False and input_status == 'dir':
+    #------check input
+    if os.path.isdir(args.outdir):
+        pass
+    else:
+        print(args.outdir, " is not exist, we will create it. ")
+        cmd = "mkdir -p " + args.outdir
+        os.system(cmd)
+    
+    slt_files = getSLT(args.i)
+    for slt_file in slt_files:
+        name, language, asr_status  = getNameLanguageStatus(slt_file)
+        #------check the input file
+        if os.path.isfile(slt_file):
+            pass
+        else:
+            print(slt_file, " is not exist.")
+            sys.exit(1)
 
+        #---------- get OStt file
+  
+        ostt_file = getostt(name, ostt_list)
+        ost_file = getost(name, ost_list)
+        
 
-def getAlign(names, language, align_dict):
-    out = []
-    for i in align_dict[language]:
-        for name in names:
-            if name in i and i not in out:
-                out.append(i)
-    return out
-def getostt(name, ostt_list):
-    out = []
-    for i in ostt_list:
-        if name in i:
-            out.append(i)
-    return out
-
-def getost(name, ost_list):
-    out = []
-    for i in ost_list:
-        if name in i:
-            out.append(i)
-    return out
-
-def gettt(name, language, tt_dict):
-    out = []
-    for i in tt_dict[language]:
-        if name in i:
-            out.append(i)
-    return out
-
-def getSLT(root):
-    slt_files = []
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            if '.slt' in f or '.asr' in f:
-                slt_files.append(file_path)
-    return slt_files
-
-def getNameLanguageStatus(file_name):
-    file_name = file_name.split('/')[-1]
-    file_name = file_name.split('.')
-    name = '.'.join(file_name[:-2])
-    language = file_name[-2]
-    asr_status = file_name[-1]
-    return name, language, asr_status
-
-
-
+        #------------check OStt and tt files (check for existing)
+        if asr_status != 'asr':
+            out_name = args.outdir + name + '.' + language + '.slt.out'
+        else:
+            out_name = args.outdir + name +'.'+ language +'.asr.out'
+        
+        if len(ostt_file) == 0:
+            with open(out_name, 'w') as f:
+                sys.stdout = f
+                print("commit id is ", commit_id)
+                print("OStt file does not exist.")
+                sys.stdout = original_stdout
+                continue
+        if asr_status != 'asr':       
+            tt_file = gettt(name, language, tt_dict)
+            if len(tt_file) == 0:
+                with open(out_name, 'w') as f:
+                    sys.stdout = f
+                    print("commit id is ", commit_id)
+                    print("tt file does not exist.")
+                    sys.stdout = original_stdout
+                    continue
+                    
+        if asr_status != 'asr': 
+            text = "Evaluating the file " + slt_file + " in terms of translation quality against " + ' '.join(tt_file)
+        else:
+            text = "Evaluating the file " + slt_file + " in terms of translation quality against " + ' '.join(ost_file)
+        print(text)
+        #------- get align file
+        align_file = None
+        if asr_status != 'asr':
+            if args.alignment == None:
+                a_name = [k.split('/')[-1] for k in tt_file]
+                align_file = getAlign(a_name, language, align_dict)
+                if align_file == None:
+                    print("The alignment is not exist for ", args.f, ", you can use -alignment for manual alignment" )
+                    sys.exit(1)
+            else:
+                align_file = []
+                for i in args.alignment:
+                    align_file.append(''.join(i)) 
+                    
+        if asr_status == 'asr':
+            out_name = args.outdir + name +'.'+ language +'.asr.out'
+            with open(out_name, 'w') as f:
+                sys.stdout = f
+                print("commit id is ", commit_id)
+                sys.stdout = original_stdout
+            if len(ostt_file) != 0 and len(ost_file) != 0:         
+                cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + slt_file + " --asr True " + " --b_time " + str(args.t) + " >> " + out_name
+                os.system(cmd)     
+        else:
+            if len(tt_file) != len(align_file):
+                print("count of tt files and align files not equel.")
+                sys.exit(1)
+            out_name = args.outdir + name + '.' + language + '.slt.out'
+            with open(out_name, 'w') as f:
+                sys.stdout = f
+                print("commit id is ", commit_id)
+                sys.stdout = original_stdout
+            if len(ostt_file) != 0 and len(tt_file) != 0:
+                cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + slt_file + " --align " + ' '.join(align_file) + " --b_time " + str(args.t) + " >> " + out_name
+                os.system(cmd)
 
