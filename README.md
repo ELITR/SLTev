@@ -150,7 +150,7 @@ If you want to use elitr-testset repository, first you need to download elitr-te
 If you want to use your files locally, please do as follow:
 1. make a folder by name <your_indice> in ./SLTev-cache/OStt-tt-files/ path (if ./SLTev-cache/OStt-tt-files/ is not exist please make it)                                                                       
 2. put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in <your_indice> folder                                                               
-3. do not use -a parameter, just run as follow:                                                                                                                                 
+3. do not use -g parameter, just run as follow:                                                                                                                                 
 - e.g. ./SLTev -e <your_indice> -i ./submision/  --outdir ./test/ 
 
 

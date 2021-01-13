@@ -42,8 +42,14 @@ os.system(cmd)
 cache_path = "./SLTev-cache/"
 ostt_other_path = "./SLTev-cache/OStt-tt-files/"
 
-if args.clean == True and os.path.isdir(cache_path):
-    shutil.rmtree(cache_path)
+if args.clean == True:
+    try:
+        shutil.rmtree(cache_path)
+        print("all files and folders in ./SLTev-cache/ removed")
+        sys.exit(1)
+    except:
+        print("Folder ./SLTev-cache/  is not exist")
+        sys.exit(1)
 
 if os.path.isdir(ostt_other_path):
     pass
