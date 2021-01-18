@@ -54,7 +54,7 @@ $ source path/to/virtualenv/bin/activate
 
 You can download the project as follow in Github:
 ``` {r, engine='bash'} 
-$ git clone git clone https://github.com/ELITR/SLTev.git
+$ git clone https://github.com/ELITR/SLTev.git
 $ cd SLTev 
 ```
 
