@@ -5,22 +5,13 @@ SLTev is an open-source tool for assessing the quality of spoken language transl
 
 ## Requirements Modules
 
-- python3.5 or Higher
-
-- NLTK [1]
-
+- python3.5 or higher
+- some pip-installed modules:
+  - NLTK [1]
+  - sacreBLEU [4]
+  - requests, gitpython, gitdir
 - mwerSegmenter [2]
-    
 - mosestokenizer [3]
-
-- Sacre Bleu [4]
-    
-- requests 
-    
-- gitpython 
-
-- gitdir 
-
 
 ## Input SLT and ASR name format
 
@@ -38,13 +29,19 @@ SLTev is an open-source tool for assessing the quality of spoken language transl
 
 ## Installation
 
-- If you using virtual environment, source your enviornment by the following command:
-
+Download the project from Github:
 ``` {r, engine='bash'} 
-$ source path/to/virtualenv/bin/activate
+git clone https://github.com/ELITR/SLTev.git
+cd SLTev
 ```
 
-- install needed modules by pip in your enviornment:
+Create and activate a new virtual environment (or use your standard one):
+``` {r, engine='bash'} 
+virtualenv your-env
+source your-env/bin/activate
+```
+
+Install the prerequisites:
 
 ``` {r, engine='bash'} 
 (your-env)$ pip install --upgrade -r requirements.txt
@@ -52,11 +49,6 @@ $ source path/to/virtualenv/bin/activate
 
 ## Clone project from git 
 
-You can download the project as follow in Github:
-``` {r, engine='bash'} 
-$ git clone https://github.com/ELITR/SLTev.git
-$ cd SLTev 
-```
 
 ## Package Overview
 
