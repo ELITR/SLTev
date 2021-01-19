@@ -1,7 +1,9 @@
 
 # SLTev
 
-SLTev is an open-source tool for assessing the quality of spoken language translation in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, THETOOL reports the quality, delay and stability of a given SLT candidate output.
+SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
+
+SLTev can also evaluate the intermediate steps: the output of automatic speech recognition (ASR) and machine translation (MT).
 
 ## Requirements Modules
 
@@ -13,18 +15,21 @@ SLTev is an open-source tool for assessing the quality of spoken language transl
 - mwerSegmenter [2]
 - mosestokenizer [3]
 
-## Input SLT and ASR name format
+## File Naming Convention
 
+Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming of your output files.
+
+The "OSt" means "original speech, transcribed", see the list of abbreviation below.
 
 ### SLT format
 
-- OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. de or cs) + .slt
-- e.g. 03_botel-proti-proudu.en.cs.slt, 03_botel-proti-proudu.en.de.slt
+- OSt file name (e.g. ``03_botel-proti-proudu.en.OSt``) + . + language (e.g. de or cs) + ``.slt``
+- e.g. ``03_botel-proti-proudu.en.cs.slt``, ``03_botel-proti-proudu.en.de.slt``
     
 ### ASR format
 
-- OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. en) + .asr
-- e.g. 03_botel-proti-proudu.en.en.asr
+- OSt file name (e.g. ``03_botel-proti-proudu.en.OSt``) + . + language (e.g. en) + ``.asr``
+- e.g. ``03_botel-proti-proudu.en.en.asr``
 
 
 ## Installation
@@ -47,24 +52,39 @@ Install the prerequisites:
 (your-env)$ pip install --upgrade -r requirements.txt
 ```
 
-## Clone project from git 
-
-
 ## Package Overview
 
 - SLTev-scripts: Contains scripts for running SLTev and ASRev
 - examples: Contains examples of inputs files which contains slt-asr-samples and input-files 
-- data-preperation: Contains scripts to prepere data for SLTev script such as MGIZA  
+- data-preparation: Contains maintenance scripts to prepare data for SLTev, e.g. converting MGIZA outputs to SLTev inputs
 
-## Getting Started with SLTev
 
-Please prepare your data (using data-preperation/elitr-testset-prep.md help), and run scripts as follow:
+## Evaluating on ``elitr-testset``
 
-``` {r, engine='bash'}
-(your-env)$ cd SLTev-scripts 
+SLTev works best if you want to evaluate your system on files provided in ``elitr-testset`` (https://github.com/ELITR/elitr-testset).
+
+The procedure is simple:
+1. Choose an "index", i.e. a subset of files that you want to test on, here: https://github.com/ELITR/elitr-testset/tree/master/indices
+We illustrate the rest with ``khanacademy-for-SLTev`` as the index.
+
+2. Ask SLTev to provide you with the current version of input files:
+```
+(your-env)$ SLTev -g khanacademy-for-SLTev -outdir my-evaluation-run-1
+```
+3. Process input files in ``my-evaluation-run-1`` with your system.
+```
+# Here we simply copy the sample outputs
+cp examples/slt-asr-samples/kac*slt ./my-evaluation-run-1
+```
+4. Run SLTev to get the scores:
+```
+TODO
 ```
 
-### Generate ELITER files based on the ELITER-Index-Name 
+### Outdated Instructions
+
+This section is needlessly complicated and will be removed.
+
 
 If you want to use elitr-testset repository, first you need to download elitr-testset repo. You can use SLTev with -g parameter for cloning and downloading elitr-testset repo. Also index files will put in the ./SLTev-cache/OStt-tt-files/ 
 ``` {r, engine='bash'}
@@ -92,7 +112,7 @@ If you want to use elitr-testset repository, first you need to download elitr-te
     parameters:
         -e: evaluating input file based on the ELITER files
         -f: file path for evaluating
-        -t: time of each segment for calculate BLEU score (deafult is 3000)
+        -t: time of each segment for calculate BLEU score (default is 3000)
         -alignment: alignment files (manual alignment) are using instead of the ELITER files
         -outfile: outfile (standard output writing there)
         --offline: offline cache files are using. (if not, the needed files will downloaded) 
@@ -110,14 +130,14 @@ If you want to use elitr-testset repository, first you need to download elitr-te
      
     parameters:
         -e: evaluating input files based on the ELITER files. 
-        -i: ditrectory path for evaluating
+        -i: directory path for evaluating
         -t: time of each segment for calculate BLEU score
         --outdir: output directory path
         --offline: offline cache files are using. (if not, the needed files will downloaded)  
     Notes:
             - e.g. mkdir test1; ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples/ --outdir ./test1/;
 
-#### Evaluta asr files based on the WER score (Running ASRev)
+#### Evaluate ASR files using WER score (Running ASRev)
 
 ``` {r, engine='bash'}
 (your-env)$ ./SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory> --ASRev
@@ -146,6 +166,14 @@ If you want to use your files locally, please do as follow:
 - e.g. ./SLTev -e <your_indice> -i ./submision/  --outdir ./test/ 
 
 
+## Getting Started with SLTev
+
+Please prepare your data (using data-preparation/elitr-testset-prep.md help), and run scripts as follow:
+
+``` {r, engine='bash'}
+(your-env)$ cd SLTev-scripts 
+```
+
 
 
 ## Notes
@@ -156,7 +184,7 @@ If you want to use your files locally, please do as follow:
 - For some filse which have more than one tt files, SLTev works as multireference evaluator. (e.g. 03_botel-proti-proudu have two tt files for cs language (03_botel-proti-proudu.TTcs1, 03_botel-proti-proudu.TTcs2))
 
     
-## Terminology
+## Terminology and Abbreviations
 
 In the following, we use this notation:
 
