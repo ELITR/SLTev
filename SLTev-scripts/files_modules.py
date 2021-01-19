@@ -242,11 +242,8 @@ def segmenter(MT, Ts, language):
     #------------run segmentation 
     import os
     #-------------tokenize tt and MT
-    tokenizer('./temp_ref', './tokenize_temp_ref', language)
-    tokenizer('./temp_translate', './tokenize_temp_translate', language)
-    cmd = "./mwerSegmenter -mref tokenize_temp_ref -hypfile tokenize_temp_translate"
+    cmd = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
     mWERQuality = sp.getoutput(cmd)
-    detokenizer('./__segments', './detokenize__segments', language)
 
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
@@ -255,7 +252,7 @@ def segmenter(MT, Ts, language):
     os.system('rm temp_translate')
 
     #-------------read segments 
-    in_file = open('detokenize__segments', 'r', encoding="utf8")
+    in_file = open('__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
     while line:
@@ -265,8 +262,6 @@ def segmenter(MT, Ts, language):
     mt_sentences = segments[:]
     os.system('rm __segments')
     #-------remove temp files
-    os.system('rm tokenize_temp_ref')
-    os.system('rm tokenize_temp_translate')
-    os.system('rm detokenize__segments')
+
 
     return mt_sentences, mWERQuality
