@@ -1,3 +1,8 @@
+# Data Preparation
+
+This directory is intended for those who want to create their own test sets.
+Commonly, users will only want to evaluate against ``elitr-testset`` (https://github.com/ELITR/elitr-testset), see ``../README.md``.
+
 
 You can use these scripts to prepare data for use in SLTev.  
 
