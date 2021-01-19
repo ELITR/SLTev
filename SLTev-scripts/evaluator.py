@@ -2,8 +2,8 @@
 
 import argparse
 import sys
-import nltk
 import sacrebleu
+from sacremoses import MosesTokenizer, MosesDetokenizer
 import subprocess as sp
 import os
 from mosestokenizer import *
@@ -232,25 +232,17 @@ if __name__== "__main__":
     print("macroavg Flicker       count_changed_content ", int(calc_average_flickers_per_sentence(MT)) )
 
     print("microavg Flicker       count_changed_content ", int(calc_average_flickers_per_document(MT))  )
-    bleu_score , sacre_score = calc_bleu_score_documnet(Ts, MT)
-    bleu_score = bleu_score * 100
+    sacre_score = calc_bleu_score_documnet(Ts, MT)
 
-    print("tot      BLEU          docAsAWhole           ", str("{0:.3f}".format(round(bleu_score, 3))))
     print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
-    bleu_score, sacre_score, tot_bleu, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language)
-    bleu_score = bleu_score * 100
-    tot_bleu = tot_bleu * 100
-
-    print("avg      BLEU          --                    ", str("{0:.3f}".format(round(bleu_score, 3))) )
+    sacre_score, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language)
 
     print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
     
-    print('tot      BLEU          mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu, 3))) )
     print('tot      sacreBLEU     mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu_sacre, 3))) )
-    c_b_s_s_by_time,  avg_BLEU, avg_SacreBleu = calc_bleu_score_sentence_by_time(Ts, MT, b_time)
+    c_b_s_s_by_time,  avg_SacreBleu = calc_bleu_score_sentence_by_time(Ts, MT, b_time)
     for x in c_b_s_s_by_time:
         print(x)
-    print(avg_BLEU)
     print(avg_SacreBleu)
 
 

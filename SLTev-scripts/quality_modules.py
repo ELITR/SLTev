@@ -2,7 +2,6 @@
 
 import argparse
 import sys
-import nltk
 import sacrebleu
 import subprocess as sp
 import os
@@ -17,8 +16,7 @@ def calc_bleu_score_documnet(Ts, MT):
     as a document.  
  
     """
-    from nltk.translate.bleu_score import SmoothingFunction
-    smoothie = SmoothingFunction().method4
+
     merge_mt_sentences = []
 
     for i in range(len(MT)):
@@ -31,17 +29,15 @@ def calc_bleu_score_documnet(Ts, MT):
             for k,v in j.items():
                 l.append(k)
         merge_references_sentences.append(' '.join(l))
-    bleu_scores = []
     sacre_bleu_score = []
     
 
     refs= [[i]for i in merge_references_sentences]
     sys = [' '.join(merge_mt_sentences[:])]
     b_sacre = sacrebleu.corpus_bleu(sys, refs)
-    nltk_score = nltk.translate.bleu_score.sentence_bleu([i[0].split() for i in refs], sys[0].split(), smoothing_function=smoothie)
     sacre_blue_score = b_sacre.score
 
-    return nltk_score, sacre_blue_score
+    return sacre_blue_score
 
 
 def calc_bleu_score_sentence_by_sentence(Ts, MT, language):
@@ -51,9 +47,6 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language):
     using Moses tokenizer befor using mwersegmenter
  
     """
-    import nltk
-    from nltk.translate.bleu_score import SmoothingFunction
-    smoothie = SmoothingFunction().method4
    
     mt_sentences = []
     for i in range(len(MT)):
@@ -74,7 +67,6 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language):
     segmenter_sentence, mWERQuality = segmenter(MT, Ts, language)
 
 
-    nltk_bleu = list()
     sacre_bleu = list()
     for i in range(len(references_sentences[0])):
         sys = [' '.join(segmenter_sentence[i])]
@@ -82,15 +74,17 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language):
 #         print ('sys', sys)
 #         print ('refs', refs)
         b_sacre = sacrebleu.corpus_bleu(sys, refs)
-        nltk_score = nltk.translate.bleu_score.sentence_bleu([i[0].split() for i in refs], sys[0].split(), smoothing_function=smoothie)
         sacre_blue_score = b_sacre.score
-        nltk_bleu.append(nltk_score)
         sacre_bleu.append(sacre_blue_score)
     
     
- 
-
-    return (sum(nltk_bleu)/len(nltk_bleu)), (sum(sacre_bleu)/len(sacre_bleu)), sum(nltk_bleu), sum(sacre_bleu)
+    if sacre_bleu != []:
+        sacre_bleu_avg = (sum(sacre_bleu)/len(sacre_bleu))
+        sacre_bleu_sum = sum(sacre_bleu)
+    else:
+        sacre_bleu_avg = 0
+        sacre_bleu_sum = 0
+    return sacre_bleu_avg, sacre_bleu_sum
 
 def build_A_Time_Based_quality(sentence_segments):
     """
@@ -117,8 +111,7 @@ def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
     Calculates blue score using the NLTK module with time slice strategy.
 
     """
-    from nltk.translate.bleu_score import SmoothingFunction
-    smoothie = SmoothingFunction().method4
+
     
     tail_number = float(MT[-1][-1][2])
     start = 0
@@ -155,13 +148,12 @@ def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
 
 #     print('references_sentences ', references_sentences)
 #     print('mt_sentences', mt_sentences)
-    blue_scores = []
+
     start = 0 
     end = time_step
 
-    nltk_BLEU_list = []
     sacreBLEU_list = []
-    
+    blue_scores = []
     for t in  range(len(mt_sentences)):
         
         sys = [' '.join(mt_sentences[t])]
@@ -169,18 +161,14 @@ def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
 #         print ('sys', sys)
 #         print ('refs', refs)
         b_sacre = sacrebleu.corpus_bleu(sys, refs)
-        nltk_score = nltk.translate.bleu_score.sentence_bleu([i[0].split() for i in refs], sys[0].split(), smoothing_function=smoothie)
         sacre_blue_score = b_sacre.score
    
-        text = 'detailed BLEU          span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(nltk_score* 100) )
-        nltk_BLEU_list.append( nltk_score*100  )
+
         text1 = 'detailed sacreBLEU     span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(sacre_blue_score))
         sacreBLEU_list.append(sacre_blue_score)
         start += time_step
         end += time_step
-        blue_scores.append(text)
         blue_scores.append(text1)
-    avg_BLEU = "avg      BLEU          span*                  " + str("{0:.3f}".format(round((sum(nltk_BLEU_list)/len(nltk_BLEU_list)), 3))) 
     avg_SacreBleu = "avg      sacreBLEU     span*                  " + str("{0:.3f}".format(round((sum(sacreBLEU_list)/len(sacreBLEU_list)), 3)))
-    return blue_scores, avg_BLEU, avg_SacreBleu
+    return blue_scores, avg_SacreBleu
 
