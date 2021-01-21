@@ -10,6 +10,7 @@ import subprocess as sp
 import shutil
 from utilities import *
 import logging
+import git
 
 # initiate the parser
 parser = argparse.ArgumentParser(description="generate and evaluate slt/asr files.")
@@ -42,11 +43,9 @@ sys.path.insert(1, sltev_home)
 
 
 #-------actine mwerSegmenter
-# cmd = "chmod +x mwerSegmenter"
-# os.system(cmd)
 
-cache_path = sltev_home + "/SLTev-cache/"
-ostt_other_path = sltev_home + "/SLTev-cache/OStt-tt-files/"
+cache_path = "./SLTev-cache/"
+ostt_other_path = "./SLTev-cache/OStt-tt-files/"
 
 if args.clean == True:
     try:
@@ -61,63 +60,53 @@ if os.path.isdir(ostt_other_path):
     pass
 else:
     os.makedirs(ostt_other_path, exist_ok=True)
-#     cmd = "mkdir -p " + ostt_other_path
-#     os.system(cmd)
+#---make out dir
+if os.path.isdir(args.outdir):
+    pass
+else:
+    os.makedirs(args.outdir, exist_ok=True)
 
 
-#----------------get commit id
-try:
-    url = "https://github.com/ELITR/elitr-testset"
-    cmd =  "git ls-remote " + url + " HEAD"
-    commit_id = sp.getoutput(cmd).split('\t')[0]
-except:
-    commit_id = "no commit id, you are using offline mode"
 original_stdout = sys.stdout
  
+#----get commit id
 
-
+try:
+    elitr_path = "./elitr-testset"
+    repo = git.Repo(elitr_path)
+    commit_id = repo.head.commit
+except:
+    commit_id = "no commit id, you are using offline mode"
+    
 if args.g != False:
     #if elitr-testset repo exist pull it and otherwise clone it
     git_path = "https://github.com/ELITR/elitr-testset.git"
-    elitr_path = sltev_home + "/elitr-testset"
+    elitr_path = "./elitr-testset"
+    
+
     if os.path.isdir(elitr_path):
-        os.chdir(elitr_path)
-#         cmd = "cd ./elitr-testset"
-#         runCMD(cmd)
-        cmd = "git pull"
-        runCMD(cmd)
-        os.chdir(current_path)
-#         cmd = "cd .."
-#         runCMD(cmd)
+        repo = git.Repo(elitr_path)
+        repo.remotes.origin.pull()
+        commit_id = repo.head.commit
     else:
-        os.chdir(sltev_home)
-        cmd = "git clone " + git_path
-        runCMD(cmd)
-        #--
-        os.chdir(elitr_path)
-        #-------checkout 
-        cmd = "git checkout " + args.commitid
-        runCMD(cmd)
-        os.chdir(current_path)
-#         cmd = "cd .."
-#         runCMD(cmd)
+        git.Git("./").clone(git_path)
+        repo = git.Repo(elitr_path)
+        commit_id = repo.head.commit
 
     gitLock(sltev_home) # lock the repo
-    indice_file_path = sltev_home + "/elitr-testset/indices/" + args.g
+    indice_file_path = "./elitr-testset/indices/" + args.g
     target_path = ostt_other_path + args.g
-    # check target existence
-#     cmd = " mkdir " + target_path
-#     runCMD(cmd)
+
     os.makedirs(target_path, exist_ok=True)
     populate(indice_file_path, target_path)
-    gitUnLock(sltev_home) #unlock the repo    
+    gitUnLock(sltev_home) #unlock the repo 
     sys.exit(1)
 #------------------download giza-outs
 
     
-align_root_path = sltev_home + "/SLTev-cache/OStt-tt-files/"  + args.e + '/'
-ostt_root_path = sltev_home + "/SLTev-cache/OStt-tt-files/" + args.e + '/'
-tt_root_path = sltev_home + "/SLTev-cache/OStt-tt-files/" + args.e + '/'
+align_root_path = "./SLTev-cache/OStt-tt-files/"  + args.e + '/'
+ostt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
+tt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
 
 align_dict = makeAlignIndexing(align_root_path)
 ostt_list = makeosttIndexing(ostt_root_path)
@@ -269,8 +258,6 @@ elif args.e != False and input_status == 'dir':
         pass
     else:
         print(args.outdir, " is not exist, we will create it. ")
-#         cmd = "mkdir -p " + args.outdir
-#         os.system(cmd)
         os.makedirs(args.outdir, exist_ok=True)
     
     slt_files = getSLT(args.i)

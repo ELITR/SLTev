@@ -1,6 +1,5 @@
-nltk
-requests
 gitpython
+requests
 mosestokenizer
 sacrebleu
 gitdir

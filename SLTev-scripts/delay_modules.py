@@ -2,7 +2,6 @@
 
 import argparse
 import sys
-import nltk
 import sacrebleu
 import subprocess as sp
 import os

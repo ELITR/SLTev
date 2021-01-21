@@ -7,7 +7,8 @@ from mosestokenizer import *
 import argparse
 import sys
 import os
-
+import uuid
+import shutil
 
 def text_preprocessing(text):
     """
@@ -123,6 +124,9 @@ def use_mversegmentor(ostt, asr, SLTev_home):
     """
     
     #---------save osst and asr sentences in temp_ref and temp_translate
+    temp_folder_name = "./" + str(uuid.uuid4())
+    os.mkdir(temp_folder_name)
+    os.chdir(temp_folder_name)
     out = open('temp_ref', 'w')
     for i in ostt:
         sentence = ' '.join(i)
@@ -138,8 +142,6 @@ def use_mversegmentor(ostt, asr, SLTev_home):
         out.write(sentence)
         out.write('\n')
     out.close()
-    #------------run segmentation 
-    import os
     #--------------run mversegmnter and extract sentences in __segment file
     #-------------tokenize tt and MT
     cmd = SLTev_home + "/mwerSegmenter -mref " + "temp_ref" +" -hypfile "+ "temp_translate"
@@ -148,9 +150,6 @@ def use_mversegmentor(ostt, asr, SLTev_home):
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
 
-    
-    os.remove('temp_ref')
-    os.remove('temp_translate')
     
     #-------------read segments 
     in_file = open('__segments', 'r', encoding="utf8")
@@ -162,7 +161,8 @@ def use_mversegmentor(ostt, asr, SLTev_home):
         line = in_file.readline()
         
     asr = segments[:]
-    os.remove('__segments')
+    os.chdir('../')
+    shutil.rmtree(temp_folder_name)
     
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
@@ -190,6 +190,10 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
     """
     
     #---------save osst and asr sentences in temp_ref and temp_translate
+    temp_folder_name = "./" + str(uuid.uuid4())
+    os.mkdir(temp_folder_name)
+    os.chdir(temp_folder_name)
+    
     out = open('temp_ref', 'w')
     for i in ostt:
         sentence = ' '.join(i)
@@ -205,7 +209,6 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
         out.write('\n')
     out.close()
     #------------run segmentation 
-    import os
     #--------------run mversegmnter and extract sentences in __segment file
     #-------------tokenize tt and MT
     cmd = SLTev_home + "/mwerSegmenter -mref " + "temp_ref" +" -hypfile "+ "temp_translate"
@@ -213,10 +216,6 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
     
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
-
-    
-    os.remove('temp_ref')
-    os.remove('temp_translate')
     
     #-------------read segments 
     in_file = open('__segments', 'r', encoding="utf8")
@@ -227,7 +226,8 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
         line = in_file.readline()
         
     asr = segments[:]
-    os.remove('__segments')  
+    os.chdir('../')
+    shutil.rmtree(temp_folder_name)
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
     for i in range(len(ostt)):

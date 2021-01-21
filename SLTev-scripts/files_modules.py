@@ -2,13 +2,12 @@
 
 import argparse
 import sys
-import nltk
 import sacrebleu
 import subprocess as sp
 import os
 from mosestokenizer import *
-
-
+import uuid
+import shutil
     
 def read_tt(file_name):
     """
@@ -187,6 +186,9 @@ def segmenter(MT, Ts, language, SLTev_home):
         references_sentences.append(l)
 
     #------------------write MT in temp_translate file and reference in temp_ref
+    temp_folder_name = "./" + str(uuid.uuid4())
+    os.mkdir(temp_folder_name)
+    os.chdir(temp_folder_name)
     out = open('temp_ref', 'w')
     for i in references_sentences[0]:
         sentence = ' '.join(i)
@@ -202,7 +204,6 @@ def segmenter(MT, Ts, language, SLTev_home):
         out.write('\n')
     out.close()
     #------------run segmentation 
-    import os
     #-------------tokenize tt and MT
     cmd = SLTev_home + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
     mWERQuality = sp.getoutput(cmd)
@@ -210,10 +211,6 @@ def segmenter(MT, Ts, language, SLTev_home):
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
     
-    os.remove('temp_ref')
-    os.remove('temp_translate')
-#     os.system('rm temp_ref')
-#     os.system('rm temp_translate')
 
     #-------------read segments 
     in_file = open('__segments', 'r', encoding="utf8")
@@ -224,7 +221,8 @@ def segmenter(MT, Ts, language, SLTev_home):
         line = in_file.readline()
 
     mt_sentences = segments[:]
-    os.remove('__segments')
+    os.chdir('../')
+    shutil.rmtree(temp_folder_name)
 #     os.system('rm __segments')
     #-------remove temp files
 

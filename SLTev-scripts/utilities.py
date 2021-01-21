@@ -6,6 +6,7 @@ from urllib.request import urlopen
 import subprocess as sp
 import shutil
 import logging
+from pathlib import Path
 
 def runCMD(cmd):
     import os
@@ -60,11 +61,9 @@ def populate(indice_file_path, target_path):
             getIndices(indice, target_path)
             
 def gitLock(sltev_home):
-    cmd = "touch " + sltev_home + "/elitr-testset/.git/index.lock"
-    runCMD(cmd)
+    Path("./elitr-testset/.git/index.lock").touch()
 def gitUnLock(sltev_home):
-    cmd = sltev_home + "/elitr-testset/.git/index.lock"
-    os.remove(cmd)
+    os.remove("./elitr-testset/.git/index.lock")
     
 def downloadGitFile(url, filename):
     try:
@@ -136,19 +135,6 @@ def makettIndexing(root):
                     tt_dict[la] = [file_path]
                     
     return tt_dict
-
-# def makettIndexing(root):
-#     tt_dict = {'cs':[], 'de':[], 'en':[]}
-#     for root, dirs, files in os.walk(root):   
-#         for f in files:
-#             file_path = os.path.join(root, f)
-#             if '.TTcs' in file_path and '.align' != file_path[-6:]:
-#                 tt_dict['cs'].append(file_path)
-#             elif '.TTde' in file_path and '.align' != file_path[-6:]:
-#                 tt_dict['de'].append(file_path)
-#             elif '.OSt' in file_path and '.OStt' not in file_path and '.align' != file_path[-6:]:
-#                 tt_dict['en'].append(file_path)
-#     return tt_dict
 
 def readCommitFile(commit_file):
     out = ''

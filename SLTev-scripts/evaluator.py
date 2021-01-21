@@ -3,7 +3,6 @@
 import argparse
 import sys
 import sacrebleu
-from sacremoses import MosesTokenizer, MosesDetokenizer
 import subprocess as sp
 import os
 from mosestokenizer import *
