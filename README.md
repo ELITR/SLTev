@@ -3,9 +3,9 @@
 
 SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
 
-SLTev can also evaluate the intermediate steps: the output of automatic speech recognition (ASR) and machine translation (MT).
+SLTev can also evaluate the intermediate steps alone: the output of automatic speech recognition (ASR) and machine translation (MT).
 
-## Requirements Modules
+## Requirements
 
 - python3.5 or higher
 - some pip-installed modules:
@@ -59,7 +59,13 @@ Install the prerequisites:
 - data-preparation: Contains maintenance scripts to prepare data for SLTev, e.g. converting MGIZA outputs to SLTev inputs
 
 
-## Evaluating on ``elitr-testset``
+## Evaluating
+
+SLTev scoring relies on reference outputs (golden transcript for ASR, reference translation for MT and SLT).
+
+You can run SLTev and provide it with your custom reference outputs, or you can pick the easier option: use our provided test set (``elitr-testset``) to evaluate your system on our inputs. The added benefit of ``elitr-testset`` scoring is that it makes your results comparable to others (subject to SLTev and test set versions, of course).
+
+### Evaluating on ``elitr-testset``
 
 SLTev works best if you want to evaluate your system on files provided in ``elitr-testset`` (https://github.com/ELITR/elitr-testset).
 
@@ -71,15 +77,26 @@ We illustrate the rest with ``khanacademy-for-SLTev`` as the index.
 ```
 (your-env)$ SLTev -g khanacademy-for-SLTev -outdir my-evaluation-run-1
 ```
-3. Process input files in ``my-evaluation-run-1`` with your system.
+3. Have a look at the files in ``my-evaluation-run-1``.
+SLTev has provided the inputs and expected outputs.
+References serve as expected outputs, so if you run SLTev on this directory now, the best possible scores will be printed.
+XXX Mention example files.
+
+4. Process input files in ``my-evaluation-run-1`` with your system, **replacing** expected output files.
 ```
-# Here we simply copy the sample outputs
-cp examples/slt-asr-samples/kac*slt ./my-evaluation-run-1
+# In this demo, we do not do anything with the input:
+cat my-evaluation-run-1/XXXSAMPLEOUTPUTFILE > /dev/null
+# Instead, we steal the reference and only modify it by uppercasing it in place:
+perl -pi -e 'tr/a-z/A-Z/' my-evaluation-run-1/XXXSAMPLEOUTPUTFILE
 ```
-4. Run SLTev to get the scores:
+5. Run SLTev to get the scores:
 ```
+(your-env)$ SLTev -e my-evaluation-run-1
+```
+
+### Evaluating with Your Custom Reference Files
+
 TODO
-```
 
 ### Outdated Instructions
 
