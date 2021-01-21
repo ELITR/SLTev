@@ -22,9 +22,9 @@ parser.add_argument("-r", "--tt", help="path of the tt file", type=list, nargs='
 parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
 parser.add_argument("-m", "--mt", help="path of the MT file", type=str )
 parser.add_argument("-b", "--b_time", help="slot time of blue score calculation", type=int, default = 3000 )
+parser.add_argument("--SLTev_home", help="path of SLTev files", type=str, default = './' )
 # read arguments from the command line
 args = parser.parse_args()
-
 if args.ostt == None:
     print('please insert OStt (time-stamped transcript) file path')
     sys.exit(1)
@@ -168,7 +168,7 @@ if __name__== "__main__":
     print("avg      Delay         nTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
     print("tot      MissedWords   nTnn                  ", missing_words)
     
-    delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language)
+    delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, args.SLTev_home)
 
 
     print("tot      Delay         nnWn                  ", str("{0:.3f}".format(round(delay, 3))))
@@ -187,7 +187,7 @@ if __name__== "__main__":
     print("tot      MissedWords   PTnn                  ", missing_words)
     
     
-    delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language)
+    delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, args.SLTev_home)
 
     print("tot      Delay         PnWn                  ", str("{0:.3f}".format(round(delay, 3))))
     print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
@@ -217,7 +217,7 @@ if __name__== "__main__":
         print("avg      Delay         PTnA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
         print("tot      MissedWords   PTnA                  ", missing_words)
 
-        delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords, language)
+        delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords, language, args.SLTev_home)
 
         print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
         print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
@@ -235,7 +235,7 @@ if __name__== "__main__":
     sacre_score = calc_bleu_score_documnet(Ts, MT)
 
     print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
-    sacre_score, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language)
+    sacre_score, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language, args.SLTev_home)
 
     print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
     

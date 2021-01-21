@@ -21,7 +21,6 @@ parser.add_argument("--noaudio",  help="if exist just download text files", cons
 parser.add_argument("--clean", "-clean", help="if exist clean all files in the ./SLTev-cache/", const=True, default=False, nargs='?')
 parser.add_argument("-e", help="eliter index name for evaluate files ", const=False, default=False, nargs='?', type=str)
 parser.add_argument("--outdir", help="slt output results directory (output of the SLTev) ", default= "./outdir/", type=str)
-parser.add_argument("--offline", "-offline", help="if exist just using cache folder ", const=True, default=False, nargs='?')
 parser.add_argument("-outfile", help="if exist,standard evaluate output saved in a file.", default=False, nargs='?', type=str)
 parser.add_argument("-i", help="eliter file name or dir", type=str)
 parser.add_argument("-alignment", help="path of the alignment file", type=list, nargs='+' )
@@ -32,15 +31,22 @@ args = parser.parse_args()
 
 # initialize the log settings
 
+
+#-----------add SLTev home to the path 
+sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
+current_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(1, sltev_home)
+
+
 #------- make a temp directory 
 
 
 #-------actine mwerSegmenter
-cmd = "chmod +x mwerSegmenter"
-os.system(cmd)
+# cmd = "chmod +x mwerSegmenter"
+# os.system(cmd)
 
-cache_path = "./SLTev-cache/"
-ostt_other_path = "./SLTev-cache/OStt-tt-files/"
+cache_path = sltev_home + "/SLTev-cache/"
+ostt_other_path = sltev_home + "/SLTev-cache/OStt-tt-files/"
 
 if args.clean == True:
     try:
@@ -48,14 +54,15 @@ if args.clean == True:
         print("all files and folders in ./SLTev-cache/ removed")
         sys.exit(1)
     except:
-        print("Folder ./SLTev-cache/  is not exist")
+        print("Folder ", cache_path, "  is not exist")
         sys.exit(1)
 
 if os.path.isdir(ostt_other_path):
     pass
 else:
-    cmd = "mkdir -p " + ostt_other_path
-    os.system(cmd)
+    os.makedirs(ostt_other_path, exist_ok=True)
+#     cmd = "mkdir -p " + ostt_other_path
+#     os.system(cmd)
 
 
 #----------------get commit id
@@ -72,37 +79,45 @@ original_stdout = sys.stdout
 if args.g != False:
     #if elitr-testset repo exist pull it and otherwise clone it
     git_path = "https://github.com/ELITR/elitr-testset.git"
-    if os.path.isdir('./elitr-testset'):
-        cmd = "cd ./elitr-testset"
-        runCMD(cmd)
+    elitr_path = sltev_home + "/elitr-testset"
+    if os.path.isdir(elitr_path):
+        os.chdir(elitr_path)
+#         cmd = "cd ./elitr-testset"
+#         runCMD(cmd)
         cmd = "git pull"
         runCMD(cmd)
-        cmd = "cd .."
-        runCMD(cmd)
+        os.chdir(current_path)
+#         cmd = "cd .."
+#         runCMD(cmd)
     else:
+        os.chdir(sltev_home)
         cmd = "git clone " + git_path
         runCMD(cmd)
+        #--
+        os.chdir(elitr_path)
         #-------checkout 
         cmd = "git checkout " + args.commitid
         runCMD(cmd)
-        cmd = "cd .."
-        runCMD(cmd)
+        os.chdir(current_path)
+#         cmd = "cd .."
+#         runCMD(cmd)
 
-    gitLock() # lock the repo
-    indice_file_path = "./elitr-testset/indices/" + args.g
+    gitLock(sltev_home) # lock the repo
+    indice_file_path = sltev_home + "/elitr-testset/indices/" + args.g
     target_path = ostt_other_path + args.g
     # check target existence
-    cmd = " mkdir " + target_path
-    runCMD(cmd)
+#     cmd = " mkdir " + target_path
+#     runCMD(cmd)
+    os.makedirs(target_path, exist_ok=True)
     populate(indice_file_path, target_path)
-    gitUnLock() #unlock the repo    
+    gitUnLock(sltev_home) #unlock the repo    
     sys.exit(1)
 #------------------download giza-outs
 
     
-align_root_path = "./SLTev-cache/OStt-tt-files/"  + args.e + '/'
-ostt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
-tt_root_path = "./SLTev-cache/OStt-tt-files/" + args.e + '/'
+align_root_path = sltev_home + "/SLTev-cache/OStt-tt-files/"  + args.e + '/'
+ostt_root_path = sltev_home + "/SLTev-cache/OStt-tt-files/" + args.e + '/'
+tt_root_path = sltev_home + "/SLTev-cache/OStt-tt-files/" + args.e + '/'
 
 align_dict = makeAlignIndexing(align_root_path)
 ostt_list = makeosttIndexing(ostt_root_path)
@@ -145,7 +160,7 @@ if  args.e != False and input_status == 'file' and args.ASRev == True:
     text = "Evaluating the file " +  args.i + " in terms of  WER score against " + ' '.join(ost_file)
     print(text)
     
-    cmd = "./ASRev --ost " + ' '.join(ost_file) + ' --asr ' + args.i
+    cmd = sltev_home + "/ASRev --ost " + ' '.join(ost_file) + ' --asr ' + args.i + " --SLTev_home "+ sltev_home 
     os.system(cmd)
     sys.exit(1)
 
@@ -168,7 +183,7 @@ elif args.e != False and input_status == 'dir' and args.ASRev == True:
             sys.stdout = f
             print("commit id is ", commit_id)
             sys.stdout = original_stdout
-        cmd = "./ASRev --ost " + ' '.join(ost_file) + ' --asr ' + slt_file + " >> " + out_name
+        cmd = sltev_home + "/ASRev --ost " + ' '.join(ost_file) + ' --asr ' + slt_file + " --SLTev_home "+ sltev_home + " >> " + out_name
         os.system(cmd)
     sys.exit(1)    
         
@@ -220,14 +235,14 @@ if  args.e != False and input_status == 'file':
        
         if args.outfile == False:
             print("commit id is ", commit_id) 
-            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t)
+            cmd = "python "+ sltev_home + "/evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t)  + " --SLTev_home "+ sltev_home
             os.system(cmd)
         else:
             with open(args.outfile, 'w') as f:
                 sys.stdout = f
                 print("commit id is ", commit_id)
                 sys.stdout = original_stdout
-            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t) + " >> " + args.outfile
+            cmd = "python "+ sltev_home +"/evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + args.i + " --asr True " + " --b_time " + str(args.t) +  " --SLTev_home "+ sltev_home + " >> " + args.outfile
             os.system(cmd)
             
             
@@ -237,14 +252,14 @@ if  args.e != False and input_status == 'file':
             sys.exit(1)
         if args.outfile == False:
             print("commit id is ", commit_id)
-            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --align " + ' '.join(align_file) + " --b_time " + str(args.t)
+            cmd = "python "+ sltev_home +"/evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --align " + ' '.join(align_file) + " --b_time " + str(args.t)  + " --SLTev_home "+ sltev_home
             os.system(cmd)
         else:
             with open(args.outfile, 'w') as f:
                 sys.stdout = f
                 print("commit id is ", commit_id)
                 sys.stdout = original_stdout
-            cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --align " + ' '.join(align_file) + " --b_time " + str(args.t) + " >> " + args.outfile
+            cmd = "python " +  sltev_home + "/evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + args.i + " --align " + ' '.join(align_file) + " --b_time " + str(args.t) +  " --SLTev_home "+ sltev_home + " >> " + args.outfile
             os.system(cmd)
     
     
@@ -254,8 +269,9 @@ elif args.e != False and input_status == 'dir':
         pass
     else:
         print(args.outdir, " is not exist, we will create it. ")
-        cmd = "mkdir -p " + args.outdir
-        os.system(cmd)
+#         cmd = "mkdir -p " + args.outdir
+#         os.system(cmd)
+        os.makedirs(args.outdir, exist_ok=True)
     
     slt_files = getSLT(args.i)
     for slt_file in slt_files:
@@ -322,7 +338,7 @@ elif args.e != False and input_status == 'dir':
                 print("commit id is ", commit_id)
                 sys.stdout = original_stdout
             if len(ostt_file) != 0 and len(ost_file) != 0:         
-                cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + slt_file + " --asr True " + " --b_time " + str(args.t) + " >> " + out_name
+                cmd = "python "+ sltev_home +"/evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(ost_file) + " --mt " + slt_file + " --asr True " + " --b_time " + str(args.t) +  " --SLTev_home "+ sltev_home + " >> " + out_name
                 os.system(cmd)     
         else:
             if len(tt_file) != len(align_file):
@@ -334,6 +350,6 @@ elif args.e != False and input_status == 'dir':
                 print("commit id is ", commit_id)
                 sys.stdout = original_stdout
             if len(ostt_file) != 0 and len(tt_file) != 0:
-                cmd = "python evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + slt_file + " --align " + ' '.join(align_file) + " --b_time " + str(args.t) + " >> " + out_name
+                cmd = "python " + sltev_home + "/evaluator.py --ostt " + ' '.join(ostt_file) + " --tt " + ' '.join(tt_file) + " --mt " + slt_file + " --align " + ' '.join(align_file) + " --b_time " + str(args.t) +  " --SLTev_home "+ sltev_home + " >> " + out_name
                 os.system(cmd)
 

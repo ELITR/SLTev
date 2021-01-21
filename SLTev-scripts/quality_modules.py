@@ -40,7 +40,7 @@ def calc_bleu_score_documnet(Ts, MT):
     return sacre_blue_score
 
 
-def calc_bleu_score_sentence_by_sentence(Ts, MT, language):
+def calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home):
     """
 
     Calculating bleu score sentence by sentence with NLTK and sacrebleu modules.
@@ -64,7 +64,7 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language):
             l.append(s)
         references_sentences.append(l)
         
-    segmenter_sentence, mWERQuality = segmenter(MT, Ts, language)
+    segmenter_sentence, mWERQuality = segmenter(MT, Ts, language, SLTev_home)
 
 
     sacre_bleu = list()

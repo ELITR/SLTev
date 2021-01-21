@@ -286,7 +286,7 @@ def time_segmenter(segmenter_sentence, A_list, MovedWords):
       
     return segment_times
 
-def evaluate_segmenter(Ts, MT, MovedWords, language):
+def evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home):
     """
 
     Receiving Ts and MT and calculates the delay time based on the mwersegmenter.
@@ -294,7 +294,7 @@ def evaluate_segmenter(Ts, MT, MovedWords, language):
 
     """
     A_list = build_segmenter_A(MT)
-    segmenter_sentence, mWERQuality = segmenter(MT, Ts, language)
+    segmenter_sentence, mWERQuality = segmenter(MT, Ts, language, SLTev_home)
     segment_times = time_segmenter(segmenter_sentence, A_list, MovedWords)
    
     sum_delay = 0

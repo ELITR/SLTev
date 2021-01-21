@@ -8,64 +8,6 @@ import argparse
 import sys
 import os
 
-def tokenizer(input_file, output_file):
-    global language
-    tokenize = MosesTokenizer(language)
-    out_file = open(output_file, 'w')
-    with open(input_file, 'r', encoding="utf8") as in_file:
-        line = in_file.readline()
-        while line:
-            tokens = ' '.join(tokenize(line))
-            out_file.write(tokens)
-            out_file.write('\n')
-            line = in_file.readline()
-    out_file.close()
-    
-    
-def detokenizer(input_file, output_file):
-    global language
-    tokenize = MosesDetokenizer(language)
-    out_file = open(output_file, 'w')
-    with open(input_file, 'r', encoding="utf8") as in_file:
-        line = in_file.readline()
-        while line:
-            tokens = line.strip().split(' ')
-            tokens = tokenize(tokens)
-            out_file.write(tokens)
-            out_file.write('\n')
-            line = in_file.readline()
-    out_file.close()  
-def convert_to_asr_format(line):
-    """
-    get a line and convert to our format
-    
-    """
-    if line[0] != 'P' and line[0] != 'C':
-        line.insert(0, 'C')
-    #------------check first number (display number)
-
-    try:
-        if float(line[1]) > -1:
-            pass
-    except:
-        line.insert(1, 0)
-    
-    #----------check second number (gues time 1)
-    try:
-        if float(line[2]) > -1:
-            pass
-    except:
-        line.insert(2, 0)
-    #----------check third number (gues time 2)
-
-    try:
-        if float(line[3]) > -1:
-            pass
-    except:
-        line.insert(3, 0)
-    
-    return line
-
 
 def text_preprocessing(text):
     """
@@ -89,13 +31,14 @@ def read_asr(file_name):
     """
   
     sentences = []
+    tokenize = MosesTokenizer()
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
-            line = line.strip().split()
+            line = tokenize(line.strip())
             if line == []:
                 continue
-            line = convert_to_asr_format(line) #--convert to asr format
+#             line = convert_to_asr_format(line) #--convert to asr format
             if line[0] != 'P' and line[0] != 'C':
                 sentences.append(line)
                 
@@ -119,10 +62,12 @@ def read_ostt(file_name):
     """
   
     sentences = []
+    tokenize = MosesTokenizer()
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
-            line = line.strip().split()
+            line = tokenize(line.strip())
+#             line = line.strip().split()
             if line[0] != 'P' and line[0] != 'C':
                 sentences.append(line)
                 
@@ -148,15 +93,16 @@ def wer_evaluate(ostt, asr):
     
     #----------convert ostt to a string
     ostt_string = ''
+    detokenize = MosesDetokenizer()
     for i in ostt:
         ostt_string += ' '
-        ostt_string += ' '.join(i)
+        ostt_string += detokenize(i)
         
     #----------convert asr to a string
     asr_string = ''
     for i in asr:
         asr_string += ' '
-        asr_string += ' '.join(i[:])   
+        asr_string += detokenize(i)   
         
     #--------preprocessing 
     asr_string = text_preprocessing(asr_string)
@@ -165,7 +111,7 @@ def wer_evaluate(ostt, asr):
     #-------run wer 
     return wer(ostt_string, asr_string)
 
-def use_mversegmentor(ostt, asr):
+def use_mversegmentor(ostt, asr, SLTev_home):
     """
     STEPS:
     
@@ -196,42 +142,35 @@ def use_mversegmentor(ostt, asr):
     import os
     #--------------run mversegmnter and extract sentences in __segment file
     #-------------tokenize tt and MT
-    tokenizer('./temp_ref', './tokenize_temp_ref')
-    tokenizer('./temp_translate', './tokenize_temp_translate')
-    cmd = "./mwerSegmenter -mref tokenize_temp_ref -hypfile tokenize_temp_translate"
+    cmd = SLTev_home + "/mwerSegmenter -mref " + "temp_ref" +" -hypfile "+ "temp_translate"
     mWERQuality = sp.getoutput(cmd)
-    detokenizer('./__segments', './detokenize__segments')
 
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
 
     
-    os.system('rm temp_ref')
-    os.system('rm temp_translate')
+    os.remove('temp_ref')
+    os.remove('temp_translate')
     
     #-------------read segments 
-    in_file = open('detokenize__segments', 'r', encoding="utf8")
+    in_file = open('__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
+    detokenize = MosesDetokenizer()
     while line:
         segments.append(line.strip().split(' '))
         line = in_file.readline()
         
     asr = segments[:]
-    os.system('rm __segments')
+    os.remove('__segments')
     
-    #--------------------remove temp files
-    os.system('rm tokenize_temp_ref')
-    os.system('rm tokenize_temp_translate')
-    os.system('rm detokenize__segments')
-
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
     for i in range(len(ostt)):
-        ostt_text = ' '.join(ostt[i])
+        ostt_text = detokenize(ostt[i])
         ostt_text = text_preprocessing(ostt_text)
         
-        asr_text = ' '.join(asr[i])
+        asr_text = detokenize(asr[i])
         asr_text = text_preprocessing(asr_text)
         score = wer(ostt_text, asr_text)
         wer_scores.append(score)
@@ -239,7 +178,7 @@ def use_mversegmentor(ostt, asr):
     return sum(wer_scores)/len(wer_scores)
 
 
-def use_moses_mversegmentor(ostt, asr):
+def use_moses_mversegmentor(ostt, asr, SLTev_home):
     """
     STEPS:
     
@@ -269,21 +208,18 @@ def use_moses_mversegmentor(ostt, asr):
     import os
     #--------------run mversegmnter and extract sentences in __segment file
     #-------------tokenize tt and MT
-    tokenizer('./temp_ref', './tokenize_temp_ref')
-    tokenizer('./temp_translate', './tokenize_temp_translate')
-    cmd = "./mwerSegmenter -mref tokenize_temp_ref -hypfile tokenize_temp_translate"
+    cmd = SLTev_home + "/mwerSegmenter -mref " + "temp_ref" +" -hypfile "+ "temp_translate"
     mWERQuality = sp.getoutput(cmd)
-    detokenizer('./__segments', './detokenize__segments')
     
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
 
     
-    os.system('rm temp_ref')
-    os.system('rm temp_translate')
+    os.remove('temp_ref')
+    os.remove('temp_translate')
     
     #-------------read segments 
-    in_file = open('detokenize__segments', 'r', encoding="utf8")
+    in_file = open('__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
     while line:
@@ -291,23 +227,17 @@ def use_moses_mversegmentor(ostt, asr):
         line = in_file.readline()
         
     asr = segments[:]
-    os.system('rm __segments')  
-    #-------remove temp files
-    os.system('rm tokenize_temp_ref')
-    os.system('rm tokenize_temp_translate')
-    os.system('rm detokenize__segments')
+    os.remove('__segments')  
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
-    tokenize = MosesTokenizer('en')
     for i in range(len(ostt)):
         ostt_text = ' '.join(ostt[i])
-        ostt_text = tokenize(ostt_text)
-        ostt_text = ' '.join(ostt_text)
+#         ostt_text = tokenize(ostt_text)
+#         ostt_text = ' '.join(ostt_text)
         
         asr_text = ' '.join(asr[i])
-        asr_text = tokenize(asr_text)
-        asr_text = ' '.join(asr_text)
-        
+#         asr_text = tokenize(asr_text)
+#         asr_text = ' '.join(asr_text)
         score = wer(ostt_text, asr_text)
         wer_scores.append(score)
     
@@ -319,7 +249,7 @@ def use_moses_mversegmentor(ostt, asr):
 parser = argparse.ArgumentParser(description="This module receives two files  --ostt that receives path of OStt or OSt file (time-stamped transcript)  and --asr which contains ASR OUTPUT")
 parser.add_argument("--ostt", "--ost", help="path of the OStt OR OSt file", type=str)
 parser.add_argument("--asr", help="path of the ASR file", type=str)
-
+parser.add_argument("--SLTev_home", help="path of SLTev files", type=str, default = './' )
 args = parser.parse_args()
 
 if args.ostt == None:
@@ -381,10 +311,10 @@ score = wer_evaluate(ostt, asr)
 print('PCnn ', str("{0:.3f}".format(round(score, 3)))  )
 
 
-score = use_mversegmentor(ostt, asr)
+score = use_mversegmentor(ostt, asr, args.SLTev_home)
 print('PnWn ', str("{0:.3f}".format(round(score, 3)))  )
 
-score = use_moses_mversegmentor(ostt, asr)
+score = use_moses_mversegmentor(ostt, asr, args.SLTev_home)
 print('nnWM ', str("{0:.3f}".format(round(score, 3)))  )
 
 

@@ -9,44 +9,6 @@ import os
 from mosestokenizer import *
 
 
-
-def tokenizer(input_file, output_file, language):
-    """
-    using Moses tokenizer and putting the output in a file
-    
-    """
-    #global language
-    tokenize = MosesTokenizer(language)
-    out_file = open(output_file, 'w')
-    with open(input_file, 'r', encoding="utf8") as in_file:
-        line = in_file.readline()
-        while line:
-            tokens = ' '.join(tokenize(line))
-            out_file.write(tokens)
-            out_file.write('\n')
-            line = in_file.readline()
-    out_file.close()
-    
-    
-def detokenizer(input_file, output_file, language):
-    """
-    using Moses detokenizer and putting the output in a file
-    
-    """
-    #global language
-    tokenize = MosesDetokenizer(language)
-    out_file = open(output_file, 'w')
-    with open(input_file, 'r', encoding="utf8") as in_file:
-        line = in_file.readline()
-        while line:
-            tokens = line.strip().split(' ')
-            tokens = tokenize(tokens)
-            out_file.write(tokens)
-            out_file.write('\n')
-            line = in_file.readline()
-    out_file.close()  
-
-    
     
 def read_tt(file_name):
     """
@@ -201,7 +163,7 @@ def read_alignment_file(in_file):
     return out
 
 
-def segmenter(MT, Ts, language):
+def segmenter(MT, Ts, language, SLTev_home):
     """
 
     MT complete segments have been joined and saved in a temp_translate file.
@@ -242,14 +204,16 @@ def segmenter(MT, Ts, language):
     #------------run segmentation 
     import os
     #-------------tokenize tt and MT
-    cmd = "./mwerSegmenter -mref temp_ref -hypfile temp_translate"
+    cmd = SLTev_home + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
     mWERQuality = sp.getoutput(cmd)
 
     mWERQuality = mWERQuality.split(' ')[-1]
     mWERQuality = float(mWERQuality)
-
-    os.system('rm temp_ref')
-    os.system('rm temp_translate')
+    
+    os.remove('temp_ref')
+    os.remove('temp_translate')
+#     os.system('rm temp_ref')
+#     os.system('rm temp_translate')
 
     #-------------read segments 
     in_file = open('__segments', 'r', encoding="utf8")
@@ -260,7 +224,8 @@ def segmenter(MT, Ts, language):
         line = in_file.readline()
 
     mt_sentences = segments[:]
-    os.system('rm __segments')
+    os.remove('__segments')
+#     os.system('rm __segments')
     #-------remove temp files
 
 
