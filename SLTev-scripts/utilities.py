@@ -60,9 +60,9 @@ def populate(indice_file_path, target_path):
             print(indice + ' copied to ' + target_path)
             getIndices(indice, target_path)
             
-def gitLock(sltev_home):
+def gitLock():
     Path("./elitr-testset/.git/index.lock").touch()
-def gitUnLock(sltev_home):
+def gitUnLock():
     os.remove("./elitr-testset/.git/index.lock")
     
 def downloadGitFile(url, filename):

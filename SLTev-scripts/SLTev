@@ -85,21 +85,38 @@ if args.g != False:
     
 
     if os.path.isdir(elitr_path):
-        repo = git.Repo(elitr_path)
-        repo.remotes.origin.pull()
-        commit_id = repo.head.commit
+        try:
+            repo = git.Repo(elitr_path)
+            repo.remotes.origin.pull()
+            commit_id = repo.head.commit
+            print("new vesion pulled")
+        except:
+            print ("pull from elitr-testset faild pleae remove ./elitr-testset folder and run SLTev with -g parameter")
+            sys.exit(1)
     else:
-        git.Git("./").clone(git_path)
-        repo = git.Repo(elitr_path)
-        commit_id = repo.head.commit
-
-    gitLock(sltev_home) # lock the repo
+        try:
+            print("cloning elitr-testset repo to the current directory")
+            git.Git("./").clone(git_path)
+            repo = git.Repo(elitr_path)
+            commit_id = repo.head.commit
+        except:
+            print("cloning from elitr-testset faild, please check your internet conection")
+    #------check commit id 
+    if args.commitid != 'HEAD':
+        try:
+            repo = git.Repo(elitr_path)
+            repo.git.checkout(args.commitid)
+            print("checkout to ", args.commitid, " done.")
+        except:
+            print (args.commitid, ' is not valid')
+            
+    gitLock() # lock the repo
     indice_file_path = "./elitr-testset/indices/" + args.g
     target_path = ostt_other_path + args.g
 
     os.makedirs(target_path, exist_ok=True)
     populate(indice_file_path, target_path)
-    gitUnLock(sltev_home) #unlock the repo 
+    gitUnLock() #unlock the repo 
     sys.exit(1)
 #------------------download giza-outs
 
