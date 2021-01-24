@@ -9,6 +9,20 @@ from mosestokenizer import *
 import uuid
 import shutil
     
+def get_number_words(tt_list):
+    """
+
+    Recived a tt list and calculate number of words.
+
+    """
+    count = 0
+    for i in tt_list:
+        count += (len(i)-1)
+
+    return count
+
+
+     
 def read_tt(file_name):
     """
 

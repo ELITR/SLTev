@@ -1,38 +1,45 @@
 
 # SLTev
 
-SLTev is an open-source tool for assessing the quality of spoken language translation in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, THETOOL reports the quality, delay and stability of a given SLT candidate output.
+SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
 
-## Requirements Modules
+SLTev can also evaluate the intermediate steps alone: the output of automatic speech recognition (ASR) and machine translation (MT).
+
+## Requirements
 
 - python3.5 or higher
 - some pip-installed modules:
-  - NLTK [1]
-  - sacreBLEU [4]
+  - sacreBLEU [3]
   - requests, gitpython, gitdir
-- mwerSegmenter [2]
-- mosestokenizer [3]
+- mwerSegmenter [1]
+- mosestokenizer [2]
 
-## Input SLT and ASR name format
+## File Naming Convention
+
+Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
+
+### OST/OSTT 
+- <file-name> . <language> . <OSt/OStt>
+- e.g. ``kaccNlwi6lUCEM.en.OSt``, ``kaccNlwi6lUCEM.cs.OStt``
+
+### ALIGN
+- <file-name> . <source-language> . <target-language> . <align>
+- e.g. ``kaccNlwi6lUCEM.en.de.align``
 
 
-### SLT format
+### SLT/MT
+- <file-name> . <source-language> . <target-language> . <slt/mt>
+- e.g. ``kaccNlwi6lUCEM.en.de.slt``, ``kaccNlwi6lUCEM.cs.en.mt``
 
-- OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. de or cs) + .slt
-- e.g. 03_botel-proti-proudu.en.cs.slt, 03_botel-proti-proudu.en.de.slt
-    
-### ASR format
-
-- OSt file name (e.g. 03_botel-proti-proudu.en.OSt) + . + language (e.g. en) + .asr
-- e.g. 03_botel-proti-proudu.en.en.asr
-
+### ASR
+- <file-name> . <source-language> . <source-language> . <asr>
+- e.g. ``kaccNlwi6lUCEM.en.en.asr``
 
 ## Installation
 
 Download the project from Github:
 ``` {r, engine='bash'} 
 git clone https://github.com/ELITR/SLTev.git
-cd SLTev
 ```
 
 Create and activate a new virtual environment (or use your standard one):
@@ -47,116 +54,41 @@ Install the prerequisites:
 (your-env)$ pip install --upgrade -r requirements.txt
 ```
 
-## Clone project from git 
-
-
 ## Package Overview
 
-- SLTev-scripts: Contains scripts for running SLTev and ASRev
-- examples: Contains examples of inputs files which contains slt-asr-samples and input-files 
-- data-preperation: Contains scripts to prepere data for SLTev script such as MGIZA  
+- SLTev-scripts: Contains scripts for running SLTev
+- SLTev-sample: Contains input and output samples
+## Evaluating
 
-## Getting Started with SLTev
+SLTev scoring relies on reference outputs (golden transcript for ASR, reference translation for MT and SLT).
 
-Please prepare your data (using data-preperation/elitr-testset-prep.md help), and run scripts as follow:
+You can run SLTev and provide it with your custom reference outputs, or you can pick the easier option: use our provided test set (``elitr-testset``) to evaluate your system on our inputs. The added benefit of ``elitr-testset`` scoring is that it makes your results comparable to others (subject to SLTev and test set versions, of course).
 
-``` {r, engine='bash'}
-(your-env)$ cd SLTev-scripts 
+### Evaluating on ``elitr-testset``
+
+SLTev works best if you want to evaluate your system on files provided in ``elitr-testset`` (https://github.com/ELITR/elitr-testset).
+
+The procedure is simple:
+1. Choose an "index", i.e. a subset of files that you want to test on, here: https://github.com/ELITR/elitr-testset/tree/master/indices
+We illustrate the rest with ``SLTev-sample`` as the index.
+
+2. Ask SLTev to provide you with the current version of input files:
+```
+(your-env)$ SLTev -g SLTev-sample --outdir my-evaluation-run-1
 ```
 
-### Generate ELITER files based on the ELITER-Index-Name 
-
-If you want to use elitr-testset repository, first you need to download elitr-testset repo. You can use SLTev with -g parameter for cloning and downloading elitr-testset repo. Also index files will put in the ./SLTev-cache/OStt-tt-files/ 
-``` {r, engine='bash'}
-(your-env)$ mkdir <output_directory>
-(your-env)$ ./SLTev -g <elitr_index_name> 
+3. Run SLTev to get the scores:
+```
+(your-env)$ SLTev -e my-evaluation-run-1
 ```
 
-    parameters:
-        -g: generating ELITER files based on the ELITER-Index-Name 
-        --commitid: checkout git repo according to the commitid (deafult is HEAD)
+### Evaluating with Your Custom Reference Files
 
-    Notes:
-        - Index-names are placed in the "https://github.com/ELITR/elitr-testset/tree/master/indices". e.g. iwslt-antrecorp
-        - e.g. ./SLTev -g khanacademy-for-SLTev
-  
-### Evaluate ASR and SLT files based on the ELITER files
-
-
-#### Single file
-
-``` {r, engine='bash'}
-(your-env)$ ./SLTev -e <elitr_index_name> -i <elitr_file_name> -t <segment_time> 
-```
-    
-    parameters:
-        -e: evaluating input file based on the ELITER files
-        -f: file path for evaluating
-        -t: time of each segment for calculate BLEU score (deafult is 3000)
-        -alignment: alignment files (manual alignment) are using instead of the ELITER files
-        -outfile: outfile (standard output writing there)
-        --offline: offline cache files are using. (if not, the needed files will downloaded) 
-    Notes:
-        - The number of the inputs in -alignment must be equal with tt files (for some files and languages, there are 
-            multiple tt files)
-        - e.g. ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples/kaccNlwi6lUCEM.en.cs.slt
-
-#### Multiple files
-
-``` {r, engine='bash'}
-(your-env)$ mkdir <result_output_directory>
-(your-env)$ ./SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory>
-```
-     
-    parameters:
-        -e: evaluating input files based on the ELITER files. 
-        -i: ditrectory path for evaluating
-        -t: time of each segment for calculate BLEU score
-        --outdir: output directory path
-        --offline: offline cache files are using. (if not, the needed files will downloaded)  
-    Notes:
-            - e.g. mkdir test1; ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples/ --outdir ./test1/;
-
-#### Evaluta asr files based on the WER score (Running ASRev)
-
-``` {r, engine='bash'}
-(your-env)$ ./SLTev -e <elitr_index_name> -i <SLT_output_directory> -outdir <result_output_directory> --ASRev
-```
-     
-    parameters:
-        -e: evaluating input files based on the ELITER files. 
-        -i: ditrectory_path/file_path for evaluating
-        --outdir: output directory path
-        --ASRev (i exist calculte WER score)
-    Notes:
-            - e.g. ./SLTev -e khanacademy-for-SLTev -i ../examples/slt-asr-samples --outdir ./test/ --ASRev
-
-
-#### Other parameters
-
-    
-- --clean: clean all cache files (SLTev-cache directory) 
-
-## How can we run our data locally?
-
-If you want to use your files locally, please do as follow:
-1. make a folder by name <your_indice> in ./SLTev-cache/OStt-tt-files/ path (if ./SLTev-cache/OStt-tt-files/ is not exist please make it)                                                                       
-2. put "tt" files (*.TTcs, *.TTde, ..), "OStt" files (*.OStt) and "align" files [outputs of the giza++] (*.align) in <your_indice> folder                                                               
-3. do not use -g parameter, just run as follow:                                                                                                                                 
-- e.g. ./SLTev -e <your_indice> -i ./submision/  --outdir ./test/ 
+Put all input (*.OSt, *.OStt, *.align) and output files (*.slt/asr/mt) in a folder (e.g. My-folder) and the evaluation would be similar to part 3 (SLTev -e My-folder)
 
 
 
-
-## Notes
-
-- Default temporary directory name is "SLTev-cache" (it make automaticly after first SLTev runing)
-- You can use Giza++ alignments if they are missed in <elitr-testset> (detail placed in the data-preperation/elitr-testset-prep.md)
-- The first line of each output is commit ID.
-- For some filse which have more than one tt files, SLTev works as multireference evaluator. (e.g. 03_botel-proti-proudu have two tt files for cs language (03_botel-proti-proudu.TTcs1, 03_botel-proti-proudu.TTcs2))
-
-    
-## Terminology
+## Terminology and Abbreviations
 
 In the following, we use this notation:
 
@@ -171,20 +103,10 @@ In the following, we use this notation:
 * SLT ... the unrevised output of spoken language translation, i.e. sentences in the target language corresponding to sentences in the source language; the source of SLT is OS
 * MT  ... the unrevised output of text-based translation; the source of MT is ASR (machine-transcribed OS) or OSt (human-transcribed OS)
 
-## SLTev Modes of Operation
-
-SLTev is designed to support these modes of operation:
-
-* Evaluate SLT against OSt+TT. (This is the primary goal of SLTev, evaluate the output of SLT systems against time-stamped source + reference translation)
-* Evaluate ASR+SLT against OSt+TT. (A refined version of the previous, when the SLT system can provide internal details about ASR operation, esp. emission timestamps.)
-* Evaluate IS against OSt+TT. (This is an interesting contrastive use of SLTev, to evaluate human interpreters against manually translated correct transcripts.)
-* Evaluate MT against TT. (This is plain old MT evaluation.)
-* Evaluate ASR against OSt. (This is plain old ASR evaluation, except the segmentation is not prescribed.)
 
 ## References
-
-    [1] Steven Bird, Ewan Klein, and Edward Loper. 2009. Natural Language Processing with Python, 1st edition. OReilly Media, Inc.
-    [2] Evgeny Matusov, Gregor Leusch, Oliver Bender, and Hermann Ney. 2005b. Evaluating machine-translation output with automatic sentence segmentation. In International Workshop on Spoken Language Translation, pages 148–154, Pittsburgh, PA, USA.
-    [3] Philipp Koehn, Hieu Hoang, Alexandra Birch, Chris Callison-Burch, Marcello Federico, Nicola Bertoldi, Brooke Cowan, Wade Shen, Christine Moran, Richard Zens, Chris Dyer, Ondřej Bojar, Alexandra Constantin and Evan Herbst. 2007. Proceedings of the ACL (Association for Computational Linguistics).
-    [4] Post, Matt. 2018. Association for Computational Linguistics, pages 186-191. 
+    [1] Evgeny Matusov, Gregor Leusch, Oliver Bender, and Hermann Ney. 2005b. Evaluating machine-translation output with automatic sentence segmentation. In International Workshop on Spoken Language Translation, pages 148–154, Pittsburgh, PA, USA.
+    [2] Philipp Koehn, Hieu Hoang, Alexandra Birch, Chris Callison-Burch, Marcello Federico, Nicola Bertoldi, Brooke Cowan, Wade Shen, Christine Moran, Richard Zens, Chris Dyer, Ondřej Bojar, Alexandra Constantin and Evan Herbst. 2007. Proceedings of the ACL (Association for Computational Linguistics).
+    [3] Post, Matt. 2018. Association for Computational Linguistics, pages 186-191. 
     
+

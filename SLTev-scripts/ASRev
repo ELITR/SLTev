@@ -245,76 +245,52 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
 
 
 
-# initiate the parser
-parser = argparse.ArgumentParser(description="This module receives two files  --ostt that receives path of OStt or OSt file (time-stamped transcript)  and --asr which contains ASR OUTPUT")
-parser.add_argument("--ostt", "--ost", help="path of the OStt OR OSt file", type=str)
-parser.add_argument("--asr", help="path of the ASR file", type=str)
-parser.add_argument("--SLTev_home", help="path of SLTev files", type=str, default = './' )
-args = parser.parse_args()
+if __name__== "__main__":
 
-if args.ostt == None:
-    print('please insert OStt or OSt file path')
-    sys.exit(1)
-if args.asr == None :
-    print('please insert ASR file path ')
-    sys.exit(1)
+    # initiate the parser
+    parser = argparse.ArgumentParser(description="This module receives two files  --ostt that receives path of OStt or OSt file (time-stamped transcript)  and --asr which contains ASR OUTPUT")
+    parser.add_argument("--ostt", "--ost", help="path of the OStt OR OSt file", type=str)
+    parser.add_argument("--asr", help="path of the ASR file", type=str)
+    parser.add_argument("--SLTev_home", help="path of SLTev files", type=str, default = './' )
+    parser.add_argument("--simple", help="a boolean (False or True) value to define shown type", type=str )
+    args = parser.parse_args()
 
-    
-    
-#---------------------check existnest of input files--------------
-if os.path.isfile(args.ostt):
-    pass
-else:
-    print (args.ostt, " not exist")
-    sys.exit(1)
-
-if os.path.isfile(args.asr):
-    pass
-else:
-    print (args.asr, " not exist")
-    sys.exit(1)  
-    
-
-ostt_file = args.ostt
+    ostt_file = args.ostt
 
 
+    asr_file = args.asr
 
-#----------------check empty files
-if os.stat(args.asr).st_size == 0:
-    print (args.asr, " is empty")
-    sys.exit(1)
-    
-asr_file = args.asr
+    ostt = read_ostt(ostt_file)
+    asr = read_asr(asr_file)
+    current_path = os.getcwd()
 
-ostt = read_ostt(ostt_file)
-asr = read_asr(asr_file)
+    #----------
+    print("-------------------------------------------------------------")
 
-#----------check C 
-if asr == []:
-    print (args.asr, " not contain any C (complete)")
-    sys.exit(1) 
+    print('n ... not considering, not using')
+    print('P ... preprocessing contains Lowercase, punctuation removing')
+    print('C ... concatenating all sentences')
+    print('W ... using mwersegmemter')
+    print('M ... using Moses tokenizer')
+    print("-------------------------------------------------------------")
 
-#----------
-print("-------------------------------------------------------------")
+    #-----------
+    language = 'en'
 
-print('n ... not considering, not using')
-print('P ... preprocessing contains Lowercase, punctuation removing')
-print('C ... concatenating all sentences')
-print('W ... using mwersegmemter')
-print('M ... using Moses tokenizer')
-print("-------------------------------------------------------------")
+    if args.simple == 'False':
+        score = wer_evaluate(ostt, asr)
+        print('PCnn ', str("{0:.3f}".format(round(score, 3)))  )
 
-#-----------
-language = 'en'
-
-score = wer_evaluate(ostt, asr)
-print('PCnn ', str("{0:.3f}".format(round(score, 3)))  )
-
-
-score = use_mversegmentor(ostt, asr, args.SLTev_home)
-print('PnWn ', str("{0:.3f}".format(round(score, 3)))  )
-
-score = use_moses_mversegmentor(ostt, asr, args.SLTev_home)
-print('nnWM ', str("{0:.3f}".format(round(score, 3)))  )
+    try:
+        score = use_mversegmentor(ostt, asr, args.SLTev_home)
+        print('PnWn ', str("{0:.3f}".format(round(score, 3)))  )
+    except:
+        os.chdir(current_path)
+    try:
+        if args.simple == 'False':
+            score = use_moses_mversegmentor(ostt, asr, args.SLTev_home)
+            print('nnWM ', str("{0:.3f}".format(round(score, 3)))  )
+    except:
+        os.chdir(current_path)
 
 

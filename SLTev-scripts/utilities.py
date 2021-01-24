@@ -8,33 +8,24 @@ import shutil
 import logging
 from pathlib import Path
 
-def runCMD(cmd):
-    import os
-    try:
-        os.system(cmd)
-        logging.info(cmd)
-    except:
-        logging.error('Error occurred ' + cmd)
-        
+
 def removeExtraSpaces(text):
     text = text.replace("\t", "")
     text = text.replace(" ", "")
     return text
 
 
-        
+   
 def getIndices(indice_file_path, target_path):   
     if indice_file_path[-5:] == '.link' or indice_file_path[-4:] == '.url':
         indice = removeExtraSpaces(indice_file_path)
         with open(indice) as link_f:
             link_files = link_f.readlines()
             for file in link_files:
-                cmd = 'cp ' + file + ' ' + target_path
-                runCMD(cmd)    
+                shutil.copy2(file, target_path)
     else:
         indice = removeExtraSpaces(indice_file_path)
-        cmd = 'cp ' + indice + ' ' + target_path
-        runCMD(cmd)
+        shutil.copy2(indice, target_path)
         
 def populate(indice_file_path, target_path):
     indices = [indice_file_path]
@@ -55,7 +46,7 @@ def populate(indice_file_path, target_path):
             
     for indice in indices_lines:
         if indice[0] == '#':
-            logging.info('skip this line')
+            pass
         else:
             print(indice + ' copied to ' + target_path)
             getIndices(indice, target_path)
@@ -65,16 +56,6 @@ def gitLock():
 def gitUnLock():
     os.remove("./elitr-testset/.git/index.lock")
     
-def downloadGitFile(url, filename):
-    try:
-        filedata = urlopen(url)
-        datatowrite = filedata.read()
-
-        with open(filename, 'wb') as f:
-            f.write(datatowrite)
-        return True
-    except:
-        return False
     
 def readIndice(file_path):
     out = []
@@ -86,63 +67,6 @@ def readIndice(file_path):
 def removeDigits(string):
     result = ''.join([i for i in string if not i.isdigit()])
     return result
-
-def makeAlignIndexing(root):
-    align_dict = {}
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            try:
-                file_path = os.path.join(root, f)
-                split_name = f.split('.')
-                file_type = split_name[-1]
-                language = split_name[-2]
-                if file_type == 'align' and language[:2] == 'TT':
-                    la = removeDigits(language[2:])
-                    try:
-                        align_dict[la].append(file_path)
-                    except:
-                        align_dict[la] = [file_path]
-            except:
-                pass
-    return align_dict
-
-# def makeAlignIndexing(root):
-#     align_dict = {'cs':[], 'de':[]}
-#     for root, dirs, files in os.walk(root):   
-#         for f in files:
-#             file_path = os.path.join(root, f)
-#             split_name = f.split('.')
-#             file_type = split_name[-1]
-#             language = split_name[-2]
-#             if '.TTcs' in file_path and '.align' == file_path[-6:]:
-#                 align_dict['cs'].append(file_path)
-#             elif '.TTde' in file_path and '.align' == file_path[-6:]:
-#                 align_dict['de'].append(file_path)
-#     return align_dict
-
-def makettIndexing(root):
-    tt_dict = {}
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            split_name = f.split('.')
-            file_type = split_name[-1]
-            if file_type[:2] == 'TT':
-                la = removeDigits(file_type[2:])
-                try:
-                    tt_dict[la].append(file_path)
-                except:
-                    tt_dict[la] = [file_path]
-                    
-    return tt_dict
-
-def readCommitFile(commit_file):
-    out = ''
-    try:
-        out = open(commit_file, 'r').readline()
-    except:
-        pass
-    return out 
 
 def check_input(in_file):
     lines = open(in_file, 'r').readlines()
@@ -165,70 +89,81 @@ def check_input(in_file):
             
     return  state 
 
-def makeosttIndexing(root):
-    ostt_list = []
-    for root, dirs, files in os.walk(root):   
+def split_submissions_inputs(working_dir):
+    """
+    split submmisions and inputs files for SLTev evaluation
+    """
+    submissions = []
+    inputs = []
+    for root, dirs, files in os.walk(working_dir):   
         for f in files:
-            file_path = os.path.join(root, f)
-            if '.OStt' == file_path[-5:]:
-                ostt_list.append(file_path)
-    return ostt_list
+            file_path = os.path.join(working_dir, f)
+            temp = removeDigits(f.split('.')[-1])
+            if temp == 'slt' or temp == 'asr' or temp == 'mt':
+                submissions.append(file_path)
+            elif temp == 'OSt' or temp == 'OStt' or temp == 'align':
+                inputs.append(file_path)
+    return submissions, inputs
 
-def makeostIndexing(root):
-    ost_list = []
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            if '.OSt' == file_path[-4:]:
-                ost_list.append(file_path)
-    return ost_list
+def SLTev_inputs_per_submmision(submission_file, inputs):
+    """
+    extact SLTev inputs (tt, align, OStt) from the input files. 
+    """
+    status, tt, ostt, align = '', [], '', []
+    file_name1 = submission_file.split('/')[-1]
+    file_name = '.'.join(file_name1.split('.')[:-3])
+    source_lang = file_name1.split('.')[-3]
+    target_lang = file_name1.split('.')[-2]
+    status = file_name1.split('.')[-1]
+    for file in inputs:
+        input_name = file.split('/')[-1]
+        input_name = input_name.split('.')
+        if '.'.join(input_name[:-1]) + '.' + removeDigits(input_name[-1])  == file_name + '.' + target_lang + '.OSt':
+            tt.append(file)
+        elif '.'.join(input_name[:-1]) + '.' + removeDigits(input_name[-1])  == file_name + '.' + source_lang + '.OStt':
+            ostt = file
+        elif '.'.join(input_name[:-1]) + '.' + removeDigits(input_name[-1])  == file_name + '.' + source_lang + '.' + target_lang + '.align':
+            align.append(file)
+    return status, tt, ostt, align
 
+    
+def count_C_lines(list_line):
+    """
+    calculating the number of C lines in a list of lines
+  
+    """
+    counter = 0
+    for i in list_line:
+        if i.strip().split()[0] == 'C':
+            counter += 1
+    return counter
 
-def getAlign(names, language, align_dict):
-    out = []
-    for i in align_dict[language]:
-        for name in names:
-            if name in i and i not in out:
-                out.append(i)
-    return out
-def getostt(name, ostt_list):
-    out = []
-    for i in ostt_list:
-        if name in i:
-            out.append(i)
-    return out
+def partity_test(ostt, tt_list):
+    """
+    checks the number of C(complete) lines in OStt and OSt
+must be equal    
+    """
+    status = 1
+    error = 0 
+    with open(ostt) as f:
+        ostt_sentence = count_C_lines(f.readlines())
+    for file in tt_list:
+        with open(file) as f:
+            tt_sentence = len(f.readlines())
+        if ostt_sentence != tt_sentence:
+            status = 0 
+            error = "The number of C segment (complete) in " + ostt  + " is "  + ostt_sentence  + " and number of lines in " + file + " is " + tt_sentence
+            break
+    return status, error
 
-def getost(name, ost_list):
-    out = []
-    for i in ost_list:
-        if name in i:
-            out.append(i)
-    return out
-
-def gettt(name, language, tt_dict):
-    out = []
-    for i in tt_dict[language]:
-        if name in i:
-            out.append(i)
-    return out
-
-def getSLT(root):
-    slt_files = []
-    for root, dirs, files in os.walk(root):   
-        for f in files:
-            file_path = os.path.join(root, f)
-            if '.slt' in f or '.asr' in f:
-                slt_files.append(file_path)
-    return slt_files
-
-def getNameLanguageStatus(file_name):
-    file_name = file_name.split('/')[-1]
-    file_name = file_name.split('.')
-    name = '.'.join(file_name[:-2])
-    language = file_name[-2]
-    asr_status = file_name[-1]
-    return name, language, asr_status
-
-
-
+def MT_checking(file):
+    """
+    check MT that contain at least one C(Complete) segment
+    """
+    status = 0
+    with open(file) as f:
+        mt_sentence = count_C_lines(f.readlines())
+        if mt_sentence > 0:
+            status = 1
+    return status
 
