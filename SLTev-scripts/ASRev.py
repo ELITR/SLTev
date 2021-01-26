@@ -245,20 +245,18 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
 
 
 
-if __name__== "__main__":
+def ASRev(ost="", asr="", SLTev_home="./", simple="False"):
 
-    # initiate the parser
-    parser = argparse.ArgumentParser(description="This module receives two files  --ostt that receives path of OStt or OSt file (time-stamped transcript)  and --asr which contains ASR OUTPUT")
-    parser.add_argument("--ostt", "--ost", help="path of the OStt OR OSt file", type=str)
-    parser.add_argument("--asr", help="path of the ASR file", type=str)
-    parser.add_argument("--SLTev_home", help="path of SLTev files", type=str, default = './' )
-    parser.add_argument("--simple", help="a boolean (False or True) value to define shown type", type=str )
-    args = parser.parse_args()
-
-    ostt_file = args.ostt
+    """
+    This function receives two files OSt and ASR, and calculates the WER score.
+    
+    """
 
 
-    asr_file = args.asr
+    ostt_file = ost
+
+
+    asr_file = asr
 
     ostt = read_ostt(ostt_file)
     asr = read_asr(asr_file)
@@ -277,18 +275,18 @@ if __name__== "__main__":
     #-----------
     language = 'en'
 
-    if args.simple == 'False':
+    if simple == 'False':
         score = wer_evaluate(ostt, asr)
         print('PCnn ', str("{0:.3f}".format(round(score, 3)))  )
 
     try:
-        score = use_mversegmentor(ostt, asr, args.SLTev_home)
+        score = use_mversegmentor(ostt, asr, SLTev_home)
         print('PnWn ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)
     try:
-        if args.simple == 'False':
-            score = use_moses_mversegmentor(ostt, asr, args.SLTev_home)
+        if simple == 'False':
+            score = use_moses_mversegmentor(ostt, asr, SLTev_home)
             print('nnWM ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)

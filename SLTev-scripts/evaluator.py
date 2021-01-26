@@ -15,28 +15,20 @@ from files_modules import *
 
 
 
-if __name__== "__main__":
-    # initiate the parser
-    parser = argparse.ArgumentParser(description="This module receives three files  --ostt or -a that receives path of OStt file (time-stamped transcript)  --tt or -r that is the path of tt file   --mt or -m that is the path of MT output file and  -d or --delay that refers to type of delay -t or --ref_d that type of delay calculation by reference 0/1")
-    parser.add_argument("-a", "--ostt", help="path of the OStt file", type=str)
-    parser.add_argument("--asr", help="a boolean (False or True) value to define asr status", type=bool, default = False )
-    parser.add_argument("-r", "--tt", help="path of the tt file", type=list, nargs='+' )
-    parser.add_argument("-al", "--align", help="path of the aligments file", type=list, nargs='+' )
-    parser.add_argument("-m", "--mt", help="path of the MT file", type=str )
-    parser.add_argument("-b", "--b_time", help="slot time of blue score calculation", type=int, default = 3000 )
-    parser.add_argument("--SLTev_home", help="path of SLTev files", type=str, default = './' )
-    parser.add_argument("--simple", help="a boolean (False or True) value to define shown type", type=str )
-    # read arguments from the command line
-    args = parser.parse_args()
+def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev_home="./", simple="False" ):
+
+    """"
+    This function receives three input files OStt, tt (OSt), MT (ASR/SLT), and align (optionally)
+    and doing slt/asr/mt evaluation
+    """
     
     current_path = os.getcwd() 
     
     MovedWords = 1
     references =[]
-    b_time = args.b_time
     language = 'en'
-    for i in args.tt:
-        path = ''.join(i)
+    for i in tt:
+        path = i
         #------------check exist file
         if os.path.isfile(path):
             if '.de.OSt' in path:
@@ -75,7 +67,7 @@ if __name__== "__main__":
         ref_text = ref_text + ' ' + text
     print(ref_text) #---- WordCount tt1 1699 tt2 1299 ...
 
-    if args.simple == 'False':
+    if simple == 'False':
         print("avg      wordCount     tt*                   ", int(avergae_refs_words)) #---- avg WordCount tt* 12345 
     #print("Number of tt words: ", avergae_refs_words)
 
@@ -87,7 +79,7 @@ if __name__== "__main__":
         count += 1
         ref_text = ref_text + ' ' + text
         sum_sentences += len(i)
-    if args.simple == 'False':    
+    if simple == 'False':    
         print(ref_text) #---- SentenceCount tt1 1699 tt2 1299 ...
         print("avg      SentenceCount tt*                   ", str(int(sum_sentences/len(references)))) #---- avg SentenceCount tt* 220 
 
@@ -95,8 +87,8 @@ if __name__== "__main__":
 
 
 
-    OStt = read_ostt(args.ostt)
-    MT = read_MT(args.mt, args.asr)
+    OStt = read_ostt(ostt)
+    MT = read_MT(mt, asr)
 
 
     #-----------get duration of ASR
@@ -112,13 +104,13 @@ if __name__== "__main__":
         Ts.append(T)
 
 
-    if args.simple == 'False':
+    if simple == 'False':
         delay, missing_words = evaluate(Ts,MT, OStt)
         print("tot      Delay         nTnn                  ", str("{0:.3f}".format(round(delay, 3))))
         print("avg      Delay         nTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
         print("tot      MissedWords   nTnn                  ", missing_words)
         try:
-            delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, args.SLTev_home)
+            delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home)
 
 
             print("tot      Delay         nnWn                  ", str("{0:.3f}".format(round(delay, 3))))
@@ -134,7 +126,7 @@ if __name__== "__main__":
         T = get_One_T(OStt, reference)
         Ts.append(T)
 
-    if args.simple == 'False':
+    if simple == 'False':
         delay, missing_words = evaluate(Ts,MT, OStt)
 
         print("tot      Delay         PTnn                  ", str("{0:.3f}".format(round(delay, 3))))
@@ -142,7 +134,7 @@ if __name__== "__main__":
         print("tot      MissedWords   PTnn                  ", missing_words)
 
     try:
-        delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, args.SLTev_home)
+        delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home)
 
         print("tot      Delay         PnWn                  ", str("{0:.3f}".format(round(delay, 3))))
         print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
@@ -151,11 +143,11 @@ if __name__== "__main__":
     except:
         os.chdir(current_path)
 
-    if args.asr == False and args.simple == 'False':
+    if asr == False and simple == 'False':
 
         aligns =[]
-        for i in args.align:
-            path = ''.join(i)
+        for i in align:
+            path = i
             aligns.append(read_alignment_file(path))
         Ts = []
 
@@ -175,7 +167,7 @@ if __name__== "__main__":
         print("tot      MissedWords   PTnA                  ", missing_words)
         
         try:
-            delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords, language, args.SLTev_home)
+            delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home)
 
             print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
             print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
@@ -184,12 +176,12 @@ if __name__== "__main__":
         except:
             os.chdir(current_path)
 
-    if args.simple == 'False':    
+    if simple == 'False':    
         print("tot      Flicker       count_changed_words   ", int(calc_revise(MT)))
 
     print("tot      Flicker       count_changed_content ", int(calc_flicker(MT)))
 
-    if args.simple == 'False':
+    if simple == 'False':
         print("macroavg Flicker       count_changed_content ", int(calc_average_flickers_per_sentence(MT)) )
 
         print("microavg Flicker       count_changed_content ", int(calc_average_flickers_per_document(MT))  )
@@ -198,15 +190,16 @@ if __name__== "__main__":
 
     print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
 
-    if args.simple == 'False':
+    if simple == 'False':
         try:
-            sacre_score, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language, args.SLTev_home)
+            sacre_score, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home)
 
             print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
 
             print('tot      sacreBLEU     mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu_sacre, 3))) )
         except:
             os.chdir(current_path)
+            
         c_b_s_s_by_time,  avg_SacreBleu = calc_bleu_score_sentence_by_time(Ts, MT, b_time)
         for x in c_b_s_s_by_time:
             print(x)
