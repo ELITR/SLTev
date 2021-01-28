@@ -17,7 +17,7 @@ import subprocess
 if __name__ == "__main__":
     # initiate the parser
     parser = argparse.ArgumentParser(description="generate and evaluate slt/mt/asr files.")
-    parser.add_argument("-g", help="eliter index name for download files ", const=False, default=False, nargs='?', type=str)
+    parser.add_argument("-g", help="eliter index name for download files ", type=str)
     parser.add_argument("--simple", help="if exist just some of the results will be shown", const='True', nargs='?', default='False')
     parser.add_argument("--outdir", help="slt output results directory (output of the SLTev) ", default= "./outdir/", type=str)
     parser.add_argument("-e", help="eliter working directory", type=str)
@@ -35,6 +35,10 @@ if __name__ == "__main__":
     from evaluator import evaluator
     
     #-----------check output directory 
+    if args.e == None and args.g == None:
+        parser.print_help()
+        sys.exit(1)
+        
     output_dir = './'
     if os.path.isdir(args.outdir):
         output_dir = args.outdir
@@ -53,7 +57,7 @@ if __name__ == "__main__":
     except:
         commit_id = "no commit id, you are using offline mode"
 
-    if args.g != False:
+    if args.g != None:
         #if elitr-testset repo exist pull it and otherwise clone it
         git_path = "https://github.com/ELITR/elitr-testset.git"
         elitr_path = "./elitr-testset"
