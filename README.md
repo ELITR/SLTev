@@ -51,6 +51,7 @@ source your-env/bin/activate
 Install the prerequisites:
 
 ``` {r, engine='bash'} 
+(your-env)$ cd SLTev
 (your-env)$ pip install --upgrade -r requirements.txt
 ```
 
@@ -75,12 +76,12 @@ We illustrate the rest with ``SLTev-sample`` as the index.
 
 2. Ask SLTev to provide you with the current version of input files:
 ```
-(your-env)$ SLTev -g SLTev-sample --outdir my-evaluation-run-1
+(your-env)$ /path/SLTev/SLTev -g SLTev-sample --outdir my-evaluation-run-1
 ```
 
 3. Run SLTev to get the scores:
 ```
-(your-env)$ SLTev -e my-evaluation-run-1
+(your-env)$ /path/SLTev/SLTev -e my-evaluation-run-1
 ```
 
 ### Evaluating with Your Custom Reference Files
