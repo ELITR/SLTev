@@ -18,20 +18,20 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 
 Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
 
-### OST/OSTT 
+### Reference Transcripts: ``.OSt``, ``.OStt``
 - <file-name> . <language> . <OSt/OStt>
 - e.g. ``kaccNlwi6lUCEM.en.OSt``, ``kaccNlwi6lUCEM.cs.OStt``
 
-### ALIGN
+### Word Alignment for Better Estimation: ``.align``
 - <file-name> . <source-language> . <target-language> . <align>
 - e.g. ``kaccNlwi6lUCEM.en.de.align``
 
 
-### SLT/MT
+### System Outputs from Translation: ``.slt``, ``.mt``
 - <file-name> . <source-language> . <target-language> . <slt/mt>
 - e.g. ``kaccNlwi6lUCEM.en.de.slt``, ``kaccNlwi6lUCEM.cs.en.mt``
 
-### ASR
+### System Outputs from ASR: ``.asr``
 - <file-name> . <source-language> . <source-language> . <asr>
 - e.g. ``kaccNlwi6lUCEM.en.en.asr``
 
@@ -57,7 +57,8 @@ Install the prerequisites:
 ## Package Overview
 
 - SLTev-scripts: Contains scripts for running SLTev
-- SLTev-sample: Contains input and output samples
+- SLTev-sample: Contains sample input and output files
+
 ## Evaluating
 
 SLTev scoring relies on reference outputs (golden transcript for ASR, reference translation for MT and SLT).
