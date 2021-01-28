@@ -56,8 +56,8 @@ Install the prerequisites:
 
 ## Package Overview
 
-- SLTev-scripts: Contains scripts for running SLTev
-- SLTev-sample: Contains sample input and output files
+- SLTev: Contains scripts for running SLTev
+- sample-data: Contains sample input and output files
 
 ## Evaluating
 
