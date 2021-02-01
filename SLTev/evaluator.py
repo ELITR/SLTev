@@ -143,7 +143,6 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         if simple == 'False':
             print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
             print("tot      MissedWords   PnWn                  ", missing_words)
-            print("tot      mWERQuality   PnWn                  ", mWERQuality)
     except:
         os.chdir(current_path)
 
@@ -176,7 +175,6 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
             print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
             print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
             print("tot      MissedWords   PnWA                  ", missing_words)
-            print("tot      mWERQuality   PnWA                  ", mWERQuality)
         except:
             os.chdir(current_path)
 
@@ -196,11 +194,8 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
 
     if simple == 'False':
         try:
-            sacre_score, tot_bleu_sacre  = calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home)
-
+            sacre_score  = calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home)
             print("avg      sacreBLEU     --                    ", str("{0:.3f}".format(round(sacre_score, 3))) )
-
-            print('tot      sacreBLEU     mWER-segmented        ', str("{0:.3f}".format(round(tot_bleu_sacre, 3))) )
         except:
             os.chdir(current_path)
             

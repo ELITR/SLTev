@@ -29,12 +29,11 @@ def calc_bleu_score_documnet(Ts, MT):
             for k,v in j.items():
                 l.append(k)
         merge_references_sentences.append(' '.join(l))
-    sacre_bleu_score = []
     
 
-    refs= [[i]for i in merge_references_sentences]
-    sys = [' '.join(merge_mt_sentences[:])]
-    b_sacre = sacrebleu.corpus_bleu(sys, refs)
+    refs= [i for i in merge_references_sentences]
+    sys = ' '.join(merge_mt_sentences[:])
+    b_sacre = sacrebleu.sentence_bleu(sys, refs)
     sacre_blue_score = b_sacre.score
 
     return sacre_blue_score
@@ -67,24 +66,12 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home):
     segmenter_sentence, mWERQuality = segmenter(MT, Ts, language, SLTev_home)
 
 
-    sacre_bleu = list()
-    for i in range(len(references_sentences[0])):
-        sys = [' '.join(segmenter_sentence[i])]
-        refs = [ [' '.join(ref[i])] for ref in references_sentences]
-#         print ('sys', sys)
-#         print ('refs', refs)
-        b_sacre = sacrebleu.corpus_bleu(sys, refs)
-        sacre_blue_score = b_sacre.score
-        sacre_bleu.append(sacre_blue_score)
-    
-    
-    if sacre_bleu != []:
-        sacre_bleu_avg = (sum(sacre_bleu)/len(sacre_bleu))
-        sacre_bleu_sum = sum(sacre_bleu)
-    else:
-        sacre_bleu_avg = 0
-        sacre_bleu_sum = 0
-    return sacre_bleu_avg, sacre_bleu_sum
+    sys = [' '.join(i) for i in segmenter_sentence]
+    refs = [ [' '.join(ref)for ref in references_sentences[i]] for i in range(len(references_sentences))]
+    b_sacre = sacrebleu.corpus_bleu(sys, refs)
+    sacre_blue_score = b_sacre.score
+
+    return sacre_blue_score
 
 def build_A_Time_Based_quality(sentence_segments):
     """
@@ -156,11 +143,11 @@ def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
     blue_scores = []
     for t in  range(len(mt_sentences)):
         
-        sys = [' '.join(mt_sentences[t])]
-        refs = [ [' '.join(ref)] for ref in references_sentences[t]]
+        sys = ' '.join(mt_sentences[t])
+        refs = [ ' '.join(ref) for ref in references_sentences[t]]
 #         print ('sys', sys)
 #         print ('refs', refs)
-        b_sacre = sacrebleu.corpus_bleu(sys, refs)
+        b_sacre = sacrebleu.sentence_bleu(sys, refs)
         sacre_blue_score = b_sacre.score
    
 
