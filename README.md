@@ -44,7 +44,7 @@ git clone https://github.com/ELITR/SLTev.git
 
 Create and activate a new virtual environment (or use your standard one):
 ``` {r, engine='bash'} 
-virtualenv your-env
+/path/to/python3 -m venv your-env
 source your-env/bin/activate
 ```
 
