@@ -140,9 +140,10 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home)
 
         print("tot      Delay         PnWn                  ", str("{0:.3f}".format(round(delay, 3))))
-        print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-        print("tot      MissedWords   PnWn                  ", missing_words)
-        print("tot      mWERQuality   PnWn                  ", mWERQuality)
+        if simple == 'False':
+            print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+            print("tot      MissedWords   PnWn                  ", missing_words)
+            print("tot      mWERQuality   PnWn                  ", mWERQuality)
     except:
         os.chdir(current_path)
 
