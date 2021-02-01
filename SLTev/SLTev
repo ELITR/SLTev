@@ -8,7 +8,6 @@ from os import getcwd
 from urllib.request import urlopen
 import subprocess as sp
 import shutil
-from utilities import *
 import logging
 import git
 import subprocess
@@ -29,11 +28,22 @@ if __name__ == "__main__":
     #-----------add SLTev home to the path 
     sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
     current_path = os.path.dirname(os.path.abspath(__file__))
+    if os.path.isfile(sltev_home + "/mwerSegmenter"):
+        pass
+    else:
+        sltev_home = current_path
     sys.path.insert(1, sltev_home)
-
+    
+    from utilities import *
     from ASRev import ASRev
     from evaluator import evaluator
     
+    try:
+        repo = git.Repo('/'.join(sltev_home.split('/')[:-1]))
+        sha = repo.head.object.hexsha
+        SLTev_commit_id = 'SLTev_' + repo.git.rev_parse(sha, short=True)
+    except:
+        SLTev_commit_id = 'SLTev_'
     #-----------check output directory 
     if args.e == None and args.g == None:
         parser.print_help()
@@ -56,18 +66,18 @@ if __name__ == "__main__":
         commit_id = repo.head.commit
     except:
         commit_id = "no commit id, you are using offline mode"
-
+    elitr_path = "./elitr-testset"
+    
     if args.g != None:
         #if elitr-testset repo exist pull it and otherwise clone it
         git_path = "https://github.com/ELITR/elitr-testset.git"
-        elitr_path = "./elitr-testset"
-
 
         if os.path.isdir(elitr_path):
             try:
                 repo = git.Repo(elitr_path)
                 repo.remotes.origin.pull()
-                commit_id = repo.head.commit
+                sha = repo.head.object.hexsha
+                commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
                 print("elitr-tesset pulled")
             except:
                 print ("pull from elitr-testset faild pleae remove ./elitr-testset folder and run SLTev -g ", args.g)
@@ -77,7 +87,8 @@ if __name__ == "__main__":
                 print("cloning elitr-testset repo to the current directory")
                 git.Git("./").clone(git_path)
                 repo = git.Repo(elitr_path)
-                commit_id = repo.head.commit
+                sha = repo.head.object.hexsha
+                commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
             except:
                 print("cloning from elitr-testset faild, please check your internet conection")
                 sys.exit(1)
@@ -91,7 +102,7 @@ if __name__ == "__main__":
                 print (args.commitid, ' is not valid')
 
         try:
-            print('Signature:', commit_id)
+            print('elitr-tesset commit id is: ', commit_id)
             gitLock() # lock the repo
             indice_file_path = "./elitr-testset/indices/" + args.g
             target_path = output_dir
@@ -113,7 +124,16 @@ if __name__ == "__main__":
         print(working_dir, ' is not exist.')
         sys.exit(1)
 
-
+    #---make signature
+    signature =  SLTev_commit_id
+    if os.path.isdir(elitr_path):
+        try:
+            repo = git.Repo(elitr_path)
+            sha = repo.head.object.hexsha
+            elitr_commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
+            signature = signature + '_' +  elitr_commit_id
+        except:
+            pass
     """
 
     Naming template:
@@ -163,6 +183,7 @@ if __name__ == "__main__":
             out_name = args.outdir + submission_file.split('/')[-1] + ".WER.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
+                print('Signature: ', signature)
                 ASRev(ost=tt[0], asr=submission_file, SLTev_home=sltev_home, simple=args.simple)
                 sys.stdout = orig_stdout
                 
@@ -171,6 +192,7 @@ if __name__ == "__main__":
             out_name = args.outdir + submission_file.split('/')[-1] + ".BLEU.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
+                print('Signature: ', signature)
                 evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple)
                 sys.stdout = orig_stdout
             print("Results saved in ", out_name)
@@ -181,6 +203,7 @@ if __name__ == "__main__":
             out_name = args.outdir + submission_file.split('/')[-1] + ".BLEU.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
+                print('Signature: ', signature)
                 evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple)
                 sys.stdout = orig_stdout
             print("Results saved in ", out_name)
@@ -195,6 +218,7 @@ if __name__ == "__main__":
             out_name = args.outdir + submission_file.split('/')[-1] + ".BLEU.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
+                print('Signature: ', signature)
                 evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple)
                 sys.stdout = orig_stdout
             print("Results saved in ", out_name)

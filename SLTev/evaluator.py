@@ -45,12 +45,13 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
     #---------- Calculte number of words
 
     #----------------------------------------
-    print("n ... not considering, not using")
-    print("P ... considering Partial segments in delay and quality calculation(in addition to Complete segments)")
-    print("T ... considering source Timestamps supplied with MT output")
-    print("W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)")
-    print("A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)")
-    print("------------------------------------------------------------------------------------------------------------")
+    if simple == 'False':
+        print("n ... not considering, not using")
+        print("P ... considering Partial segments in delay and quality calculation(in addition to Complete segments)")
+        print("T ... considering source Timestamps supplied with MT output")
+        print("W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)")
+        print("A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)")
+        print("------------------------------------------------------------------------------------------------------------")
 
     #-----------------------------------------
     number_refs_words = []
@@ -65,7 +66,8 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         text = '    tt'  + str(count) + '                    ' + str(int(i))
         count += 1
         ref_text = ref_text + ' ' + text
-    print(ref_text) #---- WordCount tt1 1699 tt2 1299 ...
+    if simple == 'False':
+        print(ref_text) #---- WordCount tt1 1699 tt2 1299 ...
 
     if simple == 'False':
         print("avg      wordCount     tt*                   ", int(avergae_refs_words)) #---- avg WordCount tt* 12345 
@@ -96,7 +98,8 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
     end = OStt[-1][-1][1]
     duration = float(end) - float(start)
     duration =  str("{0:.3f}".format(round(duration, 3)))
-    print("OStt     Duration      --                    ", duration) #---- OStt Duration -- 88816 
+    if simple == 'False':
+        print("OStt     Duration      --                    ", duration) #---- OStt Duration -- 88816 
 
     Ts = []
     for reference in references: 

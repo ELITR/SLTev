@@ -263,14 +263,15 @@ def ASRev(ost="", asr="", SLTev_home="./", simple="False"):
     current_path = os.getcwd()
 
     #----------
-    print("-------------------------------------------------------------")
+    if simple == 'False':
+        print("-------------------------------------------------------------")
 
-    print('n ... not considering, not using')
-    print('P ... preprocessing contains Lowercase, punctuation removing')
-    print('C ... concatenating all sentences')
-    print('W ... using mwersegmemter')
-    print('M ... using Moses tokenizer')
-    print("-------------------------------------------------------------")
+        print('n ... not considering, not using')
+        print('P ... preprocessing contains Lowercase, punctuation removing')
+        print('C ... concatenating all sentences')
+        print('W ... using mwersegmemter')
+        print('M ... using Moses tokenizer')
+        print("-------------------------------------------------------------")
 
     #-----------
     language = 'en'
