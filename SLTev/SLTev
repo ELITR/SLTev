@@ -131,7 +131,7 @@ if __name__ == "__main__":
             repo = git.Repo(elitr_path)
             sha = repo.head.object.hexsha
             elitr_commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
-            signature = signature + '_' +  elitr_commit_id
+            signature = signature + '-' +  elitr_commit_id
         except:
             pass
     """
