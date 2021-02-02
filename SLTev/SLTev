@@ -11,7 +11,7 @@ import shutil
 import logging
 import git
 import subprocess
-
+import pkg_resources
 
 if __name__ == "__main__":
     # initiate the parser
@@ -26,12 +26,10 @@ if __name__ == "__main__":
     import subprocess
 
     #-----------add SLTev home to the path 
-    sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    if os.path.isfile(sltev_home + "/mwerSegmenter"):
-        pass
-    else:
-        sltev_home = current_path
+    try:
+        sltev_home = pkg_resources.resource_filename('SLTev', '')
+    except:
+        sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
     sys.path.insert(1, sltev_home)
     
     from utilities import *
@@ -43,7 +41,7 @@ if __name__ == "__main__":
         sha = repo.head.object.hexsha
         SLTev_commit_id = 'SLTev_' + repo.git.rev_parse(sha, short=True)
     except:
-        SLTev_commit_id = 'SLTev_'
+        SLTev_commit_id = ''
     #-----------check output directory 
     if args.e == None and args.g == None:
         parser.print_help()
