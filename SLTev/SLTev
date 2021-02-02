@@ -15,12 +15,12 @@ import pkg_resources
 
 if __name__ == "__main__":
     # initiate the parser
-    parser = argparse.ArgumentParser(description="generate and evaluate slt/mt/asr files.")
-    parser.add_argument("-g", help="eliter index name for download files ", type=str)
-    parser.add_argument("--simple", help="if exist just some of the results will be shown", const='True', nargs='?', default='False')
-    parser.add_argument("--outdir", help="slt output results directory (output of the SLTev) ", default= "./outdir/", type=str)
-    parser.add_argument("-e", help="eliter working directory", type=str)
-    parser.add_argument("--commitid", help="commitid for eliter-testset repo) ", default= "HEAD", type=str)
+    parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
+    parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
+    parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False') #const='True', nargs='?', default='False')
+    parser.add_argument("--outdir", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "./outdir/", type=str)
+    parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
+    parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
     # read arguments from the command line
     args = parser.parse_args()
     import subprocess
@@ -78,7 +78,7 @@ if __name__ == "__main__":
                 commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
                 print("elitr-tesset pulled")
             except:
-                print ("pull from elitr-testset faild pleae remove ./elitr-testset folder and run SLTev -g ", args.g)
+                print ("pull from elitr-testset failed please remove ./elitr-testset folder and re-run SLTev -g ", args.g)
                 sys.exit(1)
         else:
             try:
@@ -107,7 +107,7 @@ if __name__ == "__main__":
             populate(indice_file_path, target_path)
             gitUnLock() #unlock the repo 
         except:
-            print ("Generating inedx ",args.g ," failed. check ", args.g, " index, it does not seem to exist, also check ", output_dir, ' for write permision'  )
+            print ("Generating index ",args.g ," failed. check ", args.g, " index, it does not seem to exist, also check ", output_dir, ' for write permision'  )
         sys.exit(1)
 
 
