@@ -37,22 +37,16 @@ Depending on whether your system produces (spoken language) translation (SLT), o
 
 ## Installation
 
-Download the project from Github:
+Install the Python module (Python 3 only)
+   
 ``` {r, engine='bash'} 
-git clone https://github.com/ELITR/SLTev.git
+pip3 install SLTev
 ```
-
-Create and activate a new virtual environment (or use your standard one):
-``` {r, engine='bash'} 
-python3 -m venv your-env
-source your-env/bin/activate
-```
-
-Install the prerequisites:
+    
+Also, you can install from the source:
 
 ``` {r, engine='bash'} 
-(your-env)$ cd SLTev
-(your-env)$ pip install --upgrade -r requirements.txt
+python3 setup.py install
 ```
 
 ## Package Overview
@@ -76,12 +70,12 @@ We illustrate the rest with ``SLTev-sample`` as the index.
 
 2. Ask SLTev to provide you with the current version of input files:
 ```
-(your-env)$ /path/to/SLTev/SLTev -g SLTev-sample --outdir my-evaluation-run-1
+SLTev -g SLTev-sample --outdir my-evaluation-run-1
 ```
 
 3. Run SLTev to get the scores:
 ```
-(your-env)$ /path/to/SLTev/SLTev -e my-evaluation-run-1
+SLTev -e my-evaluation-run-1/
 ```
 
 ### Evaluating with Your Custom Reference Files
