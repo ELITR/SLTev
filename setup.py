@@ -1,16 +1,9 @@
-#pip install -e .
+#python setup.py bdist_wheel --universal
 from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
-"""
-'SLTev/utilities.py','SLTev/ASRev.py', 'SLTev/evaluator.py', 'SLTev/delay_modules.py', 'SLTev/flicker_modules.py', 'SLTev/files_modules.py', 'SLTev/quality_modules.py' 
-"""
-    
-import os
-import sys
-SLTev_path = os.path.dirname(os.path.abspath(__file__)) + "/SLTev"
-sys.path.insert(1, SLTev_path)
+
 setup(
     name='SLTev',
     version='1.0.0',
@@ -22,6 +15,7 @@ setup(
     data_files = [ ('SLTev', ['SLTev/mwerSegmenter']) ],
     include_package_data=True,
     install_requires=['gitpython', 'requests', 'mosestokenizer', 'sacrebleu', 'gitdir', 'jiwer'],
+    url="https://github.com/ELITR/SLTev.git",
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
