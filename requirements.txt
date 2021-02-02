@@ -4,3 +4,4 @@ mosestokenizer
 sacrebleu
 gitdir
 jiwer
+filelock

@@ -8,6 +8,10 @@ import shutil
 import logging
 from pathlib import Path
 
+# print to STDERR:
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 def removeExtraSpaces(text):
     text = text.replace("\t", "")
@@ -25,9 +29,18 @@ def getIndices(indice_file_path, target_path):
                 shutil.copy2(file, target_path)
     else:
         indice = removeExtraSpaces(indice_file_path)
+        # eprint("Getting copy of", indice_file_path)
         shutil.copy2(indice, target_path)
-        
-def populate(indice_file_path, target_path):
+
+def chop_elitr_testset_prefix(path):
+    # removes elitr-testset/ from the beginning of path
+    if path[:14] == "elitr-testset/": # FIXME portability
+        return path[14:]
+    else:
+        raise ValueError("File name does not start with elitr-testset: "+path)
+
+def populate(elitr_testset_path, indexname, target_path):
+    indice_file_path = os.path.join(elitr_testset_path, "indices", indexname)
     indices = [indice_file_path]
     indices_lines = []
     while indices != []:
@@ -39,10 +52,15 @@ def populate(indice_file_path, target_path):
             #TODO RECURRENT #INCLUDE 
             if line[:9] == '#include ':
                 indice = removeExtraSpaces(line[9:])
-                indice_path = "./elitr-testset/indices/" + indice
+                indice_path = os.path.join(elitr_testset_path, "indices",
+                  chop_elitr_testset_prefix(indice))
                 indices.append(indice_path)
+            elif line == "" or line[0] == '#':
+                # skip comments and empty lines
+                pass
             else:
-                indices_lines.append(line)
+                indices_lines.append(os.path.join(elitr_testset_path,
+                  chop_elitr_testset_prefix(line)))
             
     for indice in indices_lines:
         if indice[0] == '#':
@@ -50,12 +68,6 @@ def populate(indice_file_path, target_path):
         else:
             print(indice + ' copied to ' + target_path)
             getIndices(indice, target_path)
-            
-def gitLock():
-    Path("./elitr-testset/.git/index.lock").touch()
-def gitUnLock():
-    os.remove("./elitr-testset/.git/index.lock")
-    
     
 def readIndice(file_path):
     out = []

@@ -12,6 +12,7 @@ import logging
 import git
 import subprocess
 import pkg_resources
+from filelock import FileLock
 
 if __name__ == "__main__":
     # initiate the parser
@@ -19,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
     parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False') #const='True', nargs='?', default='False')
     parser.add_argument("--outdir", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "./outdir/", type=str)
+    parser.add_argument("--elitr-testset", "-T", metavar="DIR", help="use DIR as git clone of elitr-testset instead of ./elitr-testset", default= "./elitr-testset", type=str)
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
     parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
     # read arguments from the command line
@@ -58,13 +60,13 @@ if __name__ == "__main__":
 
     #----get commit id
 
+    elitr_path = args.elitr_testset
     try:
-        elitr_path = "./elitr-testset"
         repo = git.Repo(elitr_path)
         commit_id = repo.head.commit
     except:
+        # this is quite suspicious: no warning now, running with unclear repo
         commit_id = "no commit id, you are using offline mode"
-    elitr_path = "./elitr-testset"
     
     if args.g != None:
         #if elitr-testset repo exist pull it and otherwise clone it
@@ -76,9 +78,9 @@ if __name__ == "__main__":
                 repo.remotes.origin.pull()
                 sha = repo.head.object.hexsha
                 commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
-                print("elitr-tesset pulled")
+                print("elitr-testset pulled")
             except:
-                print ("pull from elitr-testset failed please remove ./elitr-testset folder and re-run SLTev -g ", args.g)
+                print ("pull from elitr-testset at "+args.elitr_testset+" failed; is it a valid git clone?", args.g)
                 sys.exit(1)
         else:
             try:
@@ -88,7 +90,7 @@ if __name__ == "__main__":
                 sha = repo.head.object.hexsha
                 commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
             except:
-                print("cloning from elitr-testset faild, please check your internet conection")
+                print("cloning from elitr-testset failed, please check your internet conection")
                 sys.exit(1)
         #------check commit id 
         if args.commitid != 'HEAD':
@@ -100,14 +102,15 @@ if __name__ == "__main__":
                 print (args.commitid, ' is not valid')
 
         try:
-            print('elitr-tesset commit id is: ', commit_id)
-            gitLock() # lock the repo
-            indice_file_path = "./elitr-testset/indices/" + args.g
-            target_path = output_dir
-            populate(indice_file_path, target_path)
-            gitUnLock() #unlock the repo 
+            print('elitr-testset commit id is: ', commit_id)
+            # access the clone only in a locked way, so that more SLTevs
+            # do not move to a different commit ids
+            with FileLock(os.path.join(args.elitr_testset, "SLTev.lock")):
+                indice_file_path = os.path.join(args.elitr_testset, "indices", args.g)
+                target_path = output_dir
+                populate(args.elitr_testset, args.g, target_path)
         except:
-            print ("Generating index ",args.g ," failed. check ", args.g, " index, it does not seem to exist, also check ", output_dir, ' for write permision'  )
+            print ("Generating index ",args.g ," failed. Check ", args.g, " index, it does not seem to exist, also check ", output_dir, ' for write permision'  )
         sys.exit(1)
 
 
