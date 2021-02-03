@@ -73,7 +73,9 @@ We illustrate the rest with ``SLTev-sample`` as the index.
 SLTev -g SLTev-sample --outdir my-evaluation-run-1
 ```
 
-3. Run SLTev to get the scores:
+3. Run your models on files in ``my-evaluation-run-1`` and put the outputs into the same directory, with filename suffixes as described above.
+
+4. Run SLTev to get the scores:
 ```
 SLTev -e my-evaluation-run-1/
 ```
