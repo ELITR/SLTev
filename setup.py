@@ -4,6 +4,9 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+with open("requirements.txt") as fh:
+    install_requires = fh.read().splitlines()
+
 setup(
     name='SLTev',
     version='1.0.2',
@@ -14,7 +17,7 @@ setup(
     packages=['SLTev',],
     data_files = [ ('SLTev', ['SLTev/mwerSegmenter']) ],
     include_package_data=True,
-    install_requires=['gitpython', 'requests', 'mosestokenizer', 'sacrebleu', 'gitdir', 'jiwer', 'filelock'],
+    install_requires=install_requires,
     url="https://github.com/ELITR/SLTev.git",
     classifiers=[
         "Programming Language :: Python :: 3",
