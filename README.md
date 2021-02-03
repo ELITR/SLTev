@@ -10,7 +10,7 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 - python3.5 or higher
 - some pip-installed modules:
   - sacreBLEU [3]
-  - requests, gitpython, gitdir
+  - requests, gitpython, gitdir, filelock
 - mwerSegmenter [1]
 - mosestokenizer [2]
 
