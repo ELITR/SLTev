@@ -14,7 +14,7 @@ setup(
     packages=['SLTev',],
     data_files = [ ('SLTev', ['SLTev/mwerSegmenter']) ],
     include_package_data=True,
-    install_requires=['gitpython', 'requests', 'mosestokenizer', 'sacrebleu', 'gitdir', 'jiwer'],
+    install_requires=['gitpython', 'requests', 'mosestokenizer', 'sacrebleu', 'gitdir', 'jiwer', 'filelock'],
     url="https://github.com/ELITR/SLTev.git",
     classifiers=[
         "Programming Language :: Python :: 3",
