@@ -9,7 +9,7 @@ import sys
 import os
 import uuid
 import shutil
-
+from utilities import *
 
 ######################################################################
 # WER score functions (know as ASRev)
@@ -112,7 +112,7 @@ def wer_evaluate(ostt, asr):
     #-------run wer 
     return wer(ostt_string, asr_string)
 
-def use_mversegmentor(ostt, asr, SLTev_home):
+def use_mversegmentor(ostt, asr, SLTev_home, temp_folder):
     """
     STEPS:
     1- save osst and asr sentences in temp_ref and temp_translate
@@ -123,11 +123,12 @@ def use_mversegmentor(ostt, asr, SLTev_home):
     :param ostt: the list of OSt(OStt) sentences
     :param asr: the list of asr sentences
     :param SLTev_home: path oof the SLTev files (/path/to/mwerSegmenter)
+    :param temp_folder: name of tem folder that created by UUID
     :return: Return a WER score
     """
     
     #---------save osst and asr sentences in temp_ref and temp_translate
-    temp_folder_name = "./" + str(uuid.uuid4())
+    temp_folder_name = temp_folder
     os.mkdir(temp_folder_name)
     os.chdir(temp_folder_name)
     out = open('temp_ref', 'w')
@@ -171,7 +172,7 @@ def use_mversegmentor(ostt, asr, SLTev_home):
         wer_scores.append(score)
     return sum(wer_scores)/len(wer_scores)
 
-def use_moses_mversegmentor(ostt, asr, SLTev_home):
+def use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder):
     """
     STEPS:
     1- save osst and asr sentences in temp_ref and temp_translate
@@ -182,11 +183,12 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home):
     :param ostt: the list of OSt(OStt) sentences
     :param asr: the list of asr sentences
     :param SLTev_home: path oof the SLTev files (/path/to/mwerSegmenter)
+    :param temp_folder: name of tem folder that created by UUID
     :return: Return a WER score
     """
     
     #---------save osst and asr sentences in temp_ref and temp_translate
-    temp_folder_name = "./" + str(uuid.uuid4())
+    temp_folder_name = temp_folder
     os.mkdir(temp_folder_name)
     os.chdir(temp_folder_name)
     out = open('temp_ref', 'w')
@@ -243,28 +245,31 @@ def ASRev(ost="", asr="", SLTev_home="./", simple="False"):
     asr = read_asr(asr_file)
     current_path = os.getcwd()
     if simple == 'False':
-        print("-------------------------------------------------------------")
-        print('n ... not considering, not using')
-        print('L ... lowercasing')
-        print('P ... removing punctuation')
-        print('C ... concatenating all sentences')
-        print('W ... using mwersegmemter')
-        print('M ... using Moses tokenizer')
-        print("-------------------------------------------------------------")
+        eprint("-------------------------------------------------------------")
+        eprint('n ... not considering, not using')
+        eprint('L ... lowercasing')
+        eprint('P ... removing punctuation')
+        eprint('C ... concatenating all sentences')
+        eprint('W ... using mwersegmemter')
+        eprint('M ... using Moses tokenizer')
+        eprint("-------------------------------------------------------------")
     #-----------
     if simple == 'False':
         score = wer_evaluate(ostt, asr)
         print('LPCnn ', str("{0:.3f}".format(round(score, 3)))  )
     try:
-        score = use_mversegmentor(ostt, asr, SLTev_home)
+        temp_folder = "./" + str(uuid.uuid4())
+        score = use_mversegmentor(ostt, asr, SLTev_home, temp_folder)
         print('LPnWn ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)
+        shutil.rmtree(temp_folder, ignore_errors=True)
     try:
         if simple == 'False':
-            score = use_moses_mversegmentor(ostt, asr, SLTev_home)
+            temp_folder = "./" + str(uuid.uuid4())
+            score = use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder)
             print('nnnWM ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)
-
+        shutil.rmtree(temp_folder, ignore_errors=True)
 
