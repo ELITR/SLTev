@@ -143,16 +143,28 @@ if __name__ == "__main__":
         if state:
             continue
         status, tt, ostt, align = SLTev_inputs_per_submmision(submission_file, inputs)
-        #----checking number of C sentences in OStt and all tt must be equal
-        parity_state,error = partity_test(ostt, tt)
-        if  parity_state == 0:
-            eprint ("The number of Complete lines (C) in ", ostt, " and ", ' '.join(tt), ' are not equal')
-            eprint(error)
-            sys.exit(1)
+        ost_as_ostt = 0
+        if ostt == '':
+            ost_as_ostt = 1
+            temp = submission_file.split('/')[-1]
+            temp = temp.split('.')
+            ostt = working_dir + '.'.join(temp[:-2]) + '.OSt'
+            if os.path.isfile(ostt):
+                eprint("there is no OStt file for ", submission_file, " and we have ", ostt, " instead of OStt")
+            else:
+                eprint("evaluation for ", submission_file ," faild, file ", ostt, " is not exist")
+                continue
+        else:            
+            #----checking number of C sentences in OStt and all tt must be equal
+            parity_state,error = partity_test(ostt, tt)
+            if  parity_state == 0:
+                eprint ("evaluation for ", submission_file ," faild, the number of Complete lines (C) in ", ostt, " and ", ' '.join(tt), ' are not equal')
+                eprint(error)
+                continue
         #----checking MT contain at least one C segment
         if MT_checking(submission_file) == 0:
-            eprint(submission_file , "does not contain any Complete segment (C) for evaluation it must contain at least one C segment")
-            sys.exit(1)
+            eprint("evaluation for ",submission_file , " faild, does not contain any Complete segment (C) for evaluation it must contain at least one C segment")
+            continue
         if tt == []:
             eprint ("evaluation faild, no OSt file exist for ", submission_file)
             continue
@@ -173,7 +185,7 @@ if __name__ == "__main__":
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
-                evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple)
+                evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
                 sys.stdout = orig_stdout
             eprint("Results saved in ", out_name)
             continue
@@ -183,7 +195,7 @@ if __name__ == "__main__":
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
-                evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple)
+                evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
                 sys.stdout = orig_stdout
             eprint("Results saved in ", out_name)
             continue
@@ -197,7 +209,7 @@ if __name__ == "__main__":
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
-                evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple)
+                evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
                 sys.stdout = orig_stdout
             eprint("Results saved in ", out_name)
             continue

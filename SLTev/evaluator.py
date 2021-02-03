@@ -14,7 +14,7 @@ from quality_modules import *
 from files_modules import *
 from utilities import *
 
-def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev_home="./", simple="False" ):
+def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev_home="./", simple="False", ostt_state=0 ):
     """"
     This function receives three input files OStt, tt (OSt), MT (ASR/SLT), and align (optionally)
     and doing slt/asr/mt evaluation
@@ -70,7 +70,10 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
     if simple == 'False':    
         print(ref_text) #---- SentenceCount tt1 1699 tt2 1299 ...
         print("avg      SentenceCount tt*                   ", str(int(sum_sentences/len(references)))) #---- avg SentenceCount tt* 220 
-    OStt = read_ostt(ostt)
+    if ostt_state == 0:
+        OStt = read_ostt(ostt)
+    else:
+        OStt = read_ost_as_ostt(ostt)
     MT = read_MT(mt, asr)
     #-----------get duration of ASR
     start = OStt[0][0][0]
@@ -162,10 +165,13 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         except:
             os.chdir(current_path)
             shutil.rmtree(temp_folder, ignore_errors=True)
-        c_b_s_s_by_time,  avg_SacreBleu = calc_bleu_score_sentence_by_time(Ts, MT, b_time)
-        for x in c_b_s_s_by_time:
-            print(x)
-        print(avg_SacreBleu)
+        try:
+            c_b_s_s_by_time,  avg_SacreBleu = calc_bleu_score_sentence_by_time(Ts, MT, b_time)
+            for x in c_b_s_s_by_time:
+                print(x)
+            print(avg_SacreBleu)
+        except:
+            pass
 
 
 

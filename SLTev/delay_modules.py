@@ -8,17 +8,26 @@ import os
 from mosestokenizer import *
 from files_modules import *
 
-def get_Zero_T(ASR, reference):
+
+######################################################################
+# delay functions 
+######################################################################
+
+def get_Zero_T(OSTT, reference):
     """
-    Receiveing OStt (time-stamped transcript) sentences and reference sentences and calculate T matrix:
-    which elements of T is a dictionary that key is one word of reference and value is the end time of the word.      
-    To calculate the T matrix, first calculate the spent time of the Complete segment in the Ostt and this time is divided per number of equivalent sentence words in the reference.    
+    Receiving OStt (time-stamped transcript) sentences and reference sentences and calculate T matrix:
+    elements of T is a dictionary that key is one word of reference and value is the end time of the word.      
+    To calculate the T matrix, first, the spent time of the Complete segment in the Ostt is calculated and the time is divided per number of equivalent sentence words in the reference. 
+    
+    :param OSTT: a list of OStt sentences (each sentence contains multiple P and one C segments) 
+    :param reference: a list of OSt (tt) sentences
+    :return Zero_T: a list of dictionaries which each dictionary contains keys in the corresponding sentence words in the OSt. 
     """
     
     Zero_T = []
     sentence_times = []
     start_times = []
-    for sentence in ASR:
+    for sentence in OSTT:
 
         sentence_time = float(sentence[-1][1]) - float(sentence[0][0])
         sentence_times.append(sentence_time)
@@ -37,8 +46,12 @@ def get_Zero_T(ASR, reference):
 
 def segemtWordsTimes(segment):
     """
-    getting a segment and for each word calcuate word ending time 
+    getting a segment and for each word ending time is calculated.
+    
+    :param segment: a segment (Partial or Complete)
+    :return out: a dictionary that contains unique words as keys and ending time as values
     """
+    
     out = {}
     duration = float(segment[1]) - float(segment[0])
     step = duration/len(segment[2:-1])
@@ -51,8 +64,11 @@ def segemtWordsTimes(segment):
     
 def makeAlignDict(align, ref):    
     """
-    making alignment between source and refernce by align file. in the output each word of reference (tt) match to the word
-    of source (OStt)
+    making alignment between source and reference by aligning file. in the output, each word of reference (tt) would be aligned with the word of the source (OStt)
+    
+    :param align: a align dictionary 
+    :param ref: a list of words in the sentence
+    :return out: a dictionary that each word of ref would be assigned to a place of a word in the OStt   
     """
     
     out = {}
@@ -64,9 +80,12 @@ def makeAlignDict(align, ref):
 
 def get_One_T(OStt, reference, aligns = None):
     """
-    Receiving OStt (time-stamped transcript), tt sentences and the alignment (giza sentence orders) and
-    finally calculated T matrix. Each row of T is a dictionary which key is one word of reference line and the value is the end time of that word. 
-    To calculate T matrix,      
+    Receiving OStt (time-stamped transcript), tt sentences, and the alignment (MGIZA sentence orders) and T matrix is calculated. Each row of T is a dictionary in which the keys are words of the reference sentences, and the values, are the end time of those words.
+    
+    :param OStt: a list of OStt sentences
+    :param reference: a list of OSt (tt) sentences
+    :param aligns: alist of align sentences
+    :return T: the T matrix
     """
     
     T = []
@@ -110,8 +129,12 @@ def get_One_T(OStt, reference, aligns = None):
               
 def build_A_Time_Based(sentence_segments):
     """
-    Receiving segments of the mt sentences and calculates A dictionary:
-    A is a dictionary which key is one word of MT sentence and value is the show time of the word.
+    Receiving segments of the submission sentences and calculates A dictionary:
+    A is a dictionary that keys are words of MT/SLT/ASR sentence, and value is the display time of the words.
+    
+    :param sentence_segments: a sentence of submission (SLT/ASR/MT)
+    :return uniq_words_show_time: a dictionary that unique words are the keys and display times are the values
+    :return uniq_words_estimate_time: a dictionary that unique words are the keys and estimated times are the values
     """
     
     uniq_words_show_time = {}
@@ -129,7 +152,12 @@ def build_A_Time_Based(sentence_segments):
     
 def extractMatchWords_basedOnTime(estimat_times, display_times, start, end):
     """
-    extract all words in MT which have estimation time in range start and end (start and end extracted in OStt).     
+    extracting all words in MT which have estimation time in range start and end (start and end extracted in OStt). 
+    
+    :param estimat_times: an estimation dictionary that obtained by build_A_Time_Based function
+    :param display_times: an display dictionary that obtained by build_A_Time_Based function
+    :param start,end: the start and end times of a sentence based on the OStt. 
+    :return out: a dictionary that contains words between start and end 
     """
     
     out = {}
@@ -163,7 +191,12 @@ def extractMatchWords_basedOnTime(estimat_times, display_times, start, end):
 
 def get_delay (T, match_words):
     """
-    calculating delay between T table and match words  
+    the calculating delay between T table and match words
+    
+    :param T: the T table
+    :param match_words: Common words between T matrix (OSt words) and submission file based on the two different types of segmentation 
+    :return miss_word: words that just are in the T 
+    :return delay: difference between words time in the T and display time in the match words
     """
     
     miss_word = 0
@@ -179,7 +212,13 @@ def get_delay (T, match_words):
             
 def evaluate(Ts, MT, OStt):
     """
-    calcuting delay and mission words
+    the calculating delay between submission and OSts (tt) 
+    
+    :param Ts: a list of T tables 
+    :param MT: a list of MT senetnces 
+    :param OStt: a list of OStt sentences
+    :return sum_delay: sum of delays between between submission and OSts
+    :return sum_missing_words: sum of missing words between between submission and OSts
     """
     
     sum_delay = 0
@@ -207,8 +246,10 @@ def evaluate(Ts, MT, OStt):
 
 def build_segmenter_A(MT):
     """
-    In this function, for each MT segment 'A' matrix has been built.
-    The output is a big list as mt sentences words which each element of it is as [word, display_time[word]].
+    In this function, for each MT segment, the  'A' matrix has been built.
+       
+    :param MT: a list of MT senetnces 
+    :return out: a list of dictionary that unique words in the C segments are the keys, and display times are the values 
     """
     
     A_list = []
@@ -231,8 +272,12 @@ def build_segmenter_A(MT):
 
 def time_segmenter(segmenter_sentence, A_list, MovedWords):
     """
-    This function indicates each segment in segmenter_sentence contains which segments in MT.
-    This function get output of build_segmenter_A() and a list of sentences which is output of segmenter() function and a integer number as MovedWords (indicate move number to left and write (default is 1))    
+    this function indicates each segment in segmenter_sentence contains which segments in MT.
+    
+    :param segmenter_sentence: list of sentences based on the mwerSegmenter
+    :param A_list: the output of the build_segmenter_A functions (display times of submission words)
+    :param MovedWords: indicate move number to left and write (default is 1)
+    :return segment_times: a list of correspond words in the  A_list
     """
     
     segment_times = list()
@@ -260,8 +305,17 @@ def time_segmenter(segmenter_sentence, A_list, MovedWords):
 
 def evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home, temp_folder):
     """
-    Receiving Ts and MT and calculates the delay time based on the mwersegmenter.
-    First calculating segmenter_sentence, A_list by segmenter() and build_segmenter_A() functions and then build times table with time_segmenter() function, and calculate delay sentence by sentence in T and times. 
+    Receiving Ts and MT and the delay based on the mwerSegmenter segmentation is calculated.
+    
+    :param Ts: a list of T tables 
+    :param MT: a list of MT senetnces 
+    :param MovedWords: indicate move number to left and write (default is 1)
+    :param language: the submision language. 
+    :param SLTev_home: path of the mwerSegmenter folder
+    :param temp_folder: path of the temp folder that created by UUID
+    :return sum_delay: sum of delays between between submission and OSts
+    :return sum_missing_words: sum of missing words between between submission and OSts
+    :return mWERQuality: the quality score of mwerSegmenter
     """
     
     A_list = build_segmenter_A(MT)
