@@ -235,6 +235,6 @@ def segmenter(MT, Ts, language, SLTev_home, temp_folder):
         segments.append(line.strip().split(' '))
         line = in_file.readline()
     mt_sentences = segments[:]
-    os.chdir('../')
+    os.chdir('..')
     shutil.rmtree(temp_folder_name)
     return mt_sentences, mWERQuality

@@ -39,7 +39,6 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         references.append(read_tt(path))
     #----------------------------------------
     if simple == 'False':
-        eprint("n ... not considering, not using")
         eprint("P ... considering Partial segments in delay and quality calculation(in addition to Complete segments)")
         eprint("T ... considering source Timestamps supplied with MT output")
         eprint("W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)")
@@ -88,16 +87,16 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         Ts.append(T)
     if simple == 'False':
         delay, missing_words = evaluate(Ts,MT, OStt)
-        print("tot      Delay         nTnn                  ", str("{0:.3f}".format(round(delay, 3))))
-        print("avg      Delay         nTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-        print("tot      MissedWords   nTnn                  ", missing_words)
+        print("tot      Delay         T                     ", str("{0:.3f}".format(round(delay, 3))))
+        print("avg      Delay         T                     ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+        print("tot      MissedWords   T                     ", missing_words)
         try:
             temp_folder = "./" + str(uuid.uuid4())
             delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home, temp_folder)
-            print("tot      Delay         nnWn                  ", str("{0:.3f}".format(round(delay, 3))))
-            print("avg      Delay         nnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-            print("tot      MissedWords   nnWn                  ", missing_words)
-            print("tot      mWERQuality   nnWn                  ", mWERQuality)
+            print("tot      Delay         W                     ", str("{0:.3f}".format(round(delay, 3))))
+            print("avg      Delay         W                     ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+            print("tot      MissedWords   W                     ", missing_words)
+            print("tot      mWERQuality   W                     ", mWERQuality)
         except:
             os.chdir(current_path)
             shutil.rmtree(temp_folder, ignore_errors=True)
@@ -108,17 +107,17 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
 
     if simple == 'False':
         delay, missing_words = evaluate(Ts,MT, OStt)
-        print("tot      Delay         PTnn                  ", str("{0:.3f}".format(round(delay, 3))))
-        print("avg      Delay         PTnn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-        print("tot      MissedWords   PTnn                  ", missing_words)
+        print("tot      Delay         PT                    ", str("{0:.3f}".format(round(delay, 3))))
+        print("avg      Delay         PT                    ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+        print("tot      MissedWords   PT                    ", missing_words)
 
     try:
         temp_folder = "./" + str(uuid.uuid4())
         delay, missing_words, mWERQuality = evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home, temp_folder)
-        print("tot      Delay         PnWn                  ", str("{0:.3f}".format(round(delay, 3))))
+        print("tot      Delay         PW                    ", str("{0:.3f}".format(round(delay, 3))))
         if simple == 'False':
-            print("avg      Delay         PnWn                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-            print("tot      MissedWords   PnWn                  ", missing_words)
+            print("avg      Delay         PW                    ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+            print("tot      MissedWords   PW                    ", missing_words)
     except:
         os.chdir(current_path)
         shutil.rmtree(temp_folder, ignore_errors=True)
@@ -137,15 +136,15 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
             T = get_One_T(OStt, reference, align)
             Ts.append(T)
         delay, missing_words = evaluate(Ts,MT, OStt)
-        print("tot      Delay         PTnA                  ", str("{0:.3f}".format(round(delay, 3))))
-        print("avg      Delay         PTnA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-        print("tot      MissedWords   PTnA                  ", missing_words)     
+        print("tot      Delay         PTA                   ", str("{0:.3f}".format(round(delay, 3))))
+        print("avg      Delay         PTA                   ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+        print("tot      MissedWords   PTA                   ", missing_words)     
         try:
             temp_folder = "./" + str(uuid.uuid4())
             delay, missing_words, mWERQuality =  evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home, temp_folder)
-            print("tot      Delay         PnWA                  ", str("{0:.3f}".format(round(delay, 3))))
-            print("avg      Delay         PnWA                  ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
-            print("tot      MissedWords   PnWA                  ", missing_words)
+            print("tot      Delay         PWA                   ", str("{0:.3f}".format(round(delay, 3))))
+            print("avg      Delay         PWA                   ", str("{0:.3f}".format(round((delay/avergae_refs_words), 3))))
+            print("tot      MissedWords   PWA                   ", missing_words)
         except:
             os.chdir(current_path)
             shutil.rmtree(temp_folder, ignore_errors=True)
@@ -153,8 +152,8 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         print("tot      Flicker       count_changed_words   ", int(calc_revise(MT)))
     print("tot      Flicker       count_changed_content ", int(calc_flicker(MT)))
     if simple == 'False':
-        print("macroavg Flicker       count_changed_content ", int(calc_average_flickers_per_sentence(MT)) )
-        print("microavg Flicker       count_changed_content ", int(calc_average_flickers_per_document(MT))  )
+        print("macroavg Flicker       count_changed_content ", str("{0:.3f}".format(round(calc_average_flickers_per_sentence(MT), 3)))  )
+        print("microavg Flicker       count_changed_content ",  str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))))
     sacre_score = calc_bleu_score_documnet(Ts, MT)
     print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
     if simple == 'False':

@@ -1,5 +1,3 @@
-#python setup.py bdist_wheel --universal
-#twine upload --repository pypi dist/* --verbose
 from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
@@ -7,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='SLTev',
-    version='1.0.3',
+    version='1.0.4',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
@@ -26,6 +24,4 @@ setup(
     python_requires='>=3.6',
 
 )
-
-
 

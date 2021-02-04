@@ -158,7 +158,7 @@ def use_mversegmentor(ostt, asr, SLTev_home, temp_folder):
         segments.append(line.strip().split(' '))
         line = in_file.readline()
     asr = segments[:]
-    os.chdir('../')
+    os.chdir('..')
     shutil.rmtree(temp_folder_name)
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
@@ -217,7 +217,7 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder):
         segments.append(line.strip().split(' '))
         line = in_file.readline()
     asr = segments[:]
-    os.chdir('../')
+    os.chdir('..')
     shutil.rmtree(temp_folder_name)
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
@@ -228,7 +228,7 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder):
         wer_scores.append(score)
     return sum(wer_scores)/len(wer_scores)
 
-def ASRev(ost="", asr="", SLTev_home="./", simple="False"):
+def ASRev(ost="", asr="", SLTev_home=".", simple="False"):
     """
     This function receives two files OSt and ASR, and calculates the WER score.
     
@@ -246,7 +246,6 @@ def ASRev(ost="", asr="", SLTev_home="./", simple="False"):
     current_path = os.getcwd()
     if simple == 'False':
         eprint("-------------------------------------------------------------")
-        eprint('n ... not considering, not using')
         eprint('L ... lowercasing')
         eprint('P ... removing punctuation')
         eprint('C ... concatenating all sentences')
@@ -256,19 +255,19 @@ def ASRev(ost="", asr="", SLTev_home="./", simple="False"):
     #-----------
     if simple == 'False':
         score = wer_evaluate(ostt, asr)
-        print('LPCnn ', str("{0:.3f}".format(round(score, 3)))  )
+        print('LPC   ', str("{0:.3f}".format(round(score, 3)))  )
     try:
-        temp_folder = "./" + str(uuid.uuid4())
+        temp_folder = os.path.join(".", str(uuid.uuid4()))
         score = use_mversegmentor(ostt, asr, SLTev_home, temp_folder)
-        print('LPnWn ', str("{0:.3f}".format(round(score, 3)))  )
+        print('LPW   ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)
         shutil.rmtree(temp_folder, ignore_errors=True)
     try:
         if simple == 'False':
-            temp_folder = "./" + str(uuid.uuid4())
+            temp_folder = os.path.join(".", str(uuid.uuid4()))
             score = use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder)
-            print('nnnWM ', str("{0:.3f}".format(round(score, 3)))  )
+            print('WM    ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)
         shutil.rmtree(temp_folder, ignore_errors=True)

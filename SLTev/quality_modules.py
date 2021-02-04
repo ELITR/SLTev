@@ -11,8 +11,11 @@ from files_modules import *
 
 def calc_bleu_score_documnet(Ts, MT):
     """
-    Calculating bleu score by using sacrebleu module. Input is the merge all of the sentences in MT and reference
-    as a document.   
+    Calculating bleu score by using sacrebleu module. In this method, all Complete segmented in MT is sys document and all Ts sentences is ref document. 
+    
+    :param Ts: a list of T tables 
+    :param MT: a list of MT senetnces 
+    :return sacre_blue_score: the bleu score
     """
 
     merge_mt_sentences = []
@@ -34,8 +37,14 @@ def calc_bleu_score_documnet(Ts, MT):
 
 def calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home, temp_folder):
     """
-    Calculating bleu score sentence by sentence with NLTK and sacrebleu modules.
-    using Moses tokenizer befor using mwersegmenter
+    Calculating bleu score sentence by sentence sacrebleu module.
+    
+    :param Ts: a list of T tables 
+    :param MT: a list of MT senetnces 
+    :param language: the submision language. 
+    :param SLTev_home: path of the mwerSegmenter folder
+    :param temp_folder: path of the temp folder that created by UUID
+    :return sacre_blue_score: the bleu score
     """
    
     mt_sentences = []
@@ -60,8 +69,10 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home, temp_fold
 
 def build_A_Time_Based_quality(sentence_segments):
     """
-    Receiving segments of the mt sentences and calculates A dictionary:
-    A is a dictionary which key is one word of MT sentence and value is the show time of the
+    Receiving segments of the mt sentences and calculates uniq_words_estimate_time dictionary
+       
+    :param sentence_segments: a list of a sentence segments
+    :return uniq_words_estimate_time: a dictionary which key is one word of MT sentence and value is the display time of the
     word.
     """
     
@@ -79,6 +90,12 @@ def build_A_Time_Based_quality(sentence_segments):
 def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
     """
     Calculates blue score using the NLTK module with time slice strategy.
+    
+    :param Ts: a list of T tables 
+    :param MT: a list of MT senetnces 
+    :param time_step: size of time-step
+    :return blue_scores: the average bleu score between time-step scores
+    :return avg_SacreBleu: a list of time-step scores 
     """  
     
     tail_number = float(MT[-1][-1][2])

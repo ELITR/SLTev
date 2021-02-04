@@ -59,7 +59,7 @@ def chop_elitr_testset_prefix(path):
     if path_split[0] == "elitr-testset": 
         return '/'.join(path_split[1:])
     else:
-        raise ValueError("File name does not start with elitr-testset: "+path)
+        return path
 
 def populate(elitr_testset_path, indexname, target_path):
     """
@@ -93,8 +93,11 @@ def populate(elitr_testset_path, indexname, target_path):
         if indice[0] == '#':
             pass
         else:
-            print(indice + ' copied to ' + target_path)
-            getIndices(indice, target_path)
+            try:
+                getIndices(indice, target_path)
+                eprint(indice + ' copied to ' + target_path)
+            except:
+                eprint("copyig file ", indice, "faild. please check this file in index" )
     
 def readIndice(file_path):
     """
@@ -180,13 +183,13 @@ def SLTev_inputs_per_submmision(submission_file, inputs):
     """
     
     status, tt, ostt, align = '', [], '', []
-    file_name1 = submission_file.split('/')[-1]
+    file_name1 = os.path.split(submission_file)[1]
     file_name = '.'.join(file_name1.split('.')[:-3])
     source_lang = file_name1.split('.')[-3]
     target_lang = file_name1.split('.')[-2]
     status = file_name1.split('.')[-1]
     for file in inputs:
-        input_name = file.split('/')[-1]
+        input_name = os.path.split(file)[1]
         input_name = input_name.split('.')
         if '.'.join(input_name[:-1]) + '.' + removeDigits(input_name[-1])  == file_name + '.' + target_lang + '.OSt':
             tt.append(file)

@@ -18,8 +18,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
     parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False') 
-    parser.add_argument("--outdir", "-o", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "./outdir/", type=str)
-    parser.add_argument("--elitr-testset", "-T", metavar="DIR", help="use DIR as git clone of elitr-testset instead of ./elitr-testset", default= "./elitr-testset", type=str)
+    parser.add_argument("--outdir", "-O", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "outdir", type=str)
+    parser.add_argument("-T", "--elitr-testset", metavar="DIR", help="use DIR as git clone of elitr-testset instead of elitr-testset", default= "elitr-testset", type=str)
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
     parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
     args = parser.parse_args()
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     
     SLTev_commit_id = ''
     try:
-        repo = git.Repo('/'.join(sltev_home.split('/')[:-1]))
+        repo = git.Repo(os.path.split(sltev_home)[0])
         sha = repo.head.object.hexsha
         SLTev_commit_id = 'SLTev_' + repo.git.rev_parse(sha, short=True) + '-'
     except:
@@ -46,14 +46,13 @@ if __name__ == "__main__":
         parser.print_help()
         sys.exit(1)
         
-    output_dir = './'
+    output_dir = ''
     if os.path.isdir(args.outdir):
         output_dir = args.outdir
     else:
         os.makedirs(args.outdir, exist_ok=True)
         output_dir = args.outdir
-    if output_dir[-1] != '/':
-        output_dir += '/'
+
     #----get commit id
     elitr_path = args.elitr_testset
     try:
@@ -71,7 +70,7 @@ if __name__ == "__main__":
                 commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
                 eprint("elitr-testset pulled")
             except:
-                eprint ("Pull from elitr-testset at "+args.elitr_testset+" failed; is it a valid git clone?\nTest manually:\n  cd "+args.elitr_testset+"; git pull", args.g)
+                eprint ("pull from elitr-testset at "+elitr_path+" failed; is it a valid git clone? \nTest manually:\n  cd " + elitr_path + "; git pull", args.g)
                 sys.exit(1)
         else:
             try:
@@ -93,17 +92,14 @@ if __name__ == "__main__":
                 eprint (args.commitid, ' is not valid')
         try:
             eprint('elitr-testset commit id is: ', commit_id)
-            with FileLock(os.path.join(args.elitr_testset, "SLTev.lock")):
-                indice_file_path = os.path.join(args.elitr_testset, "indices", args.g)
-                target_path = output_dir
-                populate(args.elitr_testset, args.g, target_path)
+            with FileLock(os.path.join(elitr_path, "SLTev.lock")):
+                indice_file_path = os.path.join(elitr_path, "indices", args.g)
+                populate(elitr_path, args.g, output_dir)
         except:
             eprint ("Generating index ",args.g ," failed. Check ", args.g, " index, it does not seem to exist, also check ", output_dir, ' for write permision'  )
         sys.exit(1)
     #----checking working directory    
     working_dir = args.e
-    if working_dir[-1] != '/':
-        working_dir += '/'
 
     if os.path.isdir(working_dir):
         eprint ('working directory is ', working_dir)
@@ -146,11 +142,13 @@ if __name__ == "__main__":
         ost_as_ostt = 0
         if ostt == '':
             ost_as_ostt = 1
-            temp = submission_file.split('/')[-1]
+            path, file = os.path.split(submission_file)
+            temp = file
             temp = temp.split('.')
-            ostt = working_dir + '.'.join(temp[:-2]) + '.OSt'
+            file =  '.'.join(temp[:-2]) + '.OSt'
+            ostt = os.path.join(working_dir, file)
             if os.path.isfile(ostt):
-                eprint("there is no OStt file for ", submission_file, " and we have ", ostt, " instead of OStt")
+                eprint("there is no OStt file for ", submission_file, " and we are using ", ostt, " instead of OStt")
             else:
                 eprint("evaluation for ", submission_file ," faild, file ", ostt, " is not exist")
                 continue
@@ -172,8 +170,8 @@ if __name__ == "__main__":
             eprint("evaluation faild, no OStt file exist for ", submission_file)
             continue
         if align == [] and 'asr' == removeDigits(status):
-            eprint("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])
-            out_name = output_dir + submission_file.split('/')[-1] + ".WER.out" 
+            eprint("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])     
+            out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".WER.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
@@ -181,7 +179,7 @@ if __name__ == "__main__":
                 sys.stdout = orig_stdout                
             eprint("Results saved in ", out_name)
             eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            out_name = output_dir + submission_file.split('/')[-1] + ".BLEU.out" 
+            out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
@@ -191,7 +189,7 @@ if __name__ == "__main__":
             continue
         if align == [] and 'asr' != removeDigits(status):
             eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            out_name = output_dir + submission_file.split('/')[-1] + ".BLEU.out" 
+            out_name = os.path.join(output_dir, os.path.split(submission_file)[1])+ ".BLEU.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
@@ -205,7 +203,7 @@ if __name__ == "__main__":
                 continue
 
             eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            out_name = output_dir + submission_file.split('/')[-1] + ".BLEU.out" 
+            out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
             with open(out_name, 'w') as f:
                 sys.stdout = f
                 print('Signature: ', signature)
