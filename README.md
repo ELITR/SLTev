@@ -7,7 +7,7 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 
 ## Requirements
 
-- python3.5 or higher
+- python3.6 or higher
 - some pip-installed modules:
   - sacreBLEU [3]
   - requests, gitpython, gitdir, filelock
@@ -39,13 +39,13 @@ Depending on whether your system produces (spoken language) translation (SLT), o
 
 Install the Python module (Python 3 only)
    
-``` {r, engine='bash'} 
+``` 
 pip3 install SLTev
 ```
     
 Also, you can install from the source:
 
-``` {r, engine='bash'} 
+``` 
 python3 setup.py install
 ```
 
