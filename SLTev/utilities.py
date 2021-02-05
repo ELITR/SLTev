@@ -28,7 +28,25 @@ def removeExtraSpaces(text):
     text = text.replace("\t", "")
     text = text.replace(" ", "")
     return text
-   
+ 
+def population(elitr_path, password):
+    """
+    populate link files using elitr-testset/populate.sh 
+    
+    :param elitr_path: path of the cloning elitr-tesset repo
+    :param password: an string like as ELITR_CONFIDENTIAL_PASSWORD=...
+    """
+    
+    current_path = os.getcwd()
+    os.chdir(elitr_path)
+
+    cmd = "ELITR_CONFIDENTIAL_PASSWORD=" + removeExtraSpaces(password) + " ./populate.sh"
+    os.system(cmd)
+    eprint("population done.")
+#     except:
+#         eprint("population faild, please check ELITR_CONFIDENTIAL_PASSWORD=", password, " or the new population is not exist")
+    os.chdir(current_path)
+    
 def getIndices(indice_file_path, target_path):
     """
     copy files from the index to the target path.

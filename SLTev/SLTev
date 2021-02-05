@@ -14,6 +14,8 @@ import subprocess
 import pkg_resources
 from filelock import FileLock
 
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
@@ -32,8 +34,7 @@ if __name__ == "__main__":
     sys.path.insert(1, sltev_home)
     from utilities import *
     from ASRev import *
-    from evaluator import *
-    
+    from evaluator import *    
     SLTev_commit_id = ''
     try:
         repo = git.Repo(os.path.split(sltev_home)[0])
@@ -66,16 +67,24 @@ if __name__ == "__main__":
             try:
                 repo = git.Repo(elitr_path)
                 repo.remotes.origin.pull()
+                try:
+                    population(elitr_path, os.environ.copy()['ELITR_CONFIDENTIAL_PASSWORD']) #link population
+                except:
+                    eprint("ELITR_CONFIDENTIAL_PASSWORD=... was not used")
                 sha = repo.head.object.hexsha
                 commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
                 eprint("elitr-testset pulled")
             except:
-                eprint ("pull from elitr-testset at "+elitr_path+" failed; is it a valid git clone? \nTest manually:\n  cd " + elitr_path + "; git pull", args.g)
+                eprint ("pull from elitr-testset at "+elitr_path+" failed; is it a valid git clone? \nTest manually:\n  cd " + elitr_path + "; git pull")
                 sys.exit(1)
         else:
             try:
                 eprint("cloning elitr-testset repo to the ", elitr_path)
                 git.Repo.clone_from(git_path, elitr_path)
+                try:
+                    population(elitr_path, os.environ.copy()['ELITR_CONFIDENTIAL_PASSWORD']) #link population
+                except:
+                    eprint("ELITR_CONFIDENTIAL_PASSWORD=... was not used")
                 repo = git.Repo(elitr_path)
                 sha = repo.head.object.hexsha
                 commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
