@@ -40,7 +40,7 @@ Depending on whether your system produces (spoken language) translation (SLT), o
 Install the Python module (Python 3 only)
    
 ``` 
-pip3 install SLTev
+pip3 install --upgrade SLTev
 ```
     
 Also, you can install from the source:
@@ -72,6 +72,7 @@ We illustrate the rest with ``SLTev-sample`` as the index.
 ```
 SLTev -g SLTev-sample --outdir my-evaluation-run-1
 # To use your existing checkout of elitr-testset, add -T /PATH/TO/YOUR/elitr-testset
+# To populate of elitr-testset links, add ELITR_CONFIDENTIAL_PASSWORD=<password> before SLTev (e.g. ELITR_CONFIDENTIAL_PASSWORD=myPass SLTev -g SLTev-sample --outdir my-evaluation-run-1) 
 ```
 
 3. Run your models on files in ``my-evaluation-run-1`` and put the outputs into the same directory, with filename suffixes as described above.
