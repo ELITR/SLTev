@@ -71,6 +71,7 @@ We illustrate the rest with ``SLTev-sample`` as the index.
 2. Ask SLTev to provide you with the current version of input files:
 ```
 SLTev -g SLTev-sample --outdir my-evaluation-run-1
+# To use your existing checkout of elitr-testset, add -T /PATH/TO/YOUR/elitr-testset
 ```
 
 3. Run your models on files in ``my-evaluation-run-1`` and put the outputs into the same directory, with filename suffixes as described above.
