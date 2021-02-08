@@ -77,14 +77,20 @@ def build_A_Time_Based_quality(sentence_segments):
     """
     
     uniq_words_show_time = {}
-    uniq_words_estimate_time = {} 
+    uniq_words_estimate_time = {}
+    for word in sentence_segments[-1][3:-1]:
+        uniq_words_estimate_time[word] = 0
+        uniq_words_show_time[word] = 0
     for segment in sentence_segments:
         words = segment[3:-1] 
         step = (float(segment[2])-float(segment[1]))/len(words)
         for word in segment[3:-1]:
-            if word not in uniq_words_show_time.keys() and word in sentence_segments[-1][3:-1]:
-                uniq_words_show_time[word] = float(segment[0])
-                uniq_words_estimate_time[word] = float(float(segment[1]) + ((words.index(word)+1)*step))
+            try:
+                if uniq_words_show_time[word] == 0:
+                    uniq_words_show_time[word] = float(segment[0])
+                    uniq_words_estimate_time[word] = float(float(segment[1]) + ((words.index(word)+1)*step))
+            except:
+                pass
     return uniq_words_estimate_time
 
 def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
@@ -131,16 +137,21 @@ def calc_bleu_score_sentence_by_time(Ts, MT, time_step):
     end = time_step
     sacreBLEU_list = []
     blue_scores = []
-    for t in  range(len(mt_sentences)):        
-        sys = ' '.join(mt_sentences[t])
-        refs = [ ' '.join(ref) for ref in references_sentences[t]]
-        b_sacre = sacrebleu.sentence_bleu(sys, refs)
-        sacre_blue_score = b_sacre.score
-        text1 = 'detailed sacreBLEU     span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(sacre_blue_score))
-        sacreBLEU_list.append(sacre_blue_score)
-        start += time_step
-        end += time_step
-        blue_scores.append(text1)
+    for t in  range(len(mt_sentences)):
+        try:
+            sys = ' '.join(mt_sentences[t])
+            refs = [ ' '.join(ref) for ref in references_sentences[t]]
+            b_sacre = sacrebleu.sentence_bleu(sys, refs)
+            sacre_blue_score = b_sacre.score
+            text1 = 'detailed sacreBLEU     span-'+ format(start, '06') + '-' + format(end, '06') +  '     ' + str("{0:.3f}".format(sacre_blue_score))
+            sacreBLEU_list.append(sacre_blue_score)
+            start += time_step
+            end += time_step
+            blue_scores.append(text1)
+        except:
+            pass
     avg_SacreBleu = "avg      sacreBLEU     span*                  " + str("{0:.3f}".format(round((sum(sacreBLEU_list)/len(sacreBLEU_list)), 3)))
     return blue_scores, avg_SacreBleu
+
+
 

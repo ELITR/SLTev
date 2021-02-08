@@ -78,6 +78,44 @@ def chop_elitr_testset_prefix(path):
         return '/'.join(path_split[1:])
     else:
         return path
+    
+def checkEmptyLine(file):
+    """
+    check for empty lines
+    
+    :param file: path of the file
+    :return : status of error
+    """
+    with open(file,  'r', encoding="utf8") as f:
+        lines = f.readlines()
+        for i in range(len(lines)):
+            if not lines[i].strip():
+                eprint("The file ", file, ", line ", i, " is empty. please remove it.")
+                return 1
+    return 0
+
+def checkEmptyOSttLine(file):
+    """
+    check for empty lines
+    
+    :param file: path of the file
+    :return : status of error
+    """
+    with open(file,  'r', encoding="utf8") as f:
+        lines = f.readlines()
+        for i in range(len(lines)):
+            if not lines[i].strip():
+                eprint("The file ", file, ", line ", i, " is empty. please remove it.")
+                return 1
+            line = lines[i].strip().split()
+            try:
+                if line[0] not in ["P", "C"] or int(line[1]) < -1 or int(line[2]) < -1 or line[3:] == [] or line[3:] == ['']:
+                    eprint("The file ", file, ", line ", i, " does not have true format (C/P 0 0 ) or it is empty line")
+                    return 1
+            except:
+                pass
+            
+    return 0
 
 def populate(elitr_testset_path, indexname, target_path):
     """
@@ -152,7 +190,9 @@ def check_input(in_file):
     lines = open(in_file, 'r').readlines()
     state = 0 
     for i in range(len(lines)):
-        line = lines[i].strip().split(' ')
+        line = lines[i].strip().split(' ')        
+        if line == []:
+            continue
         if line[0] != 'C' and line[0] != 'P':
             text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
             state = 1
@@ -160,9 +200,14 @@ def check_input(in_file):
             break
         try:
             if int(line[1]) > -1 and int(line[2]) > -1 and int(line[3]) > -1:
-                continue
+                if line[4:] != [] and line[4:] != ['']:
+                    pass
+                else:
+                    eprint("The file ", in_file, ", line ", i, " does not have true format (C/P 0 0 ) or it is empty line")
+                    state = 1
+                    break
         except:
-            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
+            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line> or it is empty"
             state = 1
             eprint(text)
             break
@@ -227,6 +272,8 @@ def count_C_lines(list_line):
     
     counter = 0
     for i in list_line:
+        if i.strip().split() == []:
+            continue
         if i.strip().split()[0] == 'C':
             counter += 1
     return counter
@@ -250,7 +297,7 @@ def partity_test(ostt, tt_list):
             tt_sentence = len(f.readlines())
         if ostt_sentence != tt_sentence:
             status = 0 
-            error = "The number of C segment (complete) in " + ostt  + " is "  + ostt_sentence  + " and number of lines in " + file + " is " + tt_sentence
+            error = "The number of C segment (complete) in " + ostt  + " is "  + str(ostt_sentence)  + " and number of lines in " + file + " is " + str(tt_sentence)
             break
     return status, error
 

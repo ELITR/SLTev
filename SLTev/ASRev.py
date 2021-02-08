@@ -46,7 +46,9 @@ def read_asr(file_name):
         while line:
             line = tokenize(line.strip())
             if line == []:
+                line = in_file.readline()
                 continue
+                
             if line[0] != 'P' and line[0] != 'C':
                 sentences.append(line)
                 
@@ -74,6 +76,9 @@ def read_ostt(file_name):
         line = in_file.readline()
         while line:
             line = tokenize(line.strip())
+            if line == []:
+                line = in_file.readline()
+                continue
             if line[0] != 'P' and line[0] != 'C':
                 sentences.append(line)
             elif 'C' == line[0]:

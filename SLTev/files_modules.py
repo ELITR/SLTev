@@ -40,6 +40,9 @@ def read_tt(file_name):
         line = in_file.readline()
         while line:
             l = tokenize(line.strip())
+            if l == []:
+                line = in_file.readline()
+                continue
             l.append('.')
             reference.append(l)
             line = in_file.readline()
@@ -61,6 +64,9 @@ def read_ostt(file_name):
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
+            if tokenize(line.strip()) == []:
+                line = in_file.readline()
+                continue
             if 'P ' in line[:3]:
                 l = tokenize(line.strip())[1:]
                 l.append('.')
@@ -90,6 +96,9 @@ def read_ost_as_ostt(file_name):
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()        
         while line:
+            if tokenize(line.strip()) == []:
+                line = in_file.readline()
+                continue
             l = [0,0]
             l += tokenize(line.strip())
             l.append('.')
@@ -112,7 +121,10 @@ def read_MT(file_name, asr_status=False):
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
-            line = tokenize(line.strip())               
+            line = tokenize(line.strip()) 
+            if line == []:
+                line = in_file.readline()
+                continue
             if 'P' == line[0]:
                 l = line[1:]
                 l.append('.')
@@ -143,6 +155,9 @@ def read_alignment_file(in_file):
     sentence = []
     while line:
         line = line.strip().split(' ')
+        if line == []:
+            line = in_file.readline()
+            continue
         if '#' in line:
             sentences.append(sentence)
             sentence = []

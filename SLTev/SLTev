@@ -148,6 +148,17 @@ if __name__ == "__main__":
         if state:
             continue
         status, tt, ostt, align = SLTev_inputs_per_submmision(submission_file, inputs)
+        #empty checking for tt, submission_file
+        temp_flag = 0
+        for file in tt:
+            if checkEmptyLine(file) == 1:
+                temp_flag = 1
+                continue
+        if temp_flag == 1:
+            continue
+        if checkEmptyLine(submission_file) == 1:
+            continue
+        #----
         ost_as_ostt = 0
         if ostt == '':
             ost_as_ostt = 1
@@ -169,6 +180,8 @@ if __name__ == "__main__":
                 eprint(error)
                 continue
         #----checking MT contain at least one C segment
+        if checkEmptyOSttLine(ostt) == 1:
+            continue
         if MT_checking(submission_file) == 0:
             eprint("evaluation for ",submission_file , " faild, does not contain any Complete segment (C) for evaluation it must contain at least one C segment")
             continue

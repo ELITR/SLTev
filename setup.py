@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='SLTev',
-    version='1.0.5',
+    version='1.0.6',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
@@ -21,8 +21,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     scripts=['SLTev/SLTev'],
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 
 )
-
 
