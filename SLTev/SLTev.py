@@ -6,17 +6,17 @@ import argparse
 import requests
 from os import getcwd
 from urllib.request import urlopen
-import subprocess as sp
 import shutil
 import logging
 import git
-import subprocess
 import pkg_resources
 from filelock import FileLock
+from mosestokenizer import *
+from utilities import *
+from ASRev import *
+from evaluator import *
 
-
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
     parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False') 
@@ -25,16 +25,22 @@ if __name__ == "__main__":
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
     parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
     args = parser.parse_args()
-    import subprocess
+    
     #-----------add SLTev home to the path 
     try:
         sltev_home = pkg_resources.resource_filename('SLTev', '')
     except:
         sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
     sys.path.insert(1, sltev_home)
-    from utilities import *
-    from ASRev import *
-    from evaluator import *    
+    #MosesTokenizer checking
+    try:
+        tokenize = MosesTokenizer('en')
+        tokens = tokenize('Hello World!')
+        assert tokens==['Hello', 'World', '!'], "mosestokenizer is badly installed, run as follow for fix: pip install --upgrade mosestokenizer" 
+    except:
+        eprint("mosestokenizer is badly installed, run as follow for fix:\n pip install --upgrade mosestokenizer")
+        sys.exit(1)
+    
     SLTev_commit_id = ''
     try:
         repo = git.Repo(os.path.split(sltev_home)[0])
@@ -233,3 +239,6 @@ if __name__ == "__main__":
                 sys.stdout = orig_stdout
             eprint("Results saved in ", out_name)
             continue
+            
+if __name__ == "__main__":
+    main()

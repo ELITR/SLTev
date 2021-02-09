@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='SLTev',
-    version='1.0.6',
+    version='1.0.7',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
@@ -20,7 +20,11 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    scripts=['SLTev/SLTev'],
+    entry_points={
+        'console_scripts': [
+            'SLTev = SLTev.SLTev:main',
+        ],
+    },
     python_requires='>=3.7',
 
 )
