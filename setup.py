@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='SLTev',
-    version='1.0.7',
+    version='1.0.8',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",

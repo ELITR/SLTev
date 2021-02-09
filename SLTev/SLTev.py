@@ -175,19 +175,21 @@ def main():
             ostt = os.path.join(working_dir, file)
             if os.path.isfile(ostt):
                 eprint("there is no OStt file for ", submission_file, " and we are using ", ostt, " instead of OStt")
+                if checkEmptyLine(ostt) == 1:
+                    continue
             else:
                 eprint("evaluation for ", submission_file ," faild, file ", ostt, " is not exist")
                 continue
         else:            
             #----checking number of C sentences in OStt and all tt must be equal
+            if checkEmptyOSttLine(ostt) == 1:
+                continue
             parity_state,error = partity_test(ostt, tt)
             if  parity_state == 0:
                 eprint ("evaluation for ", submission_file ," faild, the number of Complete lines (C) in ", ostt, " and ", ' '.join(tt), ' are not equal')
                 eprint(error)
                 continue
         #----checking MT contain at least one C segment
-        if checkEmptyOSttLine(ostt) == 1:
-            continue
         if MT_checking(submission_file) == 0:
             eprint("evaluation for ",submission_file , " faild, does not contain any Complete segment (C) for evaluation it must contain at least one C segment")
             continue
