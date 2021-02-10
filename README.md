@@ -19,20 +19,19 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
 
 ### Reference Transcripts: ``.OSt``, ``.OStt``
-- <file-name> . <language> . <OSt/OStt>
+- &lt;file-name&gt; . &lt;language&gt; . &lt;OSt/OStt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.OSt``, ``kaccNlwi6lUCEM.cs.OStt``
 
 ### Word Alignment for Better Estimation: ``.align``
-- <file-name> . <source-language> . <target-language> . <align>
+- &lt;file-name&gt; . &lt;source-language&gt; . &lt;target-language&gt; . &lt;align&gt;
 - e.g. ``kaccNlwi6lUCEM.en.de.align``
 
-
 ### System Outputs from Translation: ``.slt``, ``.mt``
-- <file-name> . <source-language> . <target-language> . <slt/mt>
+- &lt;file-name&gt; . &lt;source-language&gt; . &lt;target-language&gt; . &lt;slt/mt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.de.slt``, ``kaccNlwi6lUCEM.cs.en.mt``
 
 ### System Outputs from ASR: ``.asr``
-- <file-name> . <source-language> . <source-language> . <asr>
+- &lt;file-name&gt; . &lt;source-language&gt; . &lt;source-language&gt; . &lt;asr&gt;
 - e.g. ``kaccNlwi6lUCEM.en.en.asr``
 
 ## Installation
