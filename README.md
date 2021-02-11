@@ -9,10 +9,9 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 
 - python3.7 or higher
 - some pip-installed modules:
-  - sacreBLEU [3]
-  - requests, gitpython, gitdir, filelock
-- mwerSegmenter [1]
-- mosestokenizer [2]
+  - sacrebleu, sacremoses
+  - gitpython, gitdir, filelock
+- mwerSegmenter 
 
 ## File Naming Convention
 
@@ -101,11 +100,5 @@ In the following, we use this notation:
 * ASR ... the unrevised output of speech recognition system; timestamped at the word level
 * SLT ... the unrevised output of spoken language translation, i.e. sentences in the target language corresponding to sentences in the source language; the source of SLT is OS
 * MT  ... the unrevised output of text-based translation; the source of MT is ASR (machine-transcribed OS) or OSt (human-transcribed OS)
-
-
-## References
-    [1] Evgeny Matusov, Gregor Leusch, Oliver Bender, and Hermann Ney. 2005b. Evaluating machine-translation output with automatic sentence segmentation. In International Workshop on Spoken Language Translation, pages 148–154, Pittsburgh, PA, USA.
-    [2] Philipp Koehn, Hieu Hoang, Alexandra Birch, Chris Callison-Burch, Marcello Federico, Nicola Bertoldi, Brooke Cowan, Wade Shen, Christine Moran, Richard Zens, Chris Dyer, Ondřej Bojar, Alexandra Constantin and Evan Herbst. 2007. Proceedings of the ACL (Association for Computational Linguistics).
-    [3] Post, Matt. 2018. Association for Computational Linguistics, pages 186-191. 
     
 
