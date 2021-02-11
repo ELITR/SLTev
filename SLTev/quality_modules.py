@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
-import argparse
-import sys
 import sacrebleu
-import subprocess as sp
-import os
-from mosestokenizer import *
 from files_modules import *
 
+######################################################################
+# quality functions 
+######################################################################
 
 def calc_bleu_score_documnet(Ts, MT):
     """

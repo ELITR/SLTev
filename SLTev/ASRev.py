@@ -3,9 +3,7 @@ from jiwer import wer
 import string 
 import re
 import subprocess as sp
-from mosestokenizer import *
-import argparse
-import sys
+from sacremoses import MosesTokenizer, MosesDetokenizer
 import os
 import uuid
 import shutil
@@ -28,7 +26,7 @@ def text_preprocessing(text):
     text = re.sub(' +', ' ', text)
     return text
 
-def read_asr(file_name):
+def read_asr_for_wer(file_name):
     """
     Read asr file 
     Input: the path of the ASR file 
@@ -40,7 +38,7 @@ def read_asr(file_name):
     """
     
     sentences = []
-    tokenize = MosesTokenizer()
+    tokenize = MosesTokenizer().tokenize
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
@@ -59,7 +57,7 @@ def read_asr(file_name):
     sentences = list(filter(lambda a: a != [], sentences))
     return sentences
 
-def read_ostt(file_name):
+def read_ostt_for_wer(file_name):
     """
     Read OStt or tt file 
     Input: the path of OStt or tt or ASR file 
@@ -71,7 +69,7 @@ def read_ostt(file_name):
     """
     
     sentences = []
-    tokenize = MosesTokenizer()
+    tokenize = MosesTokenizer().tokenize
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
@@ -102,7 +100,7 @@ def wer_evaluate(ostt, asr):
     
     #----------convert ostt to a string
     ostt_string = ''
-    detokenize = MosesDetokenizer()
+    detokenize = MosesDetokenizer().detokenize
     for i in ostt:
         ostt_string += ' '
         ostt_string += detokenize(i) 
@@ -158,7 +156,7 @@ def use_mversegmentor(ostt, asr, SLTev_home, temp_folder):
     in_file = open('__segments', 'r', encoding="utf8")
     line = in_file.readline()
     segments = [] 
-    detokenize = MosesDetokenizer()
+    detokenize = MosesDetokenizer().detokenize
     while line:
         segments.append(line.strip().split(' '))
         line = in_file.readline()
@@ -246,8 +244,8 @@ def ASRev(ost="", asr="", SLTev_home=".", simple="False"):
     
     ostt_file = ost
     asr_file = asr
-    ostt = read_ostt(ostt_file)
-    asr = read_asr(asr_file)
+    ostt = read_ostt_for_wer(ostt_file)
+    asr = read_asr_for_wer(asr_file)
     current_path = os.getcwd()
     if simple == 'False':
         eprint("-------------------------------------------------------------")

@@ -1,12 +1,7 @@
 import os
 import sys
-import requests
 from os import getcwd
-from urllib.request import urlopen
-import subprocess as sp
 import shutil
-import logging
-from pathlib import Path
 
 ######################################################################
 # The utility modules use in the SLTev

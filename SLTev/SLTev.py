@@ -3,15 +3,12 @@
 import os
 import sys
 import argparse
-import requests
 from os import getcwd
-from urllib.request import urlopen
 import shutil
-import logging
 import git
 import pkg_resources
 from filelock import FileLock
-from mosestokenizer import *
+from sacremoses import MosesTokenizer
 from utilities import *
 from ASRev import *
 from evaluator import *
@@ -32,13 +29,13 @@ def main():
     except:
         sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
     sys.path.insert(1, sltev_home)
-    #MosesTokenizer checking
+    #sacremoses checking
     try:
-        tokenize = MosesTokenizer('en')
+        tokenize = MosesTokenizer().tokenize
         tokens = tokenize('Hello World!')
-        assert tokens==['Hello', 'World', '!'], "mosestokenizer is badly installed, run as follow for fix: pip install --upgrade mosestokenizer" 
+        assert tokens==['Hello', 'World', '!'], "sacremoses is badly installed, run as follow for fix: pip install --upgrade sacremoses" 
     except:
-        eprint("mosestokenizer is badly installed, run as follow for fix:\n pip install --upgrade mosestokenizer")
+        eprint("sacremoses is badly installed, run as follow for fix:\n pip install --upgrade sacremoses")
         sys.exit(1)
     
     SLTev_commit_id = ''

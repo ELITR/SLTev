@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
-import sys
-import sacrebleu
-import subprocess as sp
-import os
-from mosestokenizer import *
 from files_modules import *
 
 

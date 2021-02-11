@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='SLTev',
-    version='1.0.8',
+    version='1.0.9',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
@@ -13,12 +13,12 @@ setup(
     packages=['SLTev',],
     data_files = [ ('SLTev', ['SLTev/mwerSegmenter']) ],
     include_package_data=True,
-    install_requires=['gitpython', 'requests', 'mosestokenizer', 'sacrebleu', 'gitdir', 'jiwer', 'filelock'],
+    install_requires=['gitpython', 'sacremoses', 'sacrebleu', 'gitdir', 'jiwer', 'filelock'],
     url="https://github.com/ELITR/SLTev.git",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        'Operating System :: POSIX :: Linux',
     ],
     entry_points={
         'console_scripts': [

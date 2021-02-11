@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-import argparse
-import sys
-import sacrebleu
-import subprocess as sp
-import os
-from mosestokenizer import *
-from files_modules import *
+######################################################################
+# flicker functions 
+######################################################################
+
 def calc_change_words(segment1, segment2):
     """
     Receiving two segments of a sentence and calculating the number of times the first segment words have been changed.
@@ -117,3 +114,4 @@ def calc_average_flickers_per_document(MT):
             first_segment = segment[3:-1]
         complet_word_count += float(len(sentence[-1][3:-1]))
     return float(flicker_size) / complet_word_count
+

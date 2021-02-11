@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import argparse
-import sys
-import sacrebleu
 import subprocess as sp
 import os
-from mosestokenizer import *
+from sacremoses import MosesTokenizer
 import uuid
 import shutil
     
@@ -34,7 +31,7 @@ def read_tt(file_name):
     :return  reference: a list of sentences that split by space like as [['i', 'am', '.'], ['you', 'are', '.'] ]
     """
     
-    tokenize = MosesTokenizer()
+    tokenize = MosesTokenizer().tokenize
     reference = list()
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
@@ -60,7 +57,7 @@ def read_ostt(file_name):
     
     ASR = list()
     sentence = []
-    tokenize = MosesTokenizer()
+    tokenize = MosesTokenizer().tokenize
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
@@ -92,7 +89,7 @@ def read_ost_as_ostt(file_name):
     
     ASR = list()
     sentence = []
-    tokenize = MosesTokenizer()
+    tokenize = MosesTokenizer().tokenize
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()        
         while line:
@@ -117,7 +114,7 @@ def read_MT(file_name, asr_status=False):
     
     MT = list()
     sentence = []
-    tokenize = MosesTokenizer()
+    tokenize = MosesTokenizer().tokenize
     with open(file_name, 'r', encoding="utf8") as in_file:
         line = in_file.readline()
         while line:

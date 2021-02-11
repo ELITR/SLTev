@@ -1,6 +1,5 @@
 gitpython
-requests
-mosestokenizer
+sacremoses
 sacrebleu
 gitdir
 jiwer
