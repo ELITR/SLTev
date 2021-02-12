@@ -1,64 +1,42 @@
 # Data Preparation
 
-This directory is intended for those who want to create their own test sets.
-Commonly, users will only want to evaluate against ``elitr-testset`` (https://github.com/ELITR/elitr-testset), see ``../README.md``.
-
-
-You can use these scripts to prepare data for use in SLTev.  
-
-
-### Extract OSt from OStt 
-
-``` {r, engine='python'} 
-$ ./giza++/transcript_to_source ostt_file > source_ref
-```
-	- Input-files:
-        - ostt_file is the input OStt file. 
-        - source_ref is the output file. 
-    e.g. ./giza++/transcript_to_source ../examples/input-files/kaccNlwi6lUCEM.en.OStt > ./kaccNlwi6lUCEM.en.OSt
-	
-## MGIZA [1]
-
-MGIZA is a multi-CPU type of GIZA++ [2] that makes alignment between source (OSt) files and target (tt) files. 
+In order to make alignment between source and target, we trusted MGIZA [1] which is a multi-CPU type of GIZA++ [2] that makes alignment between source files and target files.
 
 ### Requirements
 
 #### python3 (it installed on Ubuntu 16.04 or higher as the default.)
 
-- sudo apt-get install python3.6
-	
+- sudo apt-get install python3.7
+
 #### cmake
-	
+
 - sudo apt install cmake
-	
+
 #### libboost
 
 - sudo apt-get install libboost-all-dev
 
 ### Input  files 
 
-- OSt file (or OStt file and convert it to OSt with giza++/transcript_to_source.py script)
-- tt file (e.g. *.TTde, *.TTcs)
+- source file
+- target file
 - Notes:
-    - The number of lines in OSt and tt must be equal. 
+    - The number of lines in source and target must be equal. 
     - The number of lines in source parallel and target parallel must be equal. 
 
 
-
-### Running giza++ without parallel data (only using ost and tt files
+### Running giza++ without parallel data
     
 ``` {r, engine='python'} 
-$ mkdir <ouput_dir>
-$ ./run-giza -s <OSt_file> -t <tt_file> -o <ouput_dir> --ncpus <number_of_cpus>
+$ ./run-giza -s <source_file> -t <target_file> -o <ouput_dir> --ncpus <number_of_cpus>
 ```
 
     - parameters:
-        - -s: path of the OSt file
-        - -t: path of the tt file
+        - -s: path of the source file
+        - -t: path of the target file
         - -o: path of the output directory (deafult is ./)
-		- --ncpus: number of cpus (deafult is 4)
-    - e.g. mkdir test;
-    ./run-giza -s ../examples/input-files/kaccNlwi6lUCEM.en.OSt -t ../examples/input-files/kaccNlwi6lUCEM.en.TTcs -o ./test/; 
+        - --ncpus: number of cpus (deafult is 4)
+    - e.g. ./run-giza -s ../sample-data/sample.en.OSt -t ../sample-data/sample.cs.OSt -o ./test/
 
 
 ### Download and use parallel corpus
@@ -67,33 +45,24 @@ You can use the parallel corpus to improve the train of giza++, so you can downl
 
 #### Downloading parallel corpues with wget
 
-	wget <parallel_corpuse_link>	
+    wget <parallel_corpuse_link>
 
 ### Running giza++ with an external parallel corpus
 
 ``` {r, engine='python'} 
-$ ./run-giza -s <OSt_file> -t <tt_file> -o <ouput_dir> -ps <source_parallel> -pt <target_parallel> --ncpus <number_of_cpus>
+$ ./run-giza -s <source_file> -t <target_file> -o <ouput_dir> -ps <source_parallel_file> -pt <target_parallel_file> --ncpus <number_of_cpus>
 ```
     - parameters:
-        - -s: path of the OSt file
-        - -t: path of the tt file
+        - -s: path of the source file
+        - -t: path of the target file
         - -o: path of the output directory (deafult is ./)
-        - -ps: path of the source parallel corpus (languege of OSt and source parallel corpus is the same.) 
-        - -pt: path of the target parallel corpus (languege of tt and target parallel corpus is the same.)
-		- --ncpus: number of cpus (deafult is 4)
-    - e.g. ./run-giza -s ../examples/input-files/kaccNlwi6lUCEM.en.OSt -t ../examples/input-files/kaccNlwi6lUCEM.en.TTcs -o ./test/ -ps ../examples/pararllel-corpus/parallel.en -pt ../examples/pararllel-corpus/parallel.cs 
+        - -ps: path of the source parallel corpus 
+        - -pt: path of the target parallel corpus 
+        - --ncpus: number of cpus (deafult is 4)
     
-### The output 
-
-After running MGIZA, a file (tt_file_name + .align), generated in the output directory path.
-For example: 
-    -command: ./run-giza -s ./test/polish.OSt -t ./test/polish.TTcs -o ./test/
-    -output: ./test/polish.TTcs.align
-
-
 
 # References
 
     [1] Qin Gao and Stephan Vogel. 2008. Parallel Implementations of Word Alignment Tool, Association for Computational Linguistics
-	
-	[2] Franz Josef Och and Hermann Ney. 2003. A systematic comparison of various statistical alignment models, Computational Linguistics, 29(1):19–51
+    [2] Franz Josef Och and Hermann Ney. 2003. A systematic comparison of various statistical alignment models, Computational Linguistics, 29(1):19–51
+
