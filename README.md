@@ -94,7 +94,7 @@ In the following, we use this notation:
 * OSt ... original speech manually transcribed
 * OStt ... original speech manually transcribed with word-level timestamps
 * IS  ... human interpreter's speech (sound)
-* ISt ... IS manually transcribed with word-level timestamps
+* IStt ... IS manually transcribed with word-level timestamps
 * TT ... human textual translation, created from transcribed original speech (OSt); corresponds sentence-by-sentence to OSt
 
 * ASR ... the unrevised output of speech recognition system; timestamped at the word level
