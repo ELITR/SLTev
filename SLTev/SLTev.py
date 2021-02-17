@@ -16,7 +16,8 @@ from evaluator import *
 def main():
     parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
-    parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False') 
+    parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False')
+    parser.add_argument("--aggregate", help="aggregate all scores and shows them in the standard output instead of produce score files", action='store_true', default='False')
     parser.add_argument("--outdir", "-O", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "outdir", type=str)
     parser.add_argument("-T", "--elitr-testset", metavar="DIR", help="use DIR as git clone of elitr-testset instead of elitr-testset", default= "elitr-testset", type=str)
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
@@ -175,7 +176,7 @@ def main():
                 if checkEmptyLine(ostt) == 1:
                     continue
             else:
-                eprint("evaluation for ", submission_file ," faild, file ", ostt, " is not exist")
+                eprint("evaluation for ", submission_file ," failed, file ", ostt, " is not exist")
                 continue
         else:            
             #----checking number of C sentences in OStt and all tt must be equal
@@ -183,60 +184,85 @@ def main():
                 continue
             parity_state,error = partity_test(ostt, tt)
             if  parity_state == 0:
-                eprint ("evaluation for ", submission_file ," faild, the number of Complete lines (C) in ", ostt, " and ", ' '.join(tt), ' are not equal')
+                eprint ("evaluation for ", submission_file ," failed, the number of Complete lines (C) in ", ostt, " and ", ' '.join(tt), ' are not equal')
                 eprint(error)
                 continue
         #----checking MT contain at least one C segment
         if MT_checking(submission_file) == 0:
-            eprint("evaluation for ",submission_file , " faild, does not contain any Complete segment (C) for evaluation it must contain at least one C segment")
+            eprint("evaluation for ",submission_file , " failed, there is no any Complete segment (C) for evaluation. It must contain at least one C segment")
             continue
         if tt == []:
-            eprint ("evaluation faild, no OSt file exist for ", submission_file)
+            eprint ("evaluation failed, no OSt file exist for ", submission_file)
             continue
         if ostt == '':
-            eprint("evaluation faild, no OStt file exist for ", submission_file)
+            eprint("evaluation failed, no OStt file exist for ", submission_file)
             continue
         if align == [] and 'asr' == removeDigits(status):
-            eprint("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])     
-            out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".WER.out" 
-            with open(out_name, 'w') as f:
-                sys.stdout = f
+            eprint("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])
+            
+            if args.aggregate != 'False':
+                print("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])
                 print('Signature: ', signature)
                 ASRev(ost=tt[0], asr=submission_file, SLTev_home=sltev_home, simple=args.simple)
-                sys.stdout = orig_stdout                
-            eprint("Results saved in ", out_name)
+            else:
+                out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".WER.out" 
+                with open(out_name, 'w') as f:
+                    sys.stdout = f
+                    print('Signature: ', signature)
+                    ASRev(ost=tt[0], asr=submission_file, SLTev_home=sltev_home, simple=args.simple)
+                    sys.stdout = orig_stdout                
+                eprint("Results saved in ", out_name)
+                
             eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
-            with open(out_name, 'w') as f:
-                sys.stdout = f
+            if args.aggregate != 'False':
+                print("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
                 print('Signature: ', signature)
                 evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
-                sys.stdout = orig_stdout
-            eprint("Results saved in ", out_name)
+            else:
+                out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
+                with open(out_name, 'w') as f:
+                    sys.stdout = f
+                    print('Signature: ', signature)
+                    evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                    sys.stdout = orig_stdout
+                eprint("Results saved in ", out_name)
             continue
+            
         if align == [] and 'asr' != removeDigits(status):
             eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            out_name = os.path.join(output_dir, os.path.split(submission_file)[1])+ ".BLEU.out" 
-            with open(out_name, 'w') as f:
-                sys.stdout = f
+            
+            if args.aggregate != 'False':
+                print("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
                 print('Signature: ', signature)
                 evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
-                sys.stdout = orig_stdout
-            eprint("Results saved in ", out_name)
+            else:
+                out_name = os.path.join(output_dir, os.path.split(submission_file)[1])+ ".BLEU.out" 
+                with open(out_name, 'w') as f:
+                    sys.stdout = f
+                    print('Signature: ', signature)
+                    evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                    sys.stdout = orig_stdout
+                eprint("Results saved in ", out_name)
             continue
         if align != [] and 'asr' != removeDigits(status):
             if len(align) != len(tt):
-                eprint("Evaluating the file ", submission_file, " faild, the number of TT files and align files not equal")
+                eprint("Evaluating the file ", submission_file, " failed, the number of TT files and align files not equal")
                 continue
 
             eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
-            with open(out_name, 'w') as f:
-                sys.stdout = f
+            
+            if args.aggregate != 'False':
+                print("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
                 print('Signature: ', signature)
                 evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
-                sys.stdout = orig_stdout
-            eprint("Results saved in ", out_name)
+            else:
+                out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
+                with open(out_name, 'w') as f:
+                    sys.stdout = f
+                    print('Signature: ', signature)
+                    evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                    sys.stdout = orig_stdout
+                eprint("Results saved in ", out_name)
             continue
             
 if __name__ == "__main__":
