@@ -78,6 +78,7 @@ SLTev -g SLTev-sample --outdir my-evaluation-run-1
 4. Run SLTev to get the scores:
 ```
 SLTev -e my-evaluation-run-1/
+# To aggregate scores instead of produce score files, add --aggregate
 ```
 
 ### Evaluating with Your Custom Reference Files
