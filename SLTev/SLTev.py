@@ -176,7 +176,7 @@ def main():
                 if checkEmptyLine(ostt) == 1:
                     continue
             else:
-                eprint("evaluation for ", submission_file ," failed, file ", ostt, " is not exist")
+                eprint("evaluation for ", submission_file ," failed, file ", ostt, " does not exist")
                 continue
         else:            
             #----checking number of C sentences in OStt and all tt must be equal
