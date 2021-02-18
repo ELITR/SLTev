@@ -150,7 +150,7 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
     if simple == 'False':
         print("macroavg Flicker       count_changed_content ", str("{0:.3f}".format(round(calc_average_flickers_per_sentence(MT), 3)))  )
         print("microavg Flicker       count_changed_content ",  str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))))
-    sacre_score = calc_bleu_score_documnet(Ts, MT)
+    sacre_score = calc_bleu_score_document(Ts, MT)
     print("tot      sacreBLEU     docAsAWhole           ",  str("{0:.3f}".format(round(sacre_score, 3)))  )
     if simple == 'False':
         try:

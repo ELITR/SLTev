@@ -242,7 +242,7 @@ def build_segmenter_A(MT):
     """
     In this function, for each MT segment, the  'A' matrix has been built.
        
-    :param MT: a list of MT senetnces 
+    :param MT: a list of MT sentences 
     :return out: a list of dictionary that unique words in the C segments are the keys, and display times are the values 
     """
     

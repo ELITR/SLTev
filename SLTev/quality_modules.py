@@ -7,7 +7,7 @@ from files_modules import *
 # quality functions 
 ######################################################################
 
-def calc_bleu_score_documnet(Ts, MT):
+def calc_bleu_score_document(Ts, MT):
     """
     Calculating bleu score by using sacrebleu module. In this method, all Complete segmented in MT is sys document and all Ts sentences is ref document. 
     

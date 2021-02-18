@@ -150,12 +150,12 @@ def populate(elitr_testset_path, indexname, target_path):
             except:
                 eprint("copyig file ", indice, "faild. please check this file in index" )
     
-def readIndice(file_path):
+def readIndex(file_path):
     """
     read an index file
     
     :param file_path: path of the index file
-    :return out: a list of sub-filse in the index file
+    :return out: a list of sub-file in the index file
     """
     
     out = []
@@ -230,7 +230,7 @@ def split_submissions_inputs(working_dir):
                 inputs.append(file_path)
     return submissions, inputs
 
-def SLTev_inputs_per_submmision(submission_file, inputs):
+def SLTev_inputs_per_submission(submission_file, inputs):
     """
     extract OSt (tt), align, OStt from the input files.
     

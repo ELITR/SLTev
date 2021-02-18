@@ -86,7 +86,7 @@ def read_ostt_for_wer(file_name):
     sentences = list(filter(lambda a: a != [], sentences))
     return sentences
 
-def wer_evaluate(ostt, asr):
+def wer_evaluation (ostt, asr):
     """
     STEPS:
     1- conver ostt and asr to a string.  
@@ -115,19 +115,17 @@ def wer_evaluate(ostt, asr):
     #-------run wer 
     return wer(ostt_string, asr_string)
 
-def use_mversegmentor(ostt, asr, SLTev_home, temp_folder):
+
+def segmentation_by_mwersegmenter(ostt, asr, SLTev_home, temp_folder):
     """
-    STEPS:
-    1- save osst and asr sentences in temp_ref and temp_translate
-    2- run mversegmnter and extract sentences in __segment file
-    3- run preprocessing over ostt 
-    4- run wer over them. 
+    doing segmentation by mwersegmenter tool
     
     :param ostt: the list of OSt(OStt) sentences
     :param asr: the list of asr sentences
     :param SLTev_home: path oof the SLTev files (/path/to/mwerSegmenter)
     :param temp_folder: name of tem folder that created by UUID
-    :return: Return a WER score
+    :return segments: a list of ASR sentecess which segmented by the mwerSegmenter
+    :return mWERQuality: the quality score of mwerSegmenter   
     """
     
     #---------save osst and asr sentences in temp_ref and temp_translate
@@ -154,15 +152,28 @@ def use_mversegmentor(ostt, asr, SLTev_home, temp_folder):
     mWERQuality = float(mWERQuality)    
     #-------------read segments 
     in_file = open('__segments', 'r', encoding="utf8")
-    line = in_file.readline()
-    segments = [] 
-    detokenize = MosesDetokenizer().detokenize
-    while line:
+    lines = in_file.readlines()
+    segments = []
+    for line in lines:
         segments.append(line.strip().split(' '))
-        line = in_file.readline()
-    asr = segments[:]
     os.chdir('..')
     shutil.rmtree(temp_folder_name)
+    return segments, mWERQuality
+
+def WER_by_mwersegmenter(ostt, asr, SLTev_home, temp_folder):
+    """ 
+    Calculating WER score without Mosses-tokenizer and with preprocessing
+    For each segment obtained from the mwersegmenter segmentation, the WER score is calculated and finally, the average is taken. 
+    
+    :param ostt: the list of OSt(OStt) sentences
+    :param asr: the list of asr sentences
+    :param SLTev_home: path oof the SLTev files (/path/to/mwerSegmenter)
+    :param temp_folder: name of tem folder that created by UUID
+    :return: Return a WER score
+    """
+    segments, mWERQuality = segmentation_by_mwersegmenter(ostt, asr, SLTev_home, temp_folder)
+    detokenize = MosesDetokenizer().detokenize
+    asr = segments[:]
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
     for i in range(len(ostt)):
@@ -175,13 +186,10 @@ def use_mversegmentor(ostt, asr, SLTev_home, temp_folder):
         wer_scores.append(score)
     return sum(wer_scores)/len(wer_scores)
 
-def use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder):
-    """
-    STEPS:
-    1- save osst and asr sentences in temp_ref and temp_translate
-    2- run mversegmnter and extract sentences in __segment file
-    3- run moses tokeniazer over ostt 
-    4- run wer over them. 
+def WER_by_moses_mwersegmenter(ostt, asr, SLTev_home, temp_folder):
+    """  
+    Calculating WER score with Mosses-tokenizer and without preprocessing
+    For each segment obtained from the mwersegmenter segmentation, the WER score is calculated and finally, the average is taken.  
     
     :param ostt: the list of OSt(OStt) sentences
     :param asr: the list of asr sentences
@@ -190,38 +198,8 @@ def use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder):
     :return: Return a WER score
     """
     
-    #---------save osst and asr sentences in temp_ref and temp_translate
-    temp_folder_name = temp_folder
-    os.mkdir(temp_folder_name)
-    os.chdir(temp_folder_name)
-    out = open('temp_ref', 'w')
-    for i in ostt:
-        sentence = ' '.join(i)
-        out.write(sentence)
-        out.write('\n')
-    out.close()
-    out = open('temp_translate', 'w')
-    for i in asr:
-        sentence = ' '.join(i[:])
-        out.write(sentence)
-        out.write('\n')
-    out.close()
-    #--------------run mversegmnter and extract sentences in __segment file
-    #-------------tokenize tt and MT
-    cmd = SLTev_home + "/mwerSegmenter -mref " + "temp_ref" +" -hypfile "+ "temp_translate"
-    mWERQuality = sp.getoutput(cmd)
-    mWERQuality = mWERQuality.split(' ')[-1]
-    mWERQuality = float(mWERQuality)
-    #-------------read segments 
-    in_file = open('__segments', 'r', encoding="utf8")
-    line = in_file.readline()
-    segments = [] 
-    while line:
-        segments.append(line.strip().split(' '))
-        line = in_file.readline()
+    segments, mWERQuality = segmentation_by_mwersegmenter(ostt, asr, SLTev_home, temp_folder)
     asr = segments[:]
-    os.chdir('..')
-    shutil.rmtree(temp_folder_name)
     # ------------------convert to text and preprocessing and run wer
     wer_scores = list()
     for i in range(len(ostt)):
@@ -257,11 +235,11 @@ def ASRev(ost="", asr="", SLTev_home=".", simple="False"):
         eprint("-------------------------------------------------------------")
     #-----------
     if simple == 'False':
-        score = wer_evaluate(ostt, asr)
+        score = wer_evaluation(ostt, asr)
         print('LPC   ', str("{0:.3f}".format(round(score, 3)))  )
     try:
         temp_folder = os.path.join(".", str(uuid.uuid4()))
-        score = use_mversegmentor(ostt, asr, SLTev_home, temp_folder)
+        score = WER_by_mwersegmenter(ostt, asr, SLTev_home, temp_folder)
         print('LPW   ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)
@@ -269,7 +247,7 @@ def ASRev(ost="", asr="", SLTev_home=".", simple="False"):
     try:
         if simple == 'False':
             temp_folder = os.path.join(".", str(uuid.uuid4()))
-            score = use_moses_mversegmentor(ostt, asr, SLTev_home, temp_folder)
+            score = WER_by_moses_mwersegmenter(ostt, asr, SLTev_home, temp_folder)
             print('WM    ', str("{0:.3f}".format(round(score, 3)))  )
     except:
         os.chdir(current_path)

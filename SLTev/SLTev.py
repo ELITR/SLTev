@@ -151,7 +151,7 @@ def main():
         state = check_input(submission_file)
         if state:
             continue
-        status, tt, ostt, align = SLTev_inputs_per_submmision(submission_file, inputs)
+        status, tt, ostt, align = SLTev_inputs_per_submission(submission_file, inputs)
         #empty checking for tt, submission_file
         temp_flag = 0
         for file in tt:
