@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name='SLTev',
-    version='1.1.2',
+    version='1.1.3',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
@@ -16,7 +16,7 @@ setup(
     install_requires=['gitpython', 'sacremoses', 'sacrebleu', 'gitdir', 'jiwer', 'filelock'],
     url="https://github.com/ELITR/SLTev.git",
     classifiers=[
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: MIT License",
         'Operating System :: POSIX :: Linux',
     ],
@@ -25,6 +25,6 @@ setup(
             'SLTev = SLTev.SLTev:main',
         ],
     },
-    python_requires='>=3.7',
+    python_requires='>=3.6',
 
 )

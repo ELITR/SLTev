@@ -7,7 +7,7 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 
 ## Requirements
 
-- python3.7 or higher
+- python3.6 or higher
 - some pip-installed modules:
   - sacrebleu, sacremoses
   - gitpython, gitdir, filelock
