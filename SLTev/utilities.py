@@ -2,9 +2,10 @@ import os
 import sys
 from os import getcwd
 import shutil
+import argparse
 
 ######################################################################
-# The utility modules use in the SLTev
+# The utility modules used in the SLTev
 ######################################################################
 
 
@@ -198,7 +199,7 @@ def check_input(in_file):
                 if line[4:] != [] and line[4:] != ['']:
                     pass
                 else:
-                    eprint("The file ", in_file, ", line ", i, " does not have true format (C/P 0 0 ) or it is empty line")
+                    eprint("The file ", in_file, ", line ", i, " does not have true format (C/P 0 0 0 ) or it is empty line")
                     state = 1
                     break
         except:
@@ -224,7 +225,7 @@ def split_submissions_inputs(working_dir):
         for f in files:
             file_path = os.path.join(working_dir, f)
             temp = removeDigits(f.split('.')[-1])
-            if temp == 'slt' or temp == 'asr' or temp == 'mt':
+            if temp == 'slt' or temp == 'asr' or temp == 'mt' or temp == 'asrt':
                 submissions.append(file_path)
             elif temp == 'OSt' or temp == 'OStt' or temp == 'align':
                 inputs.append(file_path)
@@ -312,3 +313,102 @@ def MT_checking(file):
     return status
 
 
+def splitInputsHypos(inputs, format_orders):
+    """
+    splitting inputs and hypothesis  
+    
+    :param inputs: a list of the input file paths
+    :param format_orders: a list of input formats in order
+    :return hypos: a list of the hypothesis files [[hypo_path, format], []]
+    :return gold_inputs: a list of the gold input files [{format:[file1, ...], ...}, {format:[file1, ...], ...},]
+    """
+    
+    hypos = list()
+    gold_inputs = list()
+    temp = {}
+    for inp, ords in zip(inputs, format_orders):
+        if ords in ['asrt', 'asr', 'slt', 'mt']:
+            hypos.append([inp, ords])
+            
+        else:
+            try:
+                temp[ords].append(inp)
+            except:
+                temp[ords] = [inp]
+    if temp != {}:
+        gold_inputs.append(temp)
+        
+    return hypos, gold_inputs
+
+def extractHypoGoldFiles(hypo_file, gold_inputs):
+    """
+    extracting gold files for the hypo
+    
+    :param hypo_file: path of the hypo file [hypo_path, format]
+    :param gold_inputs: a list of gold files [[gold_path, format], []]
+    :return error: if an error occurred it will be 1 and otherwise it will be 0
+    :return out: a dict of gold files for the hypo {format:file_path}
+    """
+    
+    error = 0
+    hypo_name = os.path.split(hypo_file[0])[1]
+    out = {}
+    if hypo_file[1] == "asr":
+        try:
+            out["source"] = gold_inputs["source"]
+        except:
+            eprint("evaluation failed, the source file is not exit for ", hypo_file[0])
+            error = 1
+            
+    elif hypo_file[1] == "asrt":
+        try:
+            out["source"] = gold_inputs["source"]
+        except:
+            eprint("evaluation failed, the source file is not exit for ", hypo_file[0])
+            error = 1
+        try:
+            out["ostt"] = gold_inputs["ostt"]
+        except:
+            eprint("evaluation failed, the ostt file is not exit for ", hypo_file[0])
+            error = 1
+            
+    elif hypo_file[1] == "mt":
+        try:
+            out["ref"] = gold_inputs["ref"]
+        except:
+            eprint("evaluation failed, the reference file is not exit for ", hypo_file[0])
+            error = 1
+            
+    elif hypo_file[1] == "slt":
+        out = {"ref":"", "ostt":"", "align":""}
+        try:
+            out["ref"] = gold_inputs["ref"]
+        except:
+            eprint("evaluation failed, the reference file is not exit for ", hypo_file[0])
+            error = 1
+        try:
+            out["ostt"] = gold_inputs["ostt"]
+        except:
+            eprint("evaluation failed, the ostt file is not exit for ", hypo_file[0])
+            error = 1
+        try:
+            out["align"] = gold_inputs["align"]
+        except:
+            out["align"] = []
+    return out, error   
+
+
+def submissionArgument():
+    """
+    making argument for SLTeval, ASReval and Mteval
+    
+    :return args: a parser 
+    """
+    parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
+    parser.add_argument("-i", "--inputs", help="path of the input files", type=list, nargs='+' )
+    parser.add_argument("-f", "--format_orders", help="format of the input files in order, the format can be chosen from the following dictionary keys \n {source: source files, ref: reference, ostt: timestamped gold transcript, align: align files, \
+                        slt: timestamped online MT hypothesis, mt: finalized MT hypothesis, asrt:timestamped ASR hypothesis \
+                        asr:finalized ASR transcript} ", type=list, nargs='+' )
+    parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False')
+    args = parser.parse_args()
+    return args

@@ -29,8 +29,8 @@ Depending on whether your system produces (spoken language) translation (SLT), o
 - &lt;file-name&gt; . &lt;source-language&gt; . &lt;target-language&gt; . &lt;slt/mt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.de.slt``, ``kaccNlwi6lUCEM.cs.en.mt``
 
-### System Outputs from ASR: ``.asr``
-- &lt;file-name&gt; . &lt;source-language&gt; . &lt;source-language&gt; . &lt;asr&gt;
+### System Outputs from ASR: ``.asr``, ``.asrt``
+- &lt;file-name&gt; . &lt;source-language&gt; . &lt;source-language&gt; . &lt;asr/asrt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.en.asr``
 
 ## Installation
@@ -79,27 +79,81 @@ SLTev -g SLTev-sample --outdir my-evaluation-run-1
 ```
 SLTev -e my-evaluation-run-1/
 # To aggregate scores instead of produce score files, add --aggregate
+# To reduce the number of scores, add --simple
 ```
 
 ### Evaluating with Your Custom Reference Files
 
-Put all input (*.OSt, *.OStt, *.align) and output files (*.slt/asr/mt) in a folder (e.g. My-folder) and the evaluation would be similar to part 3 (SLTev -e My-folder)
+In order to evaluate a hypothesis with custom files, you can use ``MTeval``, ``SLTeval``, ``ASReval`` commands as follow:
+Each one of them takes a list of input file paths (-i or --input) and a list of the format of the input files in orders (-f or --format_orders). The input file formats can be chosen from the following items:
+* source: source files 
+* ref: reference
+* ostt: timestamped gold transcript
+* slt: timestamped online MT hypothesis
+* mt: finalized MT hypothesis
+* align: align files (output of the MGIZA)
+* asr: finalized ASR transcript
+* asrt: timestamped ASR hypothesis
 
+#### MT Evaluating  
+```
+MTeval -i file1 file2 ... -f file1_format file2_format ...
+# To reduce the number of scores, add --simple 
+``` 
+Demo example: 
+```
+MTeval -i fake-data/sample.en.cs.mt fake-data/sample.cs.OSt -f mt ref
+``` 
+#### SLT Evaluating 
+```
+SLTeval -i file1 file2 ... -f file1_format file2_format ...
+# To reduce the number of scores, add --simple 
+```
+Demo example: 
+``` 
+SLTeval -i fake-data/sample.en.cs.slt fake-data/sample.cs.OSt fake-data/sample.en.OStt -f slt ref ostt
+```
+
+#### ASR Evaluating 
+```
+ASReval -i file1 file2 ... -f file1_format file2_format ...
+# To reduce the number of scores, add --simple 
+```
+Demo example: 
+``` 
+ASReval -i fake-data/sample.en.en.asr fake-data/sample.en.OSt -f asr source
+```
+
+
+#### ASRT Evaluating 
+```
+ASReval -i file1 file2 ... -f file1_format file2_format ...
+# To reduce the number of scores, add --simple 
+``` 
+Demo example: 
+``` 
+ASReval -i fake-data/sample.en.en.asrt fake-data/sample.en.OSt fake-data/sample.en.OStt -f asrt source ostt
+```
+
+
+#### Notes
+1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have. 
+2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates. 
+3. You can evaluate several hypotheses at the same time. For example, suppose you have two ASR systems for a resource file. You can perform the evaluation as follows:
+```
+ASReval -i system1.asr system2.asr data.source -f asr asr source
+```
 
 
 ## Terminology and Abbreviations
 
-In the following, we use this notation:
-
-* OS  ... original speech (sound)
-* OSt ... original speech manually transcribed
+* OSt  ... original speech manually transcribed
 * OStt ... original speech manually transcribed with word-level timestamps
-* IS  ... human interpreter's speech (sound)
-* IStt ... IS manually transcribed with word-level timestamps
-* TT ... human textual translation, created from transcribed original speech (OSt); corresponds sentence-by-sentence to OSt
+* mt   ... the unrevised output of text-based translation; the source of MT is ASR (machine-transcribed OS) or OSt (human-transcribed OS)
+* slt  ... timestamped online MT hypothesis
+* asr  ... the unrevised output of speech recognition system
+* asrt ... the unrevised output of speech recognition system; timestamped at the word level
 
-* ASR ... the unrevised output of speech recognition system; timestamped at the word level
-* SLT ... the unrevised output of spoken language translation, i.e. sentences in the target language corresponding to sentences in the source language; the source of SLT is OS
-* MT  ... the unrevised output of text-based translation; the source of MT is ASR (machine-transcribed OS) or OSt (human-transcribed OS)
     
+
 

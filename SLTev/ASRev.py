@@ -10,7 +10,7 @@ import shutil
 from utilities import *
 
 ######################################################################
-# WER score functions (know as ASRev)
+# WER score functions
 ######################################################################
 
 
@@ -124,7 +124,7 @@ def segmentation_by_mwersegmenter(ostt, asr, SLTev_home, temp_folder):
     :param asr: the list of asr sentences
     :param SLTev_home: path oof the SLTev files (/path/to/mwerSegmenter)
     :param temp_folder: name of tem folder that created by UUID
-    :return segments: a list of ASR sentecess which segmented by the mwerSegmenter
+    :return segments: a list of ASR sentences segmented by mwerSegmenter
     :return mWERQuality: the quality score of mwerSegmenter   
     """
     
