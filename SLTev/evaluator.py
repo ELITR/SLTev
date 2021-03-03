@@ -126,7 +126,7 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
             reference = references[index]
             align = aligns[index]
             if len(align) != len(reference):
-                print('len align(', len(align), ') is not equal to len tt (', len(reference), ') it maybe giza++ not good work'  )
+                print('len align(', len(align), ') is not equal to len tt (', len(reference), ') Maybe GIZA++ failed?'  )
                 sys.exit(1)
             T = get_One_T(OStt, reference, align)
             Ts.append(T)

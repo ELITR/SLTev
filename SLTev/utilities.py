@@ -190,7 +190,7 @@ def check_input(in_file):
         if line == []:
             continue
         if line[0] != 'C' and line[0] != 'P':
-            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line>"
+            text = "File " + in_file + " and line " + str(i) + " is not in the proper format  please correct this line as C/P 0 0 0 <text line>"
             state = 1
             eprint(text)
             break
@@ -203,7 +203,7 @@ def check_input(in_file):
                     state = 1
                     break
         except:
-            text = "File " + in_file + " and line " + str(i) + " is not in proper format  please correct this line as C/P 0 0 0 <text line> or it is empty"
+            text = "File " + in_file + " and line " + str(i) + " is not in the proper format  please correct this line as C/P 0 0 0 <text line> or it is empty"
             state = 1
             eprint(text)
             break
@@ -357,26 +357,26 @@ def extractHypoGoldFiles(hypo_file, gold_inputs):
         try:
             out["source"] = gold_inputs["source"]
         except:
-            eprint("evaluation failed, the source file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the source file does not exist for ", hypo_file[0])
             error = 1
             
     elif hypo_file[1] == "asrt":
         try:
             out["source"] = gold_inputs["source"]
         except:
-            eprint("evaluation failed, the source file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the source file does not exist for ", hypo_file[0])
             error = 1
         try:
             out["ostt"] = gold_inputs["ostt"]
         except:
-            eprint("evaluation failed, the ostt file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the OStt file does not exist for ", hypo_file[0])
             error = 1
             
     elif hypo_file[1] == "mt":
         try:
             out["ref"] = gold_inputs["ref"]
         except:
-            eprint("evaluation failed, the reference file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the reference file does not exist for ", hypo_file[0])
             error = 1
             
     elif hypo_file[1] == "slt":
@@ -384,12 +384,12 @@ def extractHypoGoldFiles(hypo_file, gold_inputs):
         try:
             out["ref"] = gold_inputs["ref"]
         except:
-            eprint("evaluation failed, the reference file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the reference file does not exist for ", hypo_file[0])
             error = 1
         try:
             out["ostt"] = gold_inputs["ostt"]
         except:
-            eprint("evaluation failed, the ostt file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the OStt file does not exist for ", hypo_file[0])
             error = 1
         try:
             out["align"] = gold_inputs["align"]

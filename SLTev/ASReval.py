@@ -17,7 +17,7 @@ def main(inputs=[], format_orders=[], simple="False"):
         
     # checking arguments
     if len(inputs) != len(format_orders):
-        eprint("inputs length and format_orders is not equal.")
+        eprint("inputs length and format_orders are not equal.")
         sys.exit(1)
         
     hypos, gold_inputs = splitInputsHypos(inputs, format_orders)
@@ -61,7 +61,7 @@ def main(inputs=[], format_orders=[], simple="False"):
             print("Evaluating the file ", hypo_file[0], " in terms of translation quality against ", ' '.join(gold_files["source"]))
             evaluator(ostt=gold_files["ostt"][0], asr=True, tt=gold_files["source"], align=[], mt=hypo_file[0], SLTev_home=sltev_home, simple=simple)
         else:
-            eprint("Evaulation for ", hypo_file[0] ," failed, it is not a ASR file")
+            eprint("Evaulation for ", hypo_file[0] ," failed, it is not an ASR file")
       
         
 def mainPoint():
