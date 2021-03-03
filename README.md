@@ -102,7 +102,7 @@ MTeval -i file1 file2 ... -f file1_format file2_format ...
 ``` 
 Demo example: 
 ```
-MTeval -i fake-data/sample.en.cs.mt fake-data/sample.cs.OSt -f mt ref
+MTeval -i sample-data/sample.en.cs.mt sample-data/sample.cs.OSt -f mt ref
 ``` 
 #### SLT Evaluating 
 ```
@@ -111,7 +111,7 @@ SLTeval -i file1 file2 ... -f file1_format file2_format ...
 ```
 Demo example: 
 ``` 
-SLTeval -i fake-data/sample.en.cs.slt fake-data/sample.cs.OSt fake-data/sample.en.OStt -f slt ref ostt
+SLTeval -i sample-data/sample.en.cs.slt sample-data/sample.cs.OSt sample-data/sample.en.OStt -f slt ref ostt
 ```
 
 #### ASR Evaluating 
@@ -121,7 +121,7 @@ ASReval -i file1 file2 ... -f file1_format file2_format ...
 ```
 Demo example: 
 ``` 
-ASReval -i fake-data/sample.en.en.asr fake-data/sample.en.OSt -f asr source
+ASReval -i sample-data/sample.en.en.asr sample-data/sample.en.OSt -f asr source
 ```
 
 
@@ -132,7 +132,7 @@ ASReval -i file1 file2 ... -f file1_format file2_format ...
 ``` 
 Demo example: 
 ``` 
-ASReval -i fake-data/sample.en.en.asrt fake-data/sample.en.OSt fake-data/sample.en.OStt -f asrt source ostt
+ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/sample.en.OStt -f asrt source ostt
 ```
 
 
