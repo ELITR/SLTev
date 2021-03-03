@@ -120,7 +120,7 @@ def main():
     if os.path.isdir(working_dir):
         eprint ('working directory is ', working_dir)
     else:
-        eprint(working_dir, ' is not exist.')
+        eprint(working_dir, ' does not exist.')
         sys.exit(1)
     #---make signature
     signature =  SLTev_commit_id

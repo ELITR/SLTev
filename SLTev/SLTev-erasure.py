@@ -59,26 +59,26 @@ def extractHypoGoldFiles(hypo_file, gold_inputs):
         try:
             out["source"] = gold_inputs["source"]
         except:
-            eprint("evaluation failed, the source file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the source file does not exist for ", hypo_file[0])
             error = 1
             
     elif hypo_file[1] == "asrt":
         try:
             out["source"] = gold_inputs["source"]
         except:
-            eprint("evaluation failed, the source file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the source file does not exist for ", hypo_file[0])
             error = 1
         try:
             out["ostt"] = gold_inputs["ostt"]
         except:
-            eprint("evaluation failed, the ostt file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the OStt file does not exist for ", hypo_file[0])
             error = 1
             
     elif hypo_file[1] == "mt":
         try:
             out["ref"] = gold_inputs["ref"]
         except:
-            eprint("evaluation failed, the reference file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the reference file does not exist for ", hypo_file[0])
             error = 1
             
     elif hypo_file[1] == "slt":
@@ -86,12 +86,12 @@ def extractHypoGoldFiles(hypo_file, gold_inputs):
         try:
             out["ref"] = gold_inputs["ref"]
         except:
-            eprint("evaluation failed, the reference file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the reference file does not exist for ", hypo_file[0])
             error = 1
         try:
             out["ostt"] = gold_inputs["ostt"]
         except:
-            eprint("evaluation failed, the ostt file is not exit for ", hypo_file[0])
+            eprint("evaluation failed, the OStt file does not exist for ", hypo_file[0])
             error = 1
         try:
             out["align"] = gold_inputs["align"]
@@ -122,7 +122,7 @@ def main():
         format_orders.append(''.join(ords))
     # checking arguments
     if len(inputs) != len(format_orders):
-        eprint("inputs length and format_orders is not equal.")
+        eprint("inputs length and format_orders are not equal.")
         sys.exit(1)
         
     hypos, gold_inputs = splitInputsHypos(inputs, format_orders)
