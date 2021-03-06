@@ -53,7 +53,11 @@ def main(inputs=[], format_orders=[], simple="False"):
                 continue
                 
             print("Evaluating the file ", hypo_file[0], " in terms of translation quality against ", ' '.join(gold_files["ref"]))
-            evaluator(ostt=gold_files["ostt"][0], asr=True, tt=gold_files["ref"], align=gold_files["align"], mt=hypo_file[0], SLTev_home=sltev_home, simple=simple)
+            if gold_files["align"] == []:
+                asr_status  = True
+            else:
+                asr_status  = False
+            evaluator(ostt=gold_files["ostt"][0], asr=asr_status, tt=gold_files["ref"], align=gold_files["align"], mt=hypo_file[0], SLTev_home=sltev_home, simple=simple)
         else:
             eprint("Evaulation for ", hypo_file[0] ," failed, it is not an SLT file")
             
@@ -76,3 +80,4 @@ if __name__ == "__main__":
     main(inputs, format_orders, args.simple)   
     
  
+
