@@ -193,11 +193,11 @@ ASReval -i system1.asr system2.asr data.source -f asr asr source
 
 ## Terminology and Abbreviations
 
-* OSt  ... original speech manually transcribed
+* OSt  ... original speech manually transcribed (i.e. golden transcript)
 * OStt ... original speech manually transcribed with word-level timestamps
-* mt   ... the unrevised output of text-based translation; the source of MT is ASR (machine-transcribed OS) or OSt (human-transcribed OS)
-* slt  ... timestamped online MT hypothesis
-* asr  ... the unrevised output of speech recognition system
+* mt   ... the unrevised output of text-based translation; the source of MT can be .asr (machine-transcribed OS) or .OSt (human-transcribed OS)
+* slt  ... timestamped online MT hypothesis, i.e. the output of an MT system ran in online mode, with timestamps recorded
+* asr  ... the unrevised output of a speech recognition system
 * asrt ... the unrevised output of speech recognition system; timestamped at the word level
 
     
