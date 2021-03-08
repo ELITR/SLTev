@@ -102,17 +102,48 @@ MTeval -i file1 file2 ... -f file1_format file2_format ...
 ``` 
 Demo example: 
 ```
+git clone https://github.com/ELITR/SLTev.git
+cd SLTev
 MTeval -i sample-data/sample.en.cs.mt sample-data/sample.cs.OSt -f mt ref
 ``` 
+Should give you output like this:
+```
+Evaluating the file  sample-data/sample.en.cs.mt  in terms of translation quality against  sample-data/sample.cs.OSt
+P ... considering Partial segments in delay and quality calculation (in addition to Complete segments)
+T ... considering source Timestamps supplied with MT output
+W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)
+A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)
+------------------------------------------------------------------------------------------------------------
+--       TokenCount    reference1             37
+avg      TokenCount    reference*             37
+--       SentenceCount reference1             4
+avg      SentenceCount reference*             4
+tot      sacreBLEU     docAsAWhole            32.786
+avg      sacreBLEU     mwerSegmenter          25.850
+```
+
 #### SLT Evaluating 
 ```
 SLTeval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
 ```
 Demo example: 
-``` 
+```
+# get sample-data as in the MT example above
 SLTeval -i sample-data/sample.en.cs.slt sample-data/sample.cs.OSt sample-data/sample.en.OStt -f slt ref ostt
 ```
+Should give you:
+```
+Evaluating the file  sample-data/sample.en.cs.slt  in terms of translation quality against  sample-data/sample.cs.OSt
+...
+tot      Delay         PW                     336.845
+...
+tot      Flicker       count_changed_content  23
+...
+tot      sacreBLEU     docAsAWhole            32.786
+...
+```
+
 
 #### ASR Evaluating 
 ```
@@ -120,12 +151,27 @@ ASReval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
 ```
 Demo example: 
-``` 
+```
+# get sample-data as in the MT example above
 ASReval -i sample-data/sample.en.en.asr sample-data/sample.en.OSt -f asr source
 ```
+Should give you:
+```
+Evaluating the file  sample-data/sample.en.en.asr  in terms of  WER score against  sample-data/sample.en.OSt
+-------------------------------------------------------------
+L ... lowercasing
+P ... removing punctuation
+C ... concatenating all sentences
+W ... using mwersegmemter
+M ... using Moses tokenizer
+-------------------------------------------------------------
+LPC    0.265
+LPW    0.274
+WM     0.323
+```
 
+#### ASRT Evaluating
 
-#### ASRT Evaluating 
 ```
 ASReval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
