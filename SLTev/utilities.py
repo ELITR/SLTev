@@ -29,7 +29,7 @@ def population(elitr_path, password):
     """
     populate link files using elitr-testset/populate.sh 
     
-    :param elitr_path: path of the cloning elitr-tesset repo
+    :param elitr_path: path of the cloning elitr-testset repo
     :param password: an string like as ELITR_CONFIDENTIAL_PASSWORD=...
     """
     

@@ -86,7 +86,8 @@ def main():
                 sys.exit(1)
         else:
             try:
-                eprint("cloning elitr-testset repo to the ", elitr_path)
+                eprint("cloning elitr-testset repo to dir: ", elitr_path)
+                eprint("...this does take a while and needs a lot of disk space")
                 git.Repo.clone_from(git_path, elitr_path)
                 try:
                     population(elitr_path, os.environ.copy()['ELITR_CONFIDENTIAL_PASSWORD']) #link population
