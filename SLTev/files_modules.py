@@ -43,7 +43,7 @@ def read_tt(file_name):
             l.append('.')
             reference.append(l)
             line = in_file.readline()
-    reference = list(filter(lambda a: a != [], reference))
+    reference = list(filter(lambda a: a != ['.'], reference))
     return reference
 
 def read_ostt(file_name):
@@ -104,7 +104,7 @@ def read_ost_as_ostt(file_name):
     ASR = list(filter(lambda a: a != [['.']], ASR))       
     return ASR
 
-def read_MT(file_name, asr_status=False):
+def read_MT(file_name):
     """
     Reading MT file and saving sentences in a list (each sentence contains many segments that split by space)
     
@@ -126,8 +126,15 @@ def read_MT(file_name, asr_status=False):
                 l = line[1:]
                 l.append('.')
                 sentence.append(l)
-            else:
+            elif 'C' == line[0]:
                 l = line[1:]
+                l.append('.')
+                sentence.append(l)
+                MT.append(sentence)
+                sentence = []
+            else:
+                l = [0, 0, 0]
+                l += line[:]
                 l.append('.')
                 sentence.append(l)
                 MT.append(sentence)
@@ -224,6 +231,63 @@ def segmenter(MT, Ts, language, SLTev_home, temp_folder):
     os.chdir(temp_folder_name)
     out = open('temp_ref', 'w')
     for i in references_sentences[0]:
+        sentence = ' '.join(i)
+        out.write(sentence)
+        out.write('\n')
+    out.close()    
+    out = open('temp_translate', 'w')   
+    for i in mt_sentences:
+        sentence = ' '.join(i)
+        out.write(sentence)
+        out.write('\n')
+    out.close()
+    #-------------tokenize tt and MT
+    cmd = SLTev_home + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
+    mWERQuality = sp.getoutput(cmd)
+    mWERQuality = mWERQuality.split(' ')[-1]
+    mWERQuality = float(mWERQuality)
+    #-------------read segments 
+    in_file = open('__segments', 'r', encoding="utf8")
+    line = in_file.readline()
+    segments = [] 
+    while line:
+        segments.append(line.strip().split(' '))
+        line = in_file.readline()
+    mt_sentences = segments[:]
+    os.chdir('..')
+    shutil.rmtree(temp_folder_name)
+    return mt_sentences, mWERQuality
+
+
+def qualitySegmenter(MT, references, language, SLTev_home, temp_folder):
+    """
+    MT complete segments have been joined and saved in a temp_translate file.
+    and temp_translate file has been segmented by mwerSegmenter. 
+    
+    :param references: a list of references
+    :param MT: a list of MT senetnces 
+    :param language: the submision language. 
+    :param SLTev_home: path of the mwerSegmenter folder
+    :param temp_folder: path of the temp folder that created by UUID
+    :return mt_sentences: a list of MT sentecess which segmented by the mwerSegmenter
+    :return mWERQuality: the quality score of mwerSegmenter
+    """
+    
+    mt_sentences = []
+    for i in range(len(MT)):
+        mt = MT[i][-1][3:-1]
+        mt_sentences.append(mt)
+
+    references_sentences = []
+
+    for ref in references[0]:
+        references_sentences.append(ref[:-1])
+    #------------------write MT in temp_translate file and reference in temp_ref
+    temp_folder_name = temp_folder
+    os.mkdir(temp_folder_name)
+    os.chdir(temp_folder_name)
+    out = open('temp_ref', 'w')
+    for i in references_sentences:
         sentence = ' '.join(i)
         out.write(sentence)
         out.write('\n')

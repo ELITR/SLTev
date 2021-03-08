@@ -8,12 +8,11 @@ if sys.version_info[:2] >= (3,7):
     numpy_version = "numpy"
 else:
     # Later numpy versions are incompatible with Python <= 3.6
-    numpy_version = 'numpy<=1.19.5'
-
+    numpy_version = "numpy<=1.19.5"
 
 setup(
     name='SLTev',
-    version='1.1.3',
+    version='1.1.5',
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
@@ -31,8 +30,12 @@ setup(
     entry_points={
         'console_scripts': [
             'SLTev = SLTev.SLTev:main',
+            'SLTeval = SLTev.SLTeval:mainPoint',
+            'ASReval = SLTev.ASReval:mainPoint',
+            'MTeval = SLTev.MTeval:mainPoint',
         ],
     },
     python_requires='>=3.6',
 
 )
+

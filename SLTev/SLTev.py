@@ -12,13 +12,16 @@ from sacremoses import MosesTokenizer
 from utilities import *
 from ASRev import *
 from evaluator import *
+import ASReval
+import MTeval
+import SLTeval
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset")
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
     parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False')
     parser.add_argument("--aggregate", help="aggregate all scores and shows them in the standard output instead of produce score files", action='store_true', default='False')
-    parser.add_argument("--outdir", "-O", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "outdir", type=str)
+    parser.add_argument("--outdir", "-O", help="put outputs (input files for -g, results for -e) in OUTDIR", type=str)
     parser.add_argument("-T", "--elitr-testset", metavar="DIR", help="use DIR as git clone of elitr-testset instead of elitr-testset", default= "elitr-testset", type=str)
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
     parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
@@ -47,16 +50,21 @@ def main():
     except:
         SLTev_commit_id = ''
     #-----------check output directory 
-    if args.e == None and args.g == None:
+    if args.e is None and args.g is None:
         parser.print_help()
         sys.exit(1)
         
     output_dir = ''
-    if os.path.isdir(args.outdir):
-        output_dir = args.outdir
-    else:
+    if args.outdir is None:
+        if args.e is not None:
+            # default outdir value is taken from -e in evaluation mode
+            output_dir = args.e
+        else:
+            # for -g, the default should be "outdir"
+            output_dir = "outdir"
+    if not os.path.isdir(output_dir):
+        # make the directory if it doesn't exist
         os.makedirs(args.outdir, exist_ok=True)
-        output_dir = args.outdir
 
     #----get commit id
     elitr_path = args.elitr_testset
@@ -83,7 +91,8 @@ def main():
                 sys.exit(1)
         else:
             try:
-                eprint("cloning elitr-testset repo to the ", elitr_path)
+                eprint("cloning elitr-testset repo to dir: ", elitr_path)
+                eprint("...this does take a while and needs a lot of disk space")
                 git.Repo.clone_from(git_path, elitr_path)
                 try:
                     population(elitr_path, os.environ.copy()['ELITR_CONFIDENTIAL_PASSWORD']) #link population
@@ -117,7 +126,7 @@ def main():
     if os.path.isdir(working_dir):
         eprint ('working directory is ', working_dir)
     else:
-        eprint(working_dir, ' is not exist.')
+        eprint(working_dir, ' does not exist.')
         sys.exit(1)
     #---make signature
     signature =  SLTev_commit_id
@@ -142,125 +151,88 @@ def main():
     <file-name> . <source-lang> . <target-lang> . asr/slt/mt
     """
     
-    submissions, inputs = split_submissions_inputs(working_dir) 
+    submissions, input_files = split_submissions_inputs(working_dir) 
     orig_stdout = sys.stdout    
     if submissions == []:
         eprint("No SLT/ASR/MT files in working directory ", working_dir, " for evaluatin")
     for submission_file in submissions:
-        #---check slt/asr/mt format
-        state = check_input(submission_file)
-        if state:
-            continue
-        status, tt, ostt, align = SLTev_inputs_per_submission(submission_file, inputs)
-        #empty checking for tt, submission_file
-        temp_flag = 0
-        for file in tt:
-            if checkEmptyLine(file) == 1:
-                temp_flag = 1
-                continue
-        if temp_flag == 1:
-            continue
-        if checkEmptyLine(submission_file) == 1:
-            continue
-        #----
-        ost_as_ostt = 0
-        if ostt == '':
-            ost_as_ostt = 1
-            path, file = os.path.split(submission_file)
-            temp = file
-            temp = temp.split('.')
-            file =  '.'.join(temp[:-2]) + '.OSt'
-            ostt = os.path.join(working_dir, file)
-            if os.path.isfile(ostt):
-                eprint("there is no OStt file for ", submission_file, " and we are using ", ostt, " instead of OStt")
-                if checkEmptyLine(ostt) == 1:
-                    continue
-            else:
-                eprint("evaluation for ", submission_file ," failed, file ", ostt, " does not exist")
-                continue
-        else:            
-            #----checking number of C sentences in OStt and all tt must be equal
-            if checkEmptyOSttLine(ostt) == 1:
-                continue
-            parity_state,error = partity_test(ostt, tt)
-            if  parity_state == 0:
-                eprint ("evaluation for ", submission_file ," failed, the number of Complete lines (C) in ", ostt, " and ", ' '.join(tt), ' are not equal')
-                eprint(error)
-                continue
-        #----checking MT contain at least one C segment
-        if MT_checking(submission_file) == 0:
-            eprint("evaluation for ",submission_file , " failed, there is no any Complete segment (C) for evaluation. It must contain at least one C segment")
-            continue
+
+        status, tt, ostt, align = SLTev_inputs_per_submission(submission_file, input_files)
+        # making inputs and format_orders
+        inputs = [submission_file] 
+        format_orders = [removeDigits(status)]
+        for i in tt:
+            if removeDigits(status) == "asr" or removeDigits(status)== "asrt":
+                inputs.append(i)
+                format_orders.append("source")
+            elif removeDigits(status) == "mt" or removeDigits(status)== "slt":
+                inputs.append(i)
+                format_orders.append("ref")
+        if ostt != "":
+            inputs.append(ostt)
+            format_orders.append("ostt")
+        for i in align:
+            inputs.append(i)
+            format_orders.append("align")
+        # checking tt counts
         if tt == []:
-            eprint ("evaluation failed, no OSt file exist for ", submission_file)
+            eprint("Evaluation failed, ther is no tt files for the ", submission_file)
             continue
-        if ostt == '':
-            eprint("evaluation failed, no OStt file exist for ", submission_file)
-            continue
-        if align == [] and 'asr' == removeDigits(status):
-            eprint("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])
-            
+        if removeDigits(status) == 'asr' :           
             if args.aggregate != 'False':
                 print("Evaluating the file ", submission_file, " in terms of  WER score against ", tt[0])
                 print('Signature: ', signature)
-                ASRev(ost=tt[0], asr=submission_file, SLTev_home=sltev_home, simple=args.simple)
+                ASReval.main(inputs, format_orders, args.simple)
             else:
                 out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".WER.out" 
                 with open(out_name, 'w') as f:
                     sys.stdout = f
                     print('Signature: ', signature)
-                    ASRev(ost=tt[0], asr=submission_file, SLTev_home=sltev_home, simple=args.simple)
+                    ASReval.main(inputs, format_orders, args.simple)
                     sys.stdout = orig_stdout                
                 eprint("Results saved in ", out_name)
                 
-            eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
+        if removeDigits(status) == 'asrt' :       
             if args.aggregate != 'False':
                 print("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
                 print('Signature: ', signature)
-                evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                ASReval.main(inputs, format_orders, args.simple)
             else:
                 out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
                 with open(out_name, 'w') as f:
                     sys.stdout = f
                     print('Signature: ', signature)
-                    evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                    ASReval.main(inputs, format_orders, args.simple)
                     sys.stdout = orig_stdout
                 eprint("Results saved in ", out_name)
             continue
             
-        if align == [] and 'asr' != removeDigits(status):
-            eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
-            
+        if removeDigits(status) == "mt":        
             if args.aggregate != 'False':
                 print("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
                 print('Signature: ', signature)
-                evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                MTeval.main(inputs, format_orders, args.simple)
             else:
                 out_name = os.path.join(output_dir, os.path.split(submission_file)[1])+ ".BLEU.out" 
                 with open(out_name, 'w') as f:
                     sys.stdout = f
                     print('Signature: ', signature)
-                    evaluator(ostt=ostt, asr=True, tt=tt, align=[], mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                    MTeval.main(inputs, format_orders, args.simple)
                     sys.stdout = orig_stdout
                 eprint("Results saved in ", out_name)
             continue
-        if align != [] and 'asr' != removeDigits(status):
-            if len(align) != len(tt):
-                eprint("Evaluating the file ", submission_file, " failed, the number of TT files and align files not equal")
-                continue
-
-            eprint("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
             
+        if removeDigits(status) == "slt":            
             if args.aggregate != 'False':
                 print("Evaluating the file ", submission_file, " in terms of translation quality against ", ' '.join(tt))
                 print('Signature: ', signature)
-                evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                SLTeval.main(inputs, format_orders, args.simple)
             else:
                 out_name = os.path.join(output_dir, os.path.split(submission_file)[1]) + ".BLEU.out" 
                 with open(out_name, 'w') as f:
                     sys.stdout = f
                     print('Signature: ', signature)
-                    evaluator(ostt=ostt, tt=tt, align=align, mt=submission_file, SLTev_home=sltev_home, simple=args.simple, ostt_state=ost_as_ostt)
+                    SLTeval.main(inputs, format_orders, args.simple)
                     sys.stdout = orig_stdout
                 eprint("Results saved in ", out_name)
             continue

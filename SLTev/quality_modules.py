@@ -7,11 +7,11 @@ from files_modules import *
 # quality functions 
 ######################################################################
 
-def calc_bleu_score_document(Ts, MT):
+def calc_bleu_score_document(references, MT):
     """
     Calculating bleu score by using sacrebleu module. In this method, all Complete segmented in MT is sys document and all Ts sentences is ref document. 
     
-    :param Ts: a list of T tables 
+    :param references: a list of references
     :param MT: a list of MT senetnces 
     :return sacre_blue_score: the bleu score
     """
@@ -21,23 +21,22 @@ def calc_bleu_score_document(Ts, MT):
         mt = MT[i][-1][3:-1]
         merge_mt_sentences += mt
     merge_references_sentences = []
-    for i in Ts:
+    for ref in references:
         l = []
-        for j in i:
-            for k,v in j.items():
-                l.append(k)
-        merge_references_sentences.append(' '.join(l))
-    refs= [i for i in merge_references_sentences]
+        for sentence in ref:
+            l.append(' '.join(sentence[:-1]))
+        merge_references_sentences.append(l)
+    refs= [' '.join(i) for i in merge_references_sentences]
     sys = ' '.join(merge_mt_sentences[:])
     b_sacre = sacrebleu.sentence_bleu(sys, refs)
     sacre_blue_score = b_sacre.score
     return sacre_blue_score
 
-def calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home, temp_folder):
+def calc_bleu_score_sentence_by_sentence(references, MT, language, SLTev_home, temp_folder):
     """
     Calculating bleu score sentence by sentence sacrebleu module.
     
-    :param Ts: a list of T tables 
+    :param references: a list of references 
     :param MT: a list of MT senetnces 
     :param language: the submision language. 
     :param SLTev_home: path of the mwerSegmenter folder
@@ -50,17 +49,15 @@ def calc_bleu_score_sentence_by_sentence(Ts, MT, language, SLTev_home, temp_fold
         mt = MT[i][-1][3:-1]
         mt_sentences.append(mt)        
     references_sentences = []
-    for ref in Ts:
+    merge_references_sentences = []
+    for ref in references:
         l = []
-        for sentennce in ref:
-            s = []
-            for k,v in sentennce.items():
-                s.append(k)
-            l.append(s)
-        references_sentences.append(l)        
-    segmenter_sentence, mWERQuality = segmenter(MT, Ts, language, SLTev_home, temp_folder)
+        for sentence in ref:
+            l.append(' '.join(sentence[:-1]))
+        merge_references_sentences.append(l)     
+    segmenter_sentence, mWERQuality = qualitySegmenter(MT, references, language, SLTev_home, temp_folder)
     sys = [' '.join(i) for i in segmenter_sentence]
-    refs = [ [' '.join(ref)for ref in references_sentences[i]] for i in range(len(references_sentences))]
+    refs = merge_references_sentences[:]
     b_sacre = sacrebleu.corpus_bleu(sys, refs)
     sacre_blue_score = b_sacre.score
     return sacre_blue_score
