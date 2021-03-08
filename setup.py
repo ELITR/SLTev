@@ -1,8 +1,6 @@
 from setuptools import setup, find_packages
+from SLTev import __version__ 
 import sys
-
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
 
 if sys.version_info[:2] >= (3,7):
     numpy_version = "numpy"
@@ -12,11 +10,10 @@ else:
 
 setup(
     name='SLTev',
-    version='1.1.5',
+    version=__version__,
     author="Mohammad Mahmoudi",
     author_email="zaribar2928@gmail.com",
     description="a tool for evaluation",
-    long_description=long_description,
     packages=['SLTev',],
     data_files = [ ('SLTev', ['SLTev/mwerSegmenter']) ],
     include_package_data=True,
@@ -38,4 +35,6 @@ setup(
     python_requires='>=3.6',
 
 )
+
+
 

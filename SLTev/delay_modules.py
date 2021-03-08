@@ -326,3 +326,4 @@ def evaluate_segmenter(Ts, MT, MovedWords, language, SLTev_home, temp_folder):
         sum_missing_words += temp_list[0][1]
         sum_delay += temp_list[0][0]            
     return sum_delay, sum_missing_words, mWERQuality
+

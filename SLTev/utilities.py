@@ -412,3 +412,4 @@ def submissionArgument():
     parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False')
     args = parser.parse_args()
     return args
+

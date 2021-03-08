@@ -25,6 +25,7 @@ def main():
     parser.add_argument("-T", "--elitr-testset", metavar="DIR", help="use DIR as git clone of elitr-testset instead of elitr-testset", default= "elitr-testset", type=str)
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
     parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
+    parser.add_argument("--version", help="report the SLTev version", action='store_true', default='False')
     args = parser.parse_args()
     
     #-----------add SLTev home to the path 
@@ -33,6 +34,21 @@ def main():
     except:
         sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
     sys.path.insert(1, sltev_home)
+    
+    #print SLTev version
+    if args.version != "False":
+        try:
+            __version__ = pkg_resources.get_distribution("SLTev").version
+            eprint(__version__)
+        except:
+            try:
+                repo = git.Repo(os.path.split(sltev_home)[0])
+                commit_id = repo.head.commit
+                eprint("The commit id is: ", commit_id)
+            except:
+                eprint("SLTev is not installed, you can use the following command for installation:\n pip install SLTev")
+        sys.exit(1)
+    
     #sacremoses checking
     try:
         tokenize = MosesTokenizer().tokenize
@@ -48,7 +64,10 @@ def main():
         sha = repo.head.object.hexsha
         SLTev_commit_id = 'SLTev_' + repo.git.rev_parse(sha, short=True) + '-'
     except:
-        SLTev_commit_id = ''
+        try:
+            SLTev_commit_id = 'SLTev_version_' + pkg_resources.get_distribution("SLTev").version + '-'
+        except:
+            SLTev_commit_id = 'SLTev_NONE' + '-'
     #-----------check output directory 
     if args.e is None and args.g is None:
         parser.print_help()
@@ -137,7 +156,9 @@ def main():
             elitr_commit_id = 'elitrtestset_' + repo.git.rev_parse(sha, short=True)
             signature = signature +  elitr_commit_id
         except:
-            pass
+            signature = signature + 'elitrtestset_NONE'
+    else:
+        signature = signature + 'elitrtestset_NONE'
         
     """
     Naming template:
@@ -239,3 +260,4 @@ def main():
             
 if __name__ == "__main__":
     main()
+

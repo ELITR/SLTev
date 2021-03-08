@@ -25,7 +25,7 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         
     #----------------------------------------
     if simple == 'False':
-        eprint("P ... considering Partial segments in delay and quality calculation (in addition to Complete segments)")
+        eprint("P ... considering Partial segments in delay and quality calculation(in addition to Complete segments)")
         eprint("T ... considering source Timestamps supplied with MT output")
         eprint("W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)")
         eprint("A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)")
@@ -142,17 +142,7 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
             print("tot      MissedTokens  PWA                   ", missing_words)
         except:
             os.chdir(current_path)
-            shutil.rmtree(temp_folder, ignore_errors=True)
-            
-    if simple == 'False' and time_stamp == "True":    
-        print("tot      Flicker       count_changed_Tokens  ", int(calc_revise(MT)))
-    
-    if  time_stamp == "True":
-        print("tot      Flicker       count_changed_content ", int(calc_flicker(MT)))
-    
-    if simple == 'False' and time_stamp == "True":
-        print("macroavg Flicker       count_changed_content ", str("{0:.3f}".format(round(calc_average_flickers_per_sentence(MT), 3)))  )
-        print("microavg Flicker       count_changed_content ",  str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))))
+            shutil.rmtree(temp_folder, ignore_errors=True)           
         
 
     sacre_score = calc_bleu_score_document(references, MT)
@@ -177,6 +167,16 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
             pass
 
 
+    if simple == 'False' and time_stamp == "True":    
+        print("tot      Flicker       count_changed_Tokens  ", int(calc_revise(MT)))
+    
+    if  time_stamp == "True":
+        print("tot      Flicker       count_changed_content ", int(calc_flicker(MT)))
+    
+    if simple == 'False' and time_stamp == "True":
+        print("mean     flicker across sentences            ", str("{0:.3f}".format(round(calc_average_flickers_per_sentence(MT), 3)))  )
+        
+        print("mean     flicker across whole documents      ",  str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))))
 
 
 
