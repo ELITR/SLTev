@@ -1,13 +1,14 @@
 from setuptools import setup, find_packages
+import sys
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-import sys
 if sys.version_info[:2] >= (3,7):
     numpy_version = "numpy"
 else:
-    numpy_version = 'numpy==1.19.5'
+    # Later numpy versions are incompatible with Python <= 3.6
+    numpy_version = 'numpy<=1.19.5'
 
 
 setup(
