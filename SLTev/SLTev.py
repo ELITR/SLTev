@@ -21,7 +21,7 @@ def main():
     parser.add_argument("-g", metavar="INDEX", help="generate an 'evaluation directory' with inputs for your system based on elitr-testset index called INDEX", type=str)
     parser.add_argument("--simple", help="report a simplified set of scores", action='store_true', default='False')
     parser.add_argument("--aggregate", help="aggregate all scores and shows them in the standard output instead of produce score files", action='store_true', default='False')
-    parser.add_argument("--outdir", "-O", help="put outputs (input files for -g, results for -e) in OUTDIR", default= "outdir", type=str)
+    parser.add_argument("--outdir", "-O", help="put outputs (input files for -g, results for -e) in OUTDIR", type=str)
     parser.add_argument("-T", "--elitr-testset", metavar="DIR", help="use DIR as git clone of elitr-testset instead of elitr-testset", default= "elitr-testset", type=str)
     parser.add_argument("-e", metavar="EVALDIR", help="evaluate evaluation directory EVALDIR", type=str)
     parser.add_argument("--commitid", help="use elitr-testset at commit COMMITID", default= "HEAD", type=str)
@@ -50,16 +50,21 @@ def main():
     except:
         SLTev_commit_id = ''
     #-----------check output directory 
-    if args.e == None and args.g == None:
+    if args.e is None and args.g is None:
         parser.print_help()
         sys.exit(1)
         
     output_dir = ''
-    if os.path.isdir(args.outdir):
-        output_dir = args.outdir
-    else:
+    if args.outdir is None:
+        if args.e is not None:
+            # default outdir value is taken from -e in evaluation mode
+            output_dir = args.e
+        else:
+            # for -g, the default should be "outdir"
+            output_dir = "outdir"
+    if not os.path.isdir(output_dir):
+        # make the directory if it doesn't exist
         os.makedirs(args.outdir, exist_ok=True)
-        output_dir = args.outdir
 
     #----get commit id
     elitr_path = args.elitr_testset
