@@ -25,7 +25,7 @@ def evaluator(ostt=None, asr=False, tt=[], align=[], mt=None, b_time=3000, SLTev
         
     #----------------------------------------
     if simple == 'False':
-        eprint("P ... considering Partial segments in delay and quality calculation(in addition to Complete segments)")
+        eprint("P ... considering Partial segments in delay and quality calculation (in addition to Complete segments)")
         eprint("T ... considering source Timestamps supplied with MT output")
         eprint("W ... segmenting by mWER segmenter (i.e. not segmenting by MT source timestamps)")
         eprint("A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)")
