@@ -172,6 +172,7 @@ WM     0.323
 
 #### ASRT Evaluating
 
+ASRT is like SLT but in the source language. All input files are in the source language and the source is the complete segments of the OStt.
 ```
 ASReval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
