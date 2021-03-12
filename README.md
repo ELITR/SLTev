@@ -95,7 +95,12 @@ Each one of them takes a list of input file paths (-i or --input) and a list of 
 * asr: finalized ASR transcript
 * asrt: timestamped ASR hypothesis
 
-#### MT Evaluating  
+#### Evaluating MT
+
+To evaluate the output of a machine translation system without any timing information, use the following command.
+
+Note that SLTev is not intended for the basic case where MT output segment correspond 1-1 to the reference; SLTev will always resegment in some way.
+
 ```
 MTeval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
@@ -122,7 +127,10 @@ tot      sacreBLEU     docAsAWhole            32.786
 avg      sacreBLEU     mwerSegmenter          25.850
 ```
 
-#### SLT Evaluating 
+#### Evaluating SLT
+
+Spoken language translation evaluates "machine translation in time". So a time-stamped MT output (``slt``) is compared with the reference translation (non-timed, ``ref``) and the timing of the golden transcript (``ostt``).
+
 ```
 SLTeval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
@@ -145,7 +153,10 @@ tot      sacreBLEU     docAsAWhole            32.786
 ```
 
 
-#### ASR Evaluating 
+#### Evaluating ASR
+
+In basic speech recognition evaluation, timing is ignored. For this type of evaluation, use the following command and provide ASR output (``asr``) and the golden transcript without timestamps (``source``):
+
 ```
 ASReval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
@@ -170,9 +181,10 @@ LPW    0.274
 WM     0.323
 ```
 
-#### ASRT Evaluating
+#### Evaluating ASR with timing (ASRT)
 
-ASRT is like SLT but in the source language. All input files are in the source language and the source is the complete segments of the OStt.
+ASRT is like SLT but in the source language, i.e. evaluating the time-stamped output of an ASR system (``asrt``) against the golden transcript which has to be provided twice: without timestamps (``source``) and with timing and partial segments (``ostt``). All the files are in the same language and the ``source`` file must have the exact same number of segments as there are "C"omplete segments in the ``ostt`` file.
+
 ```
 ASReval -i file1 file2 ... -f file1_format file2_format ...
 # To reduce the number of scores, add --simple 
@@ -184,9 +196,9 @@ ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/s
 
 
 #### Notes
-1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have. 
-2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates. 
-3. You can evaluate several hypotheses at the same time. For example, suppose you have two ASR systems for a resource file. You can perform the evaluation as follows:
+1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have them. 
+2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates, it is the ``-f`` parameter that specifies the use of the file.
+3. You can evaluate several hypotheses at once. For example, suppose you have two ASR systems for a resource file. You can perform the evaluation as follows:
 ```
 ASReval -i system1.asr system2.asr data.source -f asr asr source
 ```
