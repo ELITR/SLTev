@@ -1,7 +1,7 @@
 
 # SLTev
 
-SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped reference transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
+SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped golden transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
 
 SLTev can also evaluate the intermediate steps alone: the output of automatic speech recognition (ASR) and machine translation (MT).
 
@@ -17,7 +17,7 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 
 Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
 
-### Reference Transcripts: ``.OSt``, ``.OStt``
+### Golden Transcripts: ``.OSt``, ``.OStt``
 - &lt;file-name&gt; . &lt;language&gt; . &lt;OSt/OStt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.OSt``, ``kaccNlwi6lUCEM.cs.OStt``
 
