@@ -85,15 +85,15 @@ SLTev -e my-evaluation-run-1/
 ### Evaluating with Your Custom Reference Files
 
 In order to evaluate a hypothesis with custom files, you can use ``MTeval``, ``SLTeval``, ``ASReval`` commands as follow:
-Each one of them takes a list of input file paths (-i or --input) and a list of the format of the input files in orders (-f or --format_orders). The input file formats can be chosen from the following items:
-* source: source files 
-* ref: reference
-* ostt: timestamped gold transcript
-* slt: timestamped online MT hypothesis
-* mt: finalized MT hypothesis
+Each one of them takes a list of input file paths (-i or --input) and a list of the format of the input files in orders (-f or --file-formats). The input file formats can be chosen from the following items:
+* ost: original speech transcribed, i.e. the golden transcript 
+* ref: reference translation
+* ostt: timestamped golden transcript
+* slt: timestamped online MT hypothesis, with partial outputs
+* mt: finalized MT hypothesis (i.e. one segment per line; segmentation can differ from the reference one)
 * align: align files (output of the MGIZA)
-* asr: finalized ASR transcript
-* asrt: timestamped ASR hypothesis
+* asrt: timestamped ASR hypothesis, with partial outputs
+* asr: finalized ASR hypothesis (i.e. one segment per line; segmentation can differ from the golden one)
 
 #### Evaluating MT
 
@@ -155,7 +155,7 @@ tot      sacreBLEU     docAsAWhole            32.786
 
 #### Evaluating ASR
 
-In basic speech recognition evaluation, timing is ignored. For this type of evaluation, use the following command and provide ASR output (``asr``) and the golden transcript without timestamps (``source``):
+In basic speech recognition evaluation, timing is ignored. For this type of evaluation, use the following command and provide ASR output (``asr``) and the golden transcript without timestamps (``ost``):
 
 ```
 ASReval -i file1 file2 ... -f file1_format file2_format ...
@@ -164,7 +164,7 @@ ASReval -i file1 file2 ... -f file1_format file2_format ...
 Demo example: 
 ```
 # get sample-data as in the MT example above
-ASReval -i sample-data/sample.en.en.asr sample-data/sample.en.OSt -f asr source
+ASReval -i sample-data/sample.en.en.asr sample-data/sample.en.OSt -f asr ost
 ```
 Should give you:
 ```
@@ -183,7 +183,7 @@ WM     0.323
 
 #### Evaluating ASR with timing (ASRT)
 
-ASRT is like SLT but in the source language, i.e. evaluating the time-stamped output of an ASR system (``asrt``) against the golden transcript which has to be provided twice: without timestamps (``source``) and with timing and partial segments (``ostt``). All the files are in the same language and the ``source`` file must have the exact same number of segments as there are "C"omplete segments in the ``ostt`` file.
+ASRT is like SLT but in the source language, i.e. evaluating the time-stamped output of an ASR system (``asrt``) against the golden transcript which has to be provided twice: without timestamps (``ost``) and with timing and partial segments (``ostt``). All the files are in the same language and the ``ost`` file must have the exact same number of segments as there are "C"omplete segments in the ``ostt`` file.
 
 ```
 ASReval -i file1 file2 ... -f file1_format file2_format ...
@@ -191,7 +191,7 @@ ASReval -i file1 file2 ... -f file1_format file2_format ...
 ``` 
 Demo example: 
 ``` 
-ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/sample.en.OStt -f asrt source ostt
+ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/sample.en.OStt -f asrt ost ostt
 ```
 
 
@@ -200,7 +200,7 @@ ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/s
 2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates, it is the ``-f`` parameter that specifies the use of the file.
 3. You can evaluate several hypotheses at once. For example, suppose you have two ASR systems for a resource file. You can perform the evaluation as follows:
 ```
-ASReval -i system1.asr system2.asr data.source -f asr asr source
+ASReval -i system1.asr system2.asr golden-transcript -f asr asr ost
 ```
 
 
