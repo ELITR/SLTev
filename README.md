@@ -198,9 +198,23 @@ ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/s
 #### Notes
 1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have them. 
 2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates, it is the ``-f`` parameter that specifies the use of the file.
-3. You can evaluate several hypotheses at once. For example, suppose you have two ASR systems for a resource file. You can perform the evaluation as follows:
+3. You can evaluate several hypotheses at once. Also, you can use short file formats. For example, the following commands are equal:
+
 ```
-ASReval -i system1.asr system2.asr golden-transcript -f asr asr ost
+MTeval -i file1 hypo1 file2 hypo2 -f ref mt ref mt
+```
+OR
+```
+MTeval -i file1 hypo1 file2 hypo2 -f ref mt
+```
+4. You can use the pipeline as input instead of ``-i`` parameter, for example, the following commands are equal: 
+
+```
+MTeval -i file1 hypo1 file2 hypo2 -f ref mt
+```
+OR
+```
+echo "file1 hypo1" |  MTeval -f ref mt
 ```
 
 
