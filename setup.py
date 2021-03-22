@@ -44,6 +44,7 @@ setup(
             "SLTeval = SLTev.SLTeval:main_point",
             "ASReval = SLTev.ASReval:main_point",
             "MTeval = SLTev.MTeval:main_point",
+            "SLTIndexParser = SLTev.index_parser:main"
         ],
     },
     python_requires=">=3.6",

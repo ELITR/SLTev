@@ -39,8 +39,10 @@ def parseIndexFile(indexFilePath, testsetPath):
                    if reference:
                        yield (os.path.realpath(source), os.path.realpath(reference))
 
-
-if __name__ == "__main__":
+def main():
     pairs = parseIndexFile(sys.argv[1], sys.argv[2])
     for pair in pairs:
-        print(pair)
+        print(f"{pair[0]}\t{pair[1]}")
+
+if __name__ == "__main__":
+    main()
