@@ -194,8 +194,26 @@ Demo example:
 ``` 
 ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/sample.en.OStt -f asrt ost ostt
 ```
+#### Parsing index files
+See `SLTev/index_parser.py` for detailed description. Structure of the index file:
+```
+# SRC -> *.<EXTENSION>
+# REF -> *.<EXTENSION>
+# ALIGN -> *.<EXTENSION>
+PATH_TO_DIRECTORY
+PATH_TO_ANOTHER_DIRECTORY_WITH_SAME_EXTENSIONS
 
+# SRC -> *.<EXTENSION>
+# REF -> *.<EXTENSION>
+PATH_TO_DIRECTORY_WITH_DIFFERENT_EXTENSIONS
+```
 
+`SRC` and `REF` annotations are mandatory. Specifying a `SRC` annotation "clears" the rest of the annotations.
+
+Usage:
+```
+SLTIndexParser path_to_index_file path_to_dataset
+```
 #### Notes
 1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have them. 
 2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates, it is the ``-f`` parameter that specifies the use of the file.
