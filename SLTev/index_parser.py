@@ -13,10 +13,10 @@ Meta-annotation format:
 Return an iterable of dicts containing paths to the specified files
 If invoked on the command line, return a JSON of the list of dicts
 Multiple directories can share the same meta-annotations, as long as there isn't a blank line between them
-Blank line resets the meta-annotations 
+SRC line resets the meta-annotations 
 SRC and REF are mandatory annotations
 
-Example: 
+Example:
 
 # SRC -> *.<EXTENSION>
 # REF -> *.<EXTENSION>
@@ -39,10 +39,10 @@ def parseIndexFile(indexFilePath, testsetPath):
                     _, fileType, _, extension = line.split(" ")
                     if not extension.startswith("*"):
                         raise Exception(f"{line} -- extension must start with a *")
+                    if fileType == "SRC":
+                        fileExtensions = {}
                     fileExtensions[fileType] = extension 
-            elif len(line) == 0:
-                fileExtensions = {} 
-            else:
+            elif len(line) > 0:
                 if "SRC" not in fileExtensions or "REF" not in fileExtensions:
                     raise Exception(f"{line} -- SRC or REF not specified") 
                 sourceExtension = fileExtensions["SRC"]
