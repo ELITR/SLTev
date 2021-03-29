@@ -165,11 +165,9 @@ def main():
                 eprint("elitr-testset pulled")
             except:
                 eprint(
-                    "pull from elitr-testset at "
-                    + elitr_path
-                    + " failed; is it a valid git clone? \nTest manually:\n  cd "
-                    + elitr_path
-                    + "; git pull"
+                    "Pull from elitr-testset at " + elitr_path + " failed.\n"
+                    + "Is it a valid git clone? Do I have the git keys/password?\n"
+                    + "Test manually:\n  cd " + elitr_path + "; git pull"
                 )
                 sys.exit(1)
         else:
