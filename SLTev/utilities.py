@@ -172,7 +172,7 @@ def populate(elitr_testset_path, indexname, target_path):
                 get_indices(indice, target_path)
                 eprint(indice + " copied to " + target_path)
             except:
-                eprint("copying file ", indice, "failed. please check this file in index")
+                eprint("copying file", indice, "failed. please check this file in index")
 
 
 def remove_digits(string):
