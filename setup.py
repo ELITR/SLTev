@@ -31,6 +31,7 @@ setup(
         "gitdir",
         "jiwer",
         "filelock",
+        "pytest",
     ],
     url="https://github.com/ELITR/SLTev.git",
     classifiers=[
@@ -44,9 +45,11 @@ setup(
             "SLTeval = SLTev.SLTeval:main_point",
             "ASReval = SLTev.ASReval:main_point",
             "MTeval = SLTev.MTeval:main_point",
-            "SLTIndexParser = SLTev.index_parser:main"
         ],
     },
     python_requires=">=3.6",
     license="MIT",
 )
+
+
+
