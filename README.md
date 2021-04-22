@@ -1,18 +1,5 @@
 # SLTev
 
-## SLTev EACL Demo session. Time: Apr 22, 2021 14:30 CET
-
-Use the link below to join our Zoom meeting/discussion session of EACL Demo
-
-https://cuni-cz.zoom.us/j/94791867021?pwd=Q24wYTJCeE85bW5OSnZkV3BmUFpkdz09
-
-
-Meeting ID: 947 9186 7021
-
-Passcode: 1234
-#
-
-
 SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped golden transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
 
 SLTev can also evaluate the intermediate steps alone: the output of automatic speech recognition (ASR) and machine translation (MT).
