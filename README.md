@@ -243,9 +243,9 @@ If you use SLTev, please cite the following:
 
 ```
 @inproceedings{ansari-etal-2021-sltev,
-    title = "SLTev: Comprehensive Evaluation of Spoken Language Translation",
+    title = "{SLTEV}: Comprehensive Evaluation of Spoken Language Translation",
     author = "Ansari, Ebrahim  and
-      Bojar, Ondrej  and
+      Bojar, Ond{\v{r}}ej  and
       Haddow, Barry  and
       Mahmoudi, Mohammad",
     booktitle = "Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations",
