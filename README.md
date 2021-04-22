@@ -237,7 +237,7 @@ echo "file1 hypo1" |  MTeval -f ref mt
 ```
 
 
-# CREDITS
+## CREDITS
 
 If you use SLTev, please cite the following:
 
