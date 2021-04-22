@@ -50,6 +50,7 @@ python3 setup.py install
 
 - SLTev: Contains scripts for running SLTev
 - sample-data: Contains sample input and output files
+- test: Test files
 
 ## Evaluating
 
@@ -235,6 +236,27 @@ OR
 echo "file1 hypo1" |  MTeval -f ref mt
 ```
 
+
+# CREDITS
+
+If you use SLTev, please cite the following:
+
+```
+@inproceedings{ansari-etal-2021-sltev,
+    title = "SLTev: Comprehensive Evaluation of Spoken Language Translation",
+    author = "Ansari, Ebrahim  and
+      Bojar, Ondrej  and
+      Haddow, Barry  and
+      Mahmoudi, Mohammad",
+    booktitle = "Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations",
+    month = apr,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2021.eacl-demos.9",
+    pages = "71--79",
+}
+```
 
 ## Terminology and Abbreviations
 
