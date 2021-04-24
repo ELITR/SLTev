@@ -4,6 +4,8 @@ SLTev is an open-source tool for assessing the quality of spoken language transl
 
 SLTev can also evaluate the intermediate steps alone: the output of automatic speech recognition (ASR) and machine translation (MT).
 
+You can see our short presentaion at ``EACL 2021 - System Demonstration`` here: https://slideslive.com/38954658
+
 ## Requirements
 
 - python3.6 or higher
@@ -237,6 +239,16 @@ echo "file1 hypo1" |  MTeval -f ref mt
 ```
 
 
+## Terminology and Abbreviations
+
+* OSt  ... original speech manually transcribed (i.e. golden transcript)
+* OStt ... original speech manually transcribed with word-level timestamps
+* mt   ... the unrevised output of text-based translation; the source of MT can be .asr (machine-transcribed OS) or .OSt (human-transcribed OS)
+* slt  ... timestamped online MT hypothesis, i.e. the output of an MT system ran in online mode, with timestamps recorded
+* asr  ... the unrevised output of a speech recognition system
+* asrt ... the unrevised output of speech recognition system; timestamped at the word level
+
+
 ## CREDITS
 
 If you use SLTev, please cite the following:
@@ -257,16 +269,3 @@ If you use SLTev, please cite the following:
     pages = "71--79",
 }
 ```
-
-## Terminology and Abbreviations
-
-* OSt  ... original speech manually transcribed (i.e. golden transcript)
-* OStt ... original speech manually transcribed with word-level timestamps
-* mt   ... the unrevised output of text-based translation; the source of MT can be .asr (machine-transcribed OS) or .OSt (human-transcribed OS)
-* slt  ... timestamped online MT hypothesis, i.e. the output of an MT system ran in online mode, with timestamps recorded
-* asr  ... the unrevised output of a speech recognition system
-* asrt ... the unrevised output of speech recognition system; timestamped at the word level
-
-    
-
-
