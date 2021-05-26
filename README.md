@@ -4,7 +4,8 @@ SLTev is an open-source tool for assessing the quality of spoken language transl
 
 SLTev can also evaluate the intermediate steps alone: the output of automatic speech recognition (ASR) and machine translation (MT).
 
-You can see our short presentaion at ``EACL 2021 - System Demonstration`` here: https://slideslive.com/38954658
+You can see our short presentaion at ``EACL 2021 - System Demonstration`` here: https://slideslive.com/38954658  
+Full details in the paper (bibtex below): https://www.aclweb.org/anthology/2021.eacl-demos.9
 
 ## Requirements
 
