@@ -3,6 +3,7 @@ import sys
 import glob
 import re
 import json
+import argparse
 
 """
 Read an index file with meta-annotations (SRC, REF, ALIGNMENT...)
@@ -59,7 +60,21 @@ def parseIndexFile(indexFilePath, testsetPath):
                     yield (evalEntry)
 
 def main():
-    paths = [path for path in parseIndexFile(sys.argv[1], sys.argv[2])]
+    parser = argparse.ArgumentParser(
+        description="Interpret index files of elitr-testset (https://github.com/ELITR/elitr-testset/tree/master/indices) and print them as simple file lists."
+    )
+    parser.add_argument("indexfile-path",
+      help = "path to the index file",
+      type = str,
+    )
+    parser.add_argument("elitr-testset-path",
+      help = "path to your clone of elitr-testset",
+      type = str,
+    )
+    args = parser.parse_args()
+
+    paths = [path for path in parseIndexFile(args.indexfile_path, args.elitr_testset_path)]
+    #sys.argv[1], sys.argv[2])]
     print(json.dumps(paths))
 
 if __name__ == "__main__":
