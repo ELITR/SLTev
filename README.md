@@ -184,6 +184,7 @@ LPC    0.265
 LPW    0.274
 WM     0.323
 ```
+Here we learn that the WER score (lower is better) for this sample file varies between .265 and .323 depending on the pre-processing technique. In ASR research, the most common pre-processing strategy is what we call LPW, i.e. lowecase, remove punctuation and use mWERsegmenter to mimic the segmentation of the reference transcript. If we consider casing and punctuation (labelled WM), the score gets naturally worse.
 
 #### Evaluating ASR with timing (ASRT)
 
