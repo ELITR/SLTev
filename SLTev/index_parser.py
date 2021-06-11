@@ -106,8 +106,6 @@ def main():
     args = parser.parse_args()
 
     indexfile_path = args.elitr_testset_path+"/indices/"+args.indexfile_path if args.relative else args.indexfile_path
-    print(args.indexfile_path)
-    print(indexfile_path)
     paths = [path for path in parseIndexFile(indexfile_path, args.elitr_testset_path)]
     if args.format == "json":
       print(json.dumps(paths))
