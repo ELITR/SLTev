@@ -59,23 +59,65 @@ def parseIndexFile(indexFilePath, testsetPath):
                         evalEntry[name] = os.path.realpath(matchingFileName)
                     yield (evalEntry)
 
+## --no-* args
+class ActionNoYes(argparse.Action):
+    def __init__(self, option_strings, dest, default=None, required=False, help=None):
+
+        if default is None:
+            raise ValueError('You must provide a default with Yes/No action')
+        if len(option_strings)!=1:
+            raise ValueError('Only single argument is allowed with YesNo action')
+        opt = option_strings[0]
+        if not opt.startswith('--'):
+            raise ValueError('Yes/No arguments must be prefixed with --')
+
+        opt = opt[2:]
+        opts = ['--' + opt, '--no-' + opt]
+        super(ActionNoYes, self).__init__(opts, dest, nargs=0, const=None, 
+                                          default=default, required=required, help=help)
+    def __call__(self, parser, namespace, values, option_strings=None):
+        if option_strings.startswith('--no-'):
+            setattr(namespace, self.dest, False)
+        else:
+            setattr(namespace, self.dest, True)
+## end of --no-* args
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Interpret index files of elitr-testset (https://github.com/ELITR/elitr-testset/tree/master/indices) and print them as simple file lists."
     )
-    parser.add_argument("indexfile-path",
+    parser.add_argument("indexfile_path",
       help = "path to the index file",
       type = str,
     )
-    parser.add_argument("elitr-testset-path",
+    parser.add_argument("elitr_testset_path",
       help = "path to your clone of elitr-testset",
       type = str,
     )
+    parser.add_argument('--relative', action=ActionNoYes, default=True,
+      help = "treat indexfile_path relative to indices/ in elitr_testset_path",
+    )
+    parser.add_argument("--format", "-f",
+      help = "print output as tsv or json",
+      type = str,
+      default = "tsv",
+    )
     args = parser.parse_args()
 
-    paths = [path for path in parseIndexFile(args.indexfile_path, args.elitr_testset_path)]
-    #sys.argv[1], sys.argv[2])]
-    print(json.dumps(paths))
+    indexfile_path = args.elitr_testset_path+"/indices/"+args.indexfile_path if args.relative else args.indexfile_path
+    print(args.indexfile_path)
+    print(indexfile_path)
+    paths = [path for path in parseIndexFile(indexfile_path, args.elitr_testset_path)]
+    if args.format == "json":
+      print(json.dumps(paths))
+    else:
+      # collect used colnames
+      colnames = list(set([colname for d in paths for colname in d.keys()]))
+      print("\t".join(colnames))
+      for d in paths:
+        colvals = [ d[c] if d[c] is not None else "" for c in colnames ]
+        print("\t".join(colvals))
 
 if __name__ == "__main__":
     main()
