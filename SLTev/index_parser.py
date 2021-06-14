@@ -46,35 +46,33 @@ def parseIndexFile(indexFilePath, testsetPath):
             elif len(line) > 0:
                 if "SRC" not in fileExtensions or "REF" not in fileExtensions:
                     raise Exception(f"{line} -- SRC or REF not specified") 
-                sourceExtension = fileExtensions["SRC"]
-                sources = glob.glob(f"{testsetPath}/{line}/{sourceExtension}")
 
-                # Source file is guaranteed to exist, verify all other requested files exist
-                for source in sources:
-                    evalEntry = {}
-                    for name, extension in fileExtensions.items():
-                        matchingFileName = re.sub(sourceExtension[1:] + "$", "", source) + extension[1:]
-                        if not os.path.exists(matchingFileName):
-                            raise Exception(f"{name} {extension} -- {matchingFileName} does not exist")
-                        evalEntry[name] = os.path.realpath(matchingFileName)
-                    yield (evalEntry)
+                evalEntry = {}
+                for name, extension in fileExtensions.items():
+                    files = glob.glob(f"{testsetPath}/{line}/{extension}")
+                    matchingFiles = [file for file in files if file.endswith(extension[1:])]
+                    if len(matchingFiles) == 0:
+                        raise Exception(f"{name} {extension} does not have a matching file in directory {line}")
+                    if len(matchingFiles) > 1:
+                        raise Exception(f"{name} {extension} has more than one matching files in directory {line}: {matchingFiles}")
+                    evalEntry[name] = os.path.realpath(matchingFiles[0])
+                    yield evalEntry
 
 def main():
     parser = argparse.ArgumentParser(
         description="Interpret index files of elitr-testset (https://github.com/ELITR/elitr-testset/tree/master/indices) and print them as simple file lists."
     )
-    parser.add_argument("indexfile-path",
+    parser.add_argument("indexfile_path",
       help = "path to the index file",
       type = str,
     )
-    parser.add_argument("elitr-testset-path",
-      help = "path to your clone of elitr-testset",
+    parser.add_argument("dataset_path",
+      help = "path to your clone of dataset",
       type = str,
     )
     args = parser.parse_args()
 
-    paths = [path for path in parseIndexFile(args.indexfile_path, args.elitr_testset_path)]
-    #sys.argv[1], sys.argv[2])]
+    paths = [path for path in parseIndexFile(args.indexfile_path, args.dataset_path)]
     print(json.dumps(paths))
 
 if __name__ == "__main__":
