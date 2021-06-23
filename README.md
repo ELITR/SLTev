@@ -102,7 +102,9 @@ Each one of them takes a list of input file paths (-i or --input) and a list of 
 Please note that candidate files must be at the **before** or **after** of their input files. In the following examples A and B is correct and C is not.
 
 A) SLTeval -i slt_pth ostt_path ref_path -f slt ostt ref 
+
 B) SLTeval -i ostt_path ref_path slt_path -f ostt ref slt
+
 C) SLTeval -i ostt_path slt_path ref_path -f ostt slt ref
 
 
