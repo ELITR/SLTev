@@ -318,7 +318,7 @@ def count_C_lines(list_line):
 
 def partity_test(ostt, tt_list):
     """
-    checks equalness of  the number of C (complete) lines in OStt and OSt
+    checks equalness of the number of C (complete) lines in OStt and reference
 
     :param ostt: the path of ostt file
     :param tt_list: a list of tt (OSt) file pthes
@@ -365,6 +365,23 @@ def MT_checking(file):
     return status
 
 
+def calling_checking(inputs, file_formats):
+    """
+    checking calling format
+
+    :param inputs: a list of the input file paths
+    :param file_formats: a list of input file formats in order
+    """
+    # There is two correct format:
+    # First, candiates are before inputs
+    # Second, candidats are after inputs
+    
+    # candiates are before inputs
+    if (file_formats[0] in ["asrt", "asr", "slt", "mt"] or
+        file_formats[-1] in ["asrt", "asr", "slt", "mt"]):
+        pass
+    # checking candiates are before inputs
+    
 def split_inputs_hypos(inputs, file_formats):
     """
     splitting inputs and hypothesis
@@ -381,22 +398,34 @@ def split_inputs_hypos(inputs, file_formats):
         for i in range(1, int(len(inputs) / len(formats))):
             file_formats += formats
 
+    # calling error checking
+    # There is two correct format:
+    # First, candiates are before inputs
+    # Second, candidats are after inputs
+    if (file_formats[0] in ["asrt", "asr", "slt", "mt"] or
+        file_formats[-1] in ["asrt", "asr", "slt", "mt"]):
+        pass
+    else:
+        eprint("the calling format is not correct,\n\
+candidates (such as slt) must be before or after its inputs")
+        sys.exit(1)
+
     hypos = list()
     gold_inputs = list()
-    temp = {}
-    for inp, ords in zip(inputs, file_formats):
-        if ords in ["asrt", "asr", "slt", "mt"]:
-            hypos.append([inp, ords])
-            if temp != {}:
-                gold_inputs.append(temp)
-                temp = {}
+    input_candidates = {}
+    for input, format in zip(inputs, file_formats):
+        if format in ["asrt", "asr", "slt", "mt"]:
+            hypos.append([input, format])
+            if input_candidates != {}:
+                gold_inputs.append(input_candidates)
+                input_candidates = {}
         else:
             try:
-                temp[ords].append(inp)
+                input_candidates[format].append(input)
             except:
-                temp[ords] = [inp]
-    if temp != {}:
-        gold_inputs.append(temp)
+                input_candidates[format] = [input]
+    if input_candidates != {}:
+        gold_inputs.append(input_candidates)
     return hypos, gold_inputs
 
 
@@ -405,7 +434,7 @@ def extract_hypo_gold_files(hypo_file, gold_inputs):
     extracting gold files for the hypo
 
     :param hypo_file: path of the hypo file [hypo_path, format]
-    :param gold_inputs: a list of gold files [[gold_path, format], []]
+    :param gold_inputs: a dictionary of gold files {format:gold_path, ...} 
     :return error: if an error occurred it will be 1 and otherwise it will be 0
     :return out: a dict of gold files for the hypo {format:file_path}
     """
@@ -515,3 +544,4 @@ def pipeline_input():
     inputs = list(filter(lambda i: i != "", inputs))
     inputs = list(filter(lambda i: i != " ", inputs))
     return inputs
+
