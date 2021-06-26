@@ -212,7 +212,7 @@ def check_input(in_file):
             eprint(text)
             break
         try:
-            if int(line[1]) > -1 and int(line[2]) > -1 and int(line[3]) > -1:
+            if float(line[1]) > -1 and float(line[2]) > -1 and float(line[3]) > -1:
                 if line[4:] != [] and line[4:] != [""]:
                     pass
                 else:
@@ -226,6 +226,8 @@ def check_input(in_file):
                     state = 1
                     break
         except:
+            print("line is ", line)
+            print("int(line[1])", float(line[1]))
             text = (
                 "File "
                 + in_file
@@ -298,6 +300,12 @@ def SLTev_inputs_per_submission(submission_file, inputs):
             align.append(file)
     return status, tt, ostt, align
 
+
+def mwerSegmenter_error_message():
+    eprint(
+            " Running mwerSegmenter faild, please check SLTev installed correctly (pip install --upgrade SLTev).\n",
+            "mwerSegmenter just run in the Linux and it will be failed in the other operating systems."
+        )
 
 def count_C_lines(list_line):
     """
@@ -544,4 +552,5 @@ def pipeline_input():
     inputs = list(filter(lambda i: i != "", inputs))
     inputs = list(filter(lambda i: i != " ", inputs))
     return inputs
+
 

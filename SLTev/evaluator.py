@@ -218,6 +218,7 @@ def evaluator(
         except:
             os.chdir(current_path)
             shutil.rmtree(temp_folder, ignore_errors=True)
+            
 
     sacre_score = calc_bleu_score_document(references, MT)
     print(
@@ -238,6 +239,7 @@ def evaluator(
         except:
             os.chdir(current_path)
             shutil.rmtree(temp_folder, ignore_errors=True)
+            mwerSegmenter_error_message()
 
     if simple == "False" and time_stamp == "True":
         try:
@@ -266,3 +268,4 @@ def evaluator(
             "mean     flicker across whole documents      ",
             str("{0:.3f}".format(round(calc_average_flickers_per_document(MT), 3))),
         )
+
