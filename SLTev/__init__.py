@@ -5,4 +5,4 @@ import sys
 sltev_home = pkg_resources.resource_filename("SLTev", "")
 sys.path.insert(1, sltev_home)
 
-__version__ = "1.1.8"
+__version__ = "1.1.9"
