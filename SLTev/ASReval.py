@@ -1,70 +1,67 @@
 import pkg_resources
 import os
 import sys
-import argparse
-from utilities import *
-from ASRev import *
-from evaluator import *
+from utilities import eprint, split_gold_inputs_from_candidates, extract_gold_files_for_candidate
+from utilities import check_empty_line, osst_checking, pipeline_input, get_SLTev_home_path
+from utilities import check_time_stamp_candiates_format, submission_argument, parity_checking_between_ostt_reference
+from evaluator import normal_timestamp_evaluation, simple_timestamp_evaluation
+from ASRev import simple_asr_evaluation, normal_asr_evaluation
 
 
-def main(inputs=[], file_formats=[], simple="False"):
-    # -----------add SLTev home to the path
-    try:
-        sltev_home = pkg_resources.resource_filename("SLTev", "")
-    except:
-        sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
+def ost_checking(gold_files):
+    check_all_gold_files_flag = 0
+    for file in gold_files["ost"]:
+        if check_empty_line(file) == 1:
+            check_all_gold_files_flag = 1
+            continue
+    if check_all_gold_files_flag == 1:
+        return 0
+    return 1
+    
 
-    # checking arguments
-    if len(inputs) % len(file_formats) != 0:
+def main(input_files=[], file_formats=[], simple="False"):
+    SLTev_home = get_SLTev_home_path()
+
+    if len(input_files) % len(file_formats) != 0:
         eprint("inputs length and file_formats are not equal.")
         sys.exit(1)
 
-    hypos, gold_inputs = split_inputs_hypos(inputs, file_formats)
+    candidates , gold_inputs = split_gold_inputs_from_candidates(input_files, file_formats)
 
-    for hypo_file, gold_input in zip(hypos, gold_inputs):
-        gold_files, error = extract_hypo_gold_files(hypo_file, gold_input)
+    for candidate_file, gold_input in zip(candidates, gold_inputs):
+        gold_files, error = extract_gold_files_for_candidate(candidate_file, gold_input)
         if error == 1:
             continue
 
-        if hypo_file[1] == "asr":
-            # ost checking
-            temp_flag = 0
-            for file in gold_files["ost"]:
-                if check_empty_line(file) == 1:
-                    temp_flag = 1
-                    continue
-            if temp_flag == 1:
+        if candidate_file[1] == "asr":
+            if not ost_checking(gold_files): # ost checking
                 continue
             print(
                 "Evaluating the file ",
-                hypo_file[0],
+                candidate_file[0],
                 " in terms of  WER score against ",
                 gold_files["ost"][0],
-            )
-            ASRev(
-                ost=gold_files["ost"][0],
-                asr=hypo_file[0],
-                SLTev_home=sltev_home,
-                simple=simple,
-            )
+                )
+            inputs_object = {
+                'ost':gold_files["ost"][0],
+                'asr': candidate_file[0], 
+                'SLTev_home':  SLTev_home,
+                }
+            if simple == "False":
+                normal_asr_evaluation(inputs_object)
+            else:
+                simple_asr_evaluation(inputs_object)
 
-        elif hypo_file[1] == "asrt":
-            # ost checking
-            temp_flag = 0
-            for file in gold_files["ost"]:
-                if check_empty_line(file) == 1:
-                    temp_flag = 1
-                    continue
-            if temp_flag == 1:
+        elif candidate_file[1] == "asrt":
+            if not ost_checking(gold_files): # ost checking
                 continue
-            # OStt checking
-            if check_empty_ostt_line(gold_files["ostt"][0]) == 1:
+            if osst_checking(gold_files["ostt"][0]) == 1: # OStt checking
                 continue
-            parity_state, error = partity_test(gold_files["ostt"][0], gold_files["ost"])
+            parity_state, error = parity_checking_between_ostt_reference(gold_files["ostt"][0], gold_files["ost"])
             if parity_state == 0:
                 eprint(
                     "Evaulation for ",
-                    hypo_file[0],
+                    candidate_file[0],
                     " failed, the number of Complete lines (C) in ",
                     gold_files["ostt"][0],
                     " and ",
@@ -73,54 +70,50 @@ def main(inputs=[], file_formats=[], simple="False"):
                 )
                 eprint(error)
                 continue
-            # submission checking
-            state = check_input(hypo_file[0])
+
+            _ = check_time_stamp_candiates_format(candidate_file[0]) # submission checking
             print(
                 "Evaluating the file ",
-                hypo_file[0],
+                candidate_file[0],
                 " in terms of translation quality against ",
                 " ".join(gold_files["ost"]),
             )
-            evaluator(
-                ostt=gold_files["ostt"][0],
-                asr=True,
-                tt=gold_files["ost"],
-                align=[],
-                mt=hypo_file[0],
-                SLTev_home=sltev_home,
-                simple=simple,
-            )
+
+            inputs_object = {
+                'ostt': gold_files["ostt"][0],
+                'references': gold_files["ost"],
+                'SLTev_home': SLTev_home,
+                'candidate': candidate_file[0]
+            }
+            if simple == "False":
+                normal_timestamp_evaluation(inputs_object)
+            else:
+                simple_timestamp_evaluation(inputs_object)
+                
         else:
-            eprint("Evaulation for ", hypo_file[0], " failed, it is not an ASR file")
+            eprint("Evaulation for ", candidate_file[0], " failed, it is not an ASR file")
+
+
+def call_arguments():
+    args = submission_argument()
+    input_files = list()
+    file_formats = list()
+    if args.inputs is None:
+        input_files = pipeline_input()
+    else:
+        for inp in args.inputs:
+            input_files.append("".join(inp))
+
+    for ords in args.file_formats:
+        file_formats.append("".join(ords))
+    return input_files, file_formats, args
 
 
 def main_point():
-    args = submission_argument()
-    inputs = list()
-    file_formats = list()
-    if args.inputs is None:
-        inputs = pipeline_input()
-    else:
-        for inp in args.inputs:
-            inputs.append("".join(inp))
-
-    for ords in args.file_formats:
-        file_formats.append("".join(ords))
-
-    main(inputs, file_formats, args.simple)
-
+    input_files, file_formats, args = call_arguments()
+    main(input_files, file_formats, args.simple)
 
 if __name__ == "__main__":
-    args = submission_argument()
-    inputs = list()
-    file_formats = list()
-    if args.inputs is None:
-        inputs = pipeline_input()
-    else:
-        for inp in args.inputs:
-            inputs.append("".join(inp))
+    input_files, file_formats, args = call_arguments()
+    main(input_files, file_formats, args.simple)
 
-    for ords in args.file_formats:
-        file_formats.append("".join(ords))
-
-    main(inputs, file_formats, args.simple)

@@ -3,66 +3,47 @@
 import subprocess as sp
 import os
 from sacremoses import MosesTokenizer
-import uuid
 import shutil
 
-######################################################################
-# file manipulation functions
-######################################################################
 
-
-def get_number_words(tt_list):
+def read_reference_file(file_name):
     """
-    Recived a tt sentences and calculate number of words.
+    Reading the input reference file
 
-    :param tt_list: a list of tt (OSt) sentences
-    :return count: the count of all words
-    """
-    count = 0
-    for i in tt_list:
-        count += len(i) - 1
-
-    return count
-
-
-def read_tt(file_name):
-    """
-    Reading the input tt file
-
-    :param file_name: path of the tt file
-    :return  reference: a list of sentences that split by space like as [['i', 'am', '.'], ['you', 'are', '.'] ]
+    :param file_name: path of the reference file
+    :return  reference_lines: a list of sentences that tokenized by Moses tokenizer. For example [['i', 'am', '.'], ['you', 'are', '.'] ]
     """
 
     tokenize = MosesTokenizer().tokenize
-    reference = list()
+    reference_lines = list()
     with open(file_name, "r", encoding="utf8") as in_file:
         line = in_file.readline()
         while line:
-            l = tokenize(line.strip())
-            if l == []:
+            token_line = tokenize(line.strip())
+            if token_line == []:
                 line = in_file.readline()
                 continue
-            l.append(".")
-            reference.append(l)
+            token_line.append(".")
+            reference_lines.append(token_line)
             line = in_file.readline()
-    reference = list(filter(lambda a: a != ["."], reference))
-    return reference
+    reference_lines = list(filter(lambda a: a != ["."], reference_lines))
+    return reference_lines
 
 
-def read_ostt(file_name):
+def read_ostt_file(file_name):
     """
-    Reading *.OStt (time-stamped transcript) file
+    Reading OStt (time-stamped transcript) file
 
     :param file_name: the path of ostt file
-    :return ASR: a list of sentences which each sentence split to many segments.
-    Note: in each line in the input file, only we have end and start times (P/C start-time end-time). (e.g. P 1448 1599 How)
+    :return ostt_sentences: a list of sentences which each sentence split to many segments (a complete segment and multiple partial segments).
+    Note: in each line in the input file, only we have "end" and "start" times (P/C start-time end-time). (e.g. P 1448 1599 How)
     """
 
-    ASR = list()
-    sentence = []
+    ostt_sentences = list()
     tokenize = MosesTokenizer().tokenize
     with open(file_name, "r", encoding="utf8") as in_file:
         line = in_file.readline()
+        sentence = []
         while line:
             if tokenize(line.strip()) == []:
                 line = in_file.readline()
@@ -75,49 +56,22 @@ def read_ostt(file_name):
                 l = tokenize(line.strip())[1:]
                 l.append(".")
                 sentence.append(l)
-                ASR.append(sentence)
+                ostt_sentences.append(sentence)
                 sentence = []
             line = in_file.readline()
-    ASR = list(filter(lambda a: a != [["."]], ASR))
-    return ASR
+    ostt_sentences = list(filter(lambda a: a != [["."]], ostt_sentences))
+    return ostt_sentences
 
 
-def read_ost_as_ostt(file_name):
+def read_candidate_file(file_name):
     """
-    Reading *.OSt file as OStt file
-
-    :param file_name: the path of ost file
-    :return ASR: a list of sentences which each sentence split to many segments.
-    Note: in each line in the input file, only we have end and start times (P/C start-time end-time). (e.g. P 1448 1599 How)
-    """
-
-    ASR = list()
-    sentence = []
-    tokenize = MosesTokenizer().tokenize
-    with open(file_name, "r", encoding="utf8") as in_file:
-        line = in_file.readline()
-        while line:
-            if tokenize(line.strip()) == []:
-                line = in_file.readline()
-                continue
-            l = [0, 0]
-            l += tokenize(line.strip())
-            l.append(".")
-            ASR.append([l])
-            line = in_file.readline()
-    ASR = list(filter(lambda a: a != [["."]], ASR))
-    return ASR
-
-
-def read_MT(file_name):
-    """
-    Reading MT file and saving sentences in a list (each sentence contains many segments that split by space)
+    Reading ASRT and SLT files and saving sentences in a list (each sentence contains many segments that tokenized by Moses tokenizer)
 
     :param file_name: the path of MT/SLT files
-    :return MT: a list of sentences which each sentence splits to some segments.
+    :return candidate_sentences: a list of sentences which each sentence splits to some segments.
     """
 
-    MT = list()
+    candidate_sentences = list()
     sentence = []
     tokenize = MosesTokenizer().tokenize
     with open(file_name, "r", encoding="utf8") as in_file:
@@ -135,48 +89,48 @@ def read_MT(file_name):
                 l = line[1:]
                 l.append(".")
                 sentence.append(l)
-                MT.append(sentence)
+                candidate_sentences.append(sentence)
                 sentence = []
             else:
                 l = [0, 0, 0]
                 l += line[:]
                 l.append(".")
                 sentence.append(l)
-                MT.append(sentence)
+                candidate_sentences.append(sentence)
                 sentence = []
             line = in_file.readline()
-    MT = list(filter(lambda a: a != [["."]], MT))
-    return MT
+    candidate_sentences = list(filter(lambda a: a != [["."]], candidate_sentences))
+    return candidate_sentences
 
 
-def read_alignment_file(in_file):
+def read_alignment_file(align_file_path):
     """ "
-    Receiving alignment file path as the input and a dictionary that indicates matched word in ASR (time-stamped transcript) and reference has been returned per each sentence.
+    Receiving alignment file path as the input and a dictionary that indicates matched token in ostt (time-stamped transcript) and reference has been returned per each sentence.
 
-    :param in_file: path of the align file
-    :return out: a list of dictionary, e.g of output ([..., {'NULL': [], 'middle': ['1', '2', '4'], 'shelf': ['3', '5', '6', '7']}, ...])
+    :param align_file_path: path of the align file
+    :return align_table: a list of dictionary, e.g of output ([..., {'NULL': [], 'middle': ['1', '2', '4'], 'shelf': ['3', '5', '6', '7']}, ...])
     """
-
-    in_file = open(in_file, "r", encoding="utf8")
     sentences = []
-    line = in_file.readline()
-    sentence = []
-    while line:
-        line = line.strip().split(" ")
-        if line == []:
-            line = in_file.readline()
-            continue
-        if "#" in line:
-            sentences.append(sentence)
-            sentence = []
-        else:
-            sentence.append(line)
+    with  open(align_file_path, "r", encoding="utf8") as in_file:
         line = in_file.readline()
-    sentences.append(sentence)
-    sentences = sentences[1:]
-    orders = []
-    for i in sentences:
-        sentence = i[1]
+        sentence = []
+        while line:
+            line = line.strip().split(" ")
+            if line == []:
+                line = in_file.readline()
+                continue
+            if "#" in line:
+                sentences.append(sentence)
+                sentence = []
+            else:
+                sentence.append(line)
+            line = in_file.readline()
+        sentences.append(sentence)
+        sentences = sentences[1:]
+    
+    order_numbers = []
+    for item in sentences:
+        sentence = item[1]
         d = []
         l = []
         for j in sentence:
@@ -187,41 +141,38 @@ def read_alignment_file(in_file):
             else:
                 l.append(j)
 
-        orders.append(d)
-    out = []
-    for i in orders:
+        order_numbers.append(d)
+    
+    align_table = []
+    for i in order_numbers:
         l = {}
         for j in i:
             try:
                 l[j[0]] = j[1:]
             except:
                 l[j[0]] = int(-1)
-        out.append(l)
-    return out
+        align_table.append(l)
+    return align_table
 
 
-def segmenter(MT, Ts, language, SLTev_home, temp_folder):
+def delay_segmenter(evaluation_object, temp_folder):
     """
-    MT complete segments have been joined and saved in a temp_translate file.
+    slt complete segments have been joined and saved in the temp_translate file.
     and temp_translate file has been segmented by mwerSegmenter.
 
-    :param Ts: a list of T tables
-    :param MT: a list of MT senetnces
-    :param language: the submision language.
-    :param SLTev_home: path of the mwerSegmenter folder
+    :param evaluation_object: a dictionary of evaluation key, values
     :param temp_folder: path of the temp folder that created by UUID
-    :return mt_sentences: a list of MT sentecess which segmented by the mwerSegmenter
+    :return mwer_candidate_sentences: a list of slt sentecess which segmented by the mwerSegmenter
     :return mWERQuality: the quality score of mwerSegmenter
     """
 
-    mt_sentences = []
-    for i in range(len(MT)):
-        mt = MT[i][-1][3:-1]
-        mt_sentences.append(mt)
+    complete_candidate_sentences = []
+    for i in range(len(evaluation_object.get('candidate_sentences'))):
+        mt = evaluation_object.get('candidate_sentences')[i][-1][3:-1]
+        complete_candidate_sentences.append(mt)
 
     references_sentences = []
-
-    for ref in Ts:
+    for ref in evaluation_object.get('Ts'):
         l = []
         for sentennce in ref:
             s = []
@@ -229,7 +180,7 @@ def segmenter(MT, Ts, language, SLTev_home, temp_folder):
                 s.append(k)
             l.append(s)
         references_sentences.append(l)
-    # ------------------write MT in temp_translate file and reference in temp_ref
+    # write complete_candidate_sentences in temp_translate file and reference in temp_ref
     temp_folder_name = temp_folder
     os.mkdir(temp_folder_name)
     os.chdir(temp_folder_name)
@@ -240,81 +191,78 @@ def segmenter(MT, Ts, language, SLTev_home, temp_folder):
         out.write("\n")
     out.close()
     out = open("temp_translate", "w")
-    for i in mt_sentences:
-        sentence = " ".join(i)
+    for complete_sentence in complete_candidate_sentences:
+        sentence = " ".join(complete_sentence)
         out.write(sentence)
         out.write("\n")
     out.close()
-    # -------------tokenize tt and MT
-    cmd = SLTev_home + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
+    # tokenize candidate and reference
+    cmd = evaluation_object.get('SLTev_home') + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
     mWERQuality = sp.getoutput(cmd)
     mWERQuality = mWERQuality.split(" ")[-1]
     mWERQuality = float(mWERQuality)
-    # -------------read segments
+    # read __segments file
     in_file = open("__segments", "r", encoding="utf8")
     line = in_file.readline()
     segments = []
     while line:
         segments.append(line.strip().split(" "))
         line = in_file.readline()
-    mt_sentences = segments[:]
+
+    mwer_candidate_sentences = segments[:]
     os.chdir("..")
     shutil.rmtree(temp_folder_name)
-    return mt_sentences, mWERQuality
+    return mwer_candidate_sentences, mWERQuality
 
 
-def quality_segmenter(MT, references, language, SLTev_home, temp_folder):
+def quality_segmenter(evaluation_object, temp_folder):
     """
-    MT complete segments have been joined and saved in a temp_translate file.
+    candidate complete segments have been joined and saved in a temp_translate file.
     and temp_translate file has been segmented by mwerSegmenter.
 
-    :param references: a list of references
-    :param MT: a list of MT senetnces
-    :param language: the submision language.
-    :param SLTev_home: path of the mwerSegmenter folder
+    :param evaluation_object: a dictionary of evaluation key, values
     :param temp_folder: path of the temp folder that created by UUID
     :return mt_sentences: a list of MT sentecess which segmented by the mwerSegmenter
     :return mWERQuality: the quality score of mwerSegmenter
     """
 
-    mt_sentences = []
-    for i in range(len(MT)):
-        mt = MT[i][-1][3:-1]
-        mt_sentences.append(mt)
+    candidate_sentences = []
+    for i in range(len(evaluation_object.get('candidate_sentences'))):
+        candidate = evaluation_object.get('candidate_sentences')[i][-1][3:-1]
+        candidate_sentences.append(candidate)
 
-    references_sentences = []
-
-    for ref in references[0]:
-        references_sentences.append(ref[:-1])
-    # ------------------write MT in temp_translate file and reference in temp_ref
-    temp_folder_name = temp_folder
-    os.mkdir(temp_folder_name)
-    os.chdir(temp_folder_name)
+    reference_sentences = []
+    for ref in evaluation_object.get('references')[0]:
+        reference_sentences.append(ref[:-1])
+    # write candaiate in temp_translate file and reference in temp_ref
+    os.mkdir(temp_folder)
+    os.chdir(temp_folder)
     out = open("temp_ref", "w")
-    for i in references_sentences:
+    for i in reference_sentences:
         sentence = " ".join(i)
         out.write(sentence)
         out.write("\n")
     out.close()
     out = open("temp_translate", "w")
-    for i in mt_sentences:
+    for i in candidate_sentences:
         sentence = " ".join(i)
         out.write(sentence)
         out.write("\n")
     out.close()
-    # -------------tokenize tt and MT
-    cmd = SLTev_home + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
+    # tokenize reference and candidate
+    cmd = evaluation_object.get('SLTev_home') + "/mwerSegmenter -mref temp_ref -hypfile temp_translate"
     mWERQuality = sp.getoutput(cmd)
     mWERQuality = mWERQuality.split(" ")[-1]
     mWERQuality = float(mWERQuality)
-    # -------------read segments
+    # read segments for __segments file (output of mwerSegmenter)
     in_file = open("__segments", "r", encoding="utf8")
     line = in_file.readline()
-    segments = []
+    candidate_segments = []
     while line:
-        segments.append(line.strip().split(" "))
+        candidate_segments.append(line.strip().split(" "))
         line = in_file.readline()
-    mt_sentences = segments[:]
+
     os.chdir("..")
-    shutil.rmtree(temp_folder_name)
-    return mt_sentences, mWERQuality
+    shutil.rmtree(temp_folder)
+    return candidate_segments, mWERQuality
+

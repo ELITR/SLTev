@@ -3,13 +3,9 @@ import sys
 from os import getcwd
 import shutil
 import argparse
-
-######################################################################
-# The utility modules used in the SLTev
-######################################################################
+import pkg_resources
 
 
-# print to STDERR:
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -25,6 +21,17 @@ def remove_extra_spaces(text):
     text = text.replace("\t", "")
     text = text.replace(" ", "")
     return text
+
+
+def get_SLTev_home_path():
+    try:
+        sltev_home = pkg_resources.resource_filename("SLTev", "")
+    except:
+        sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
+    
+    if not sltev_home:
+        sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
+    return sltev_home
 
 
 def population(elitr_path, password):
@@ -48,33 +55,26 @@ def population(elitr_path, password):
     os.chdir(current_path)
 
 
-def get_indices(indice_file_path, target_path):
+def copy_index_file_to_output(index_file_path, target_path):
     """
     copy files from the index to the target path.
 
-    :param indice_file_path: a list of index files
+    :param index_file_path: a list of index files
     :param target_path: path of the target directory
     """
 
-    if indice_file_path[-5:] == ".link" or indice_file_path[-4:] == ".url":
-        indice = remove_extra_spaces(indice_file_path)
-        with open(indice) as link_f:
+    if index_file_path.endswith(".link") or index_file_path.endswith(".url"):
+        index = remove_extra_spaces(index_file_path)
+        with open(index) as link_f:
             link_files = link_f.readlines()
             for file in link_files:
                 shutil.copy2(file, target_path)
     else:
-        indice = remove_extra_spaces(indice_file_path)
+        indice = remove_extra_spaces(index_file_path)
         shutil.copy2(indice, target_path)
 
 
 def chop_elitr_testset_prefix(path):
-    """
-    remove elitr-testset from the path
-
-    :param path: input path
-    :return : preprocessed path string (removing elitr-testset from the path)
-    """
-
     path_split = path.split("/")
     if path_split[0] == "elitr-testset":
         return "/".join(path_split[1:])
@@ -98,9 +98,9 @@ def check_empty_line(file):
     return 0
 
 
-def check_empty_ostt_line(file):
+def osst_checking(file):
     """
-    check for empty lines
+    check OStt file for correct format and empty lines
 
     :param file: path of the file
     :return : status of error
@@ -134,7 +134,7 @@ def check_empty_ostt_line(file):
     return 0
 
 
-def populate(elitr_testset_path, indexname, target_path):
+def generate_index_files(elitr_testset_path, indexname, target_path):
     """
     populate and copy index files from elitr-testset to the target directory
 
@@ -142,37 +142,37 @@ def populate(elitr_testset_path, indexname, target_path):
     :param indexname: index name
     :param target_path: path of the target directory
     """
-    indice_file_path = os.path.join(elitr_testset_path, "indices", indexname)
-    indices = [indice_file_path]
+    index_file_path = os.path.join(elitr_testset_path, "indices", indexname)
+    indices = [index_file_path]
     indices_lines = []
     while indices != []:
-        indice_file_path = indices.pop()
-        with open(indice_file_path) as f:
+        index_file_path = indices.pop()
+        with open(index_file_path) as f:
             lines = f.readlines()
             lines = [i.strip() for i in lines if i.strip() != ""]
         for line in lines:
-            if line[:9] == "#include ":
+            if line.startswith("#include "):
                 indice = remove_extra_spaces(line[9:])
                 indice_path = os.path.join(
                     elitr_testset_path, "indices", chop_elitr_testset_prefix(indice)
                 )
                 indices.append(indice_path)
             elif line == "" or line[0] == "#":
-                pass
+                continue
             else:
                 indices_lines.append(
                     os.path.join(elitr_testset_path, chop_elitr_testset_prefix(line))
                 )
 
-    for indice in indices_lines:
-        if indice[0] == "#":
+    for line in indices_lines: # copy files
+        if line[0] == "#":
             pass
         else:
             try:
-                get_indices(indice, target_path)
-                eprint(indice + " copied to " + target_path)
+                copy_index_file_to_output(line, target_path)
+                eprint(line + " copied to " + target_path)
             except:
-                eprint("copying file", indice, "failed. please check this file in index")
+                eprint("copying file", line, "failed. please check this file in index")
 
 
 def remove_digits(string):
@@ -187,9 +187,9 @@ def remove_digits(string):
     return result
 
 
-def check_input(in_file):
+def check_time_stamp_candiates_format(in_file):
     """
-    check correctness of input files (MT/SLT/ASR files).
+    check timestamp candidate files
 
     :param in_file: input MT/SLT/ASR file path
     """
@@ -211,6 +211,7 @@ def check_input(in_file):
             state = 1
             eprint(text)
             break
+
         try:
             if float(line[1]) > -1 and float(line[2]) > -1 and float(line[3]) > -1:
                 if line[4:] != [] and line[4:] != [""]:
@@ -242,31 +243,31 @@ def check_input(in_file):
     return state
 
 
-def split_submissions_inputs(working_dir):
+def split_submissions_gold_inputs(working_dir):
     """
     split submmisions and inputs files for SLTev evaluation from working directory (a folder which contains inputs (OStt/OSt/...) and submmisions (SLT/ASR/MT))
 
-    :param working_dir: path of working directory.
+    :param working_dir: path of working directory (args.e avalue).
     :return submissions: a list of submmisione files
     :return inputs: a list of input files
     """
 
     submissions = []
-    inputs = []
-    for root, dirs, files in os.walk(working_dir):
+    gold_inputs = []
+    for _, _, files in os.walk(working_dir):
         for f in files:
             file_path = os.path.join(working_dir, f)
-            temp = remove_digits(f.split(".")[-1])
-            if temp == "slt" or temp == "asr" or temp == "mt" or temp == "asrt":
+            file_format = remove_digits(f.split(".")[-1])
+            if file_format == "slt" or file_format == "asr" or file_format == "mt" or file_format == "asrt":
                 submissions.append(file_path)
-            elif temp == "OSt" or temp == "OStt" or temp == "align":
-                inputs.append(file_path)
-    return submissions, inputs
+            elif file_format == "OSt" or file_format == "OStt" or file_format == "align":
+                gold_inputs.append(file_path)
+    return submissions, gold_inputs
 
 
-def SLTev_inputs_per_submission(submission_file, inputs):
+def split_gold_inputs_submission_in_working_directory(submission_file, gold_inputs):
     """
-    extract OSt (tt), align, OStt from the input files.
+    extract OSt , align and OStt from the input files.
 
     :param submission_file: path of the submission file
     :param inputs: a list of input files (OSt/OStt/align)
@@ -274,31 +275,36 @@ def SLTev_inputs_per_submission(submission_file, inputs):
     :return tt, ostt, align: OSt, OStt, align files  according to the submission file
     """
 
-    status, tt, ostt, align = "", [], "", []
-    file_name1 = os.path.split(submission_file)[1]
-    file_name = ".".join(file_name1.split(".")[:-3])
-    source_lang = file_name1.split(".")[-3]
-    target_lang = file_name1.split(".")[-2]
-    status = file_name1.split(".")[-1]
-    for file in inputs:
+    status, ostt = "", ""
+    references, aligns = list(), list()
+
+    submission_file_name = os.path.split(submission_file)[1]
+    submission_file_name_without_prefix = ".".join(submission_file_name.split(".")[:-3])
+
+    source_lang = submission_file_name.split(".")[-3]
+    target_lang = submission_file_name.split(".")[-2]
+
+    status = submission_file_name.split(".")[-1]
+
+    for file in gold_inputs:
         input_name = os.path.split(file)[1]
         input_name = input_name.split(".")
         if (
             ".".join(input_name[:-1]) + "." + remove_digits(input_name[-1])
-            == file_name + "." + target_lang + ".OSt"
+            == submission_file_name_without_prefix + "." + target_lang + ".OSt"
         ):
-            tt.append(file)
+            references.append(file)
         elif (
             ".".join(input_name[:-1]) + "." + remove_digits(input_name[-1])
-            == file_name + "." + source_lang + ".OStt"
+            == submission_file_name_without_prefix + "." + source_lang + ".OStt"
         ):
             ostt = file
         elif (
             ".".join(input_name[:-1]) + "." + remove_digits(input_name[-1])
-            == file_name + "." + source_lang + "." + target_lang + ".align"
+            == submission_file_name_without_prefix + "." + source_lang + "." + target_lang + ".align"
         ):
-            align.append(file)
-    return status, tt, ostt, align
+            aligns.append(file)
+    return status, references, ostt, aligns
 
 
 def mwerSegmenter_error_message():
@@ -307,24 +313,17 @@ def mwerSegmenter_error_message():
             "mwerSegmenter just run in the Linux and it will be failed in the other operating systems."
         )
 
-def count_C_lines(list_line):
-    """
-    calculate the number of C lines in a list of lines
-
-    :param list_line: a list of lines
-    :return counter: count of complete lines (C )
-    """
-
+def count_complete_segments(segments):
     counter = 0
-    for i in list_line:
-        if i.strip().split() == []:
+    for segment in segments:
+        if segment.strip().split() == []:
             continue
-        if i.strip().split()[0] == "C":
+        if segment.strip().split()[0] == "C":
             counter += 1
     return counter
 
 
-def partity_test(ostt, tt_list):
+def parity_checking_between_ostt_reference(ostt, references):
     """
     checks equalness of the number of C (complete) lines in OStt and reference
 
@@ -337,21 +336,21 @@ def partity_test(ostt, tt_list):
     status = 1
     error = ""
     with open(ostt) as f:
-        ostt_sentence = count_C_lines(f.readlines())
-    for file in tt_list:
-        with open(file) as f:
-            tt_sentence = len(f.readlines())
-        if ostt_sentence != tt_sentence:
+        ostt_complete_segment_count = count_complete_segments(f.readlines())
+    for ref in references:
+        with open(ref) as f:
+            ref_length = len(f.readlines())
+        if ostt_complete_segment_count != ref_length:
             status = 0
             error = (
                 "The number of C segment (complete) in "
                 + ostt
                 + " is "
-                + str(ostt_sentence)
+                + str(ostt_complete_segment_count)
                 + " and number of lines in "
-                + file
+                + ref
                 + " is "
-                + str(tt_sentence)
+                + str(ref_length)
             )
             break
     return status, error
@@ -367,45 +366,27 @@ def MT_checking(file):
 
     status = 0
     with open(file) as f:
-        mt_sentence = count_C_lines(f.readlines())
+        mt_sentence = count_complete_segments(f.readlines())
         if mt_sentence > 0:
             status = 1
     return status
 
-
-def calling_checking(inputs, file_formats):
-    """
-    checking calling format
-
-    :param inputs: a list of the input file paths
-    :param file_formats: a list of input file formats in order
-    """
-    # There is two correct format:
-    # First, candiates are before inputs
-    # Second, candidats are after inputs
     
-    # candiates are before inputs
-    if (file_formats[0] in ["asrt", "asr", "slt", "mt"] or
-        file_formats[-1] in ["asrt", "asr", "slt", "mt"]):
-        pass
-    # checking candiates are before inputs
-    
-def split_inputs_hypos(inputs, file_formats):
+def split_gold_inputs_from_candidates(input_files, file_formats):
     """
     splitting inputs and hypothesis
 
-    :param inputs: a list of the input file paths
+    :param input_files: a list of the input file paths
     :param file_formats: a list of input file formats in order
     :return hypos: a list of the hypothesis files [[hypo_path, format], []]
     :return gold_inputs: a list of the gold input files [{format:[file1, ...], ...}, {format:[file1, ...], ...},]
     """
 
     # making file_formats length as inputs length
-    if len(inputs) != len(file_formats):
+    if len(input_files) != len(file_formats):
         formats = file_formats[:]
-        for i in range(1, int(len(inputs) / len(formats))):
+        for i in range(1, int(len(input_files) / len(formats))):
             file_formats += formats
-
     # calling error checking
     # There is two correct format:
     # First, candiates are before inputs
@@ -418,12 +399,12 @@ def split_inputs_hypos(inputs, file_formats):
 candidates (such as slt) must be before or after its inputs")
         sys.exit(1)
 
-    hypos = list()
+    candidates = list()
     gold_inputs = list()
     input_candidates = {}
-    for input, format in zip(inputs, file_formats):
+    for input, format in zip(input_files, file_formats):
         if format in ["asrt", "asr", "slt", "mt"]:
-            hypos.append([input, format])
+            candidates.append([input, format])
             if input_candidates != {}:
                 gold_inputs.append(input_candidates)
                 input_candidates = {}
@@ -434,75 +415,91 @@ candidates (such as slt) must be before or after its inputs")
                 input_candidates[format] = [input]
     if input_candidates != {}:
         gold_inputs.append(input_candidates)
-    return hypos, gold_inputs
+    return candidates, gold_inputs
 
 
-def extract_hypo_gold_files(hypo_file, gold_inputs):
+def extract_asr_gold_files_for_candidate(candidate_file, gold_inputs):
+    error = 0
+    gold_files = {}
+    try:
+        gold_files["ost"] = gold_inputs["ost"]
+    except:
+        eprint("evaluation failed, the source file does not exist for ", candidate_file[0])
+        error = 1
+    return gold_files, error
+
+
+def extract_asrt_gold_files_for_candidate(candidate_file, gold_inputs):
+    error = 0
+    gold_files = {}
+    try:
+        gold_files["ost"] = gold_inputs["ost"]
+    except:
+        eprint("evaluation failed, the source file does not exist for ", candidate_file[0])
+        error = 1
+    try:
+        gold_files["ostt"] = gold_inputs["ostt"]
+    except:
+        eprint("evaluation failed, the OStt file does not exist for ", candidate_file[0])
+        error = 1
+    return gold_files, error 
+
+
+def extract_mt_gold_files_for_candidate(candidate_file, gold_inputs):
+    error = 0
+    gold_files = {}
+    try:
+        gold_files["ref"] = gold_inputs["ref"]
+    except:
+        eprint( "evaluation failed, the reference file does not exist for ", candidate_file[0])
+        error = 1
+    return gold_files, error 
+
+
+def extract_slt_gold_files_for_candidate(candidate_file, gold_inputs):
+    error = 0
+    gold_files = {"ref": "", "ostt": "", "align": ""}
+    try:
+        gold_files["ref"] = gold_inputs["ref"]
+    except:
+        eprint("evaluation failed, the reference file does not exist for ", candidate_file[0])
+        error = 1
+    try:
+        gold_files["ostt"] = gold_inputs["ostt"]
+    except:
+        eprint("evaluation failed, the OStt file does not exist for ", candidate_file[0])
+        error = 1
+    try:
+        gold_files["align"] = gold_inputs["align"]
+    except:
+        gold_files["align"] = []
+    return gold_files, error 
+
+
+def extract_gold_files_for_candidate(candidate_file, gold_inputs):
     """
-    extracting gold files for the hypo
+    extracting gold files for the candidate
 
-    :param hypo_file: path of the hypo file [hypo_path, format]
+    :param candidate_file: path of the hypo file [hypo_path, format]
     :param gold_inputs: a dictionary of gold files {format:gold_path, ...} 
     :return error: if an error occurred it will be 1 and otherwise it will be 0
     :return out: a dict of gold files for the hypo {format:file_path}
     """
 
     error = 0
-    hypo_name = os.path.split(hypo_file[0])[1]
-    out = {}
-    if hypo_file[1] == "asr":
-        try:
-            out["ost"] = gold_inputs["ost"]
-        except:
-            eprint(
-                "evaluation failed, the source file does not exist for ", hypo_file[0]
-            )
-            error = 1
+    gold_files = {}
+    if candidate_file[1] == "asr":
+        gold_files, error = extract_asr_gold_files_for_candidate(candidate_file, gold_inputs)
 
-    elif hypo_file[1] == "asrt":
-        try:
-            out["ost"] = gold_inputs["ost"]
-        except:
-            eprint(
-                "evaluation failed, the source file does not exist for ", hypo_file[0]
-            )
-            error = 1
-        try:
-            out["ostt"] = gold_inputs["ostt"]
-        except:
-            eprint("evaluation failed, the OStt file does not exist for ", hypo_file[0])
-            error = 1
+    elif candidate_file[1] == "asrt":
+        gold_files, error = extract_asrt_gold_files_for_candidate(candidate_file, gold_inputs)
 
-    elif hypo_file[1] == "mt":
-        try:
-            out["ref"] = gold_inputs["ref"]
-        except:
-            eprint(
-                "evaluation failed, the reference file does not exist for ",
-                hypo_file[0],
-            )
-            error = 1
+    elif candidate_file[1] == "mt":
+        gold_files, error = extract_mt_gold_files_for_candidate(candidate_file, gold_inputs)
 
-    elif hypo_file[1] == "slt":
-        out = {"ref": "", "ostt": "", "align": ""}
-        try:
-            out["ref"] = gold_inputs["ref"]
-        except:
-            eprint(
-                "evaluation failed, the reference file does not exist for ",
-                hypo_file[0],
-            )
-            error = 1
-        try:
-            out["ostt"] = gold_inputs["ostt"]
-        except:
-            eprint("evaluation failed, the OStt file does not exist for ", hypo_file[0])
-            error = 1
-        try:
-            out["align"] = gold_inputs["align"]
-        except:
-            out["align"] = []
-    return out, error
+    elif candidate_file[1] == "slt":
+        gold_files, error = extract_slt_gold_files_for_candidate(candidate_file, gold_inputs)
+    return gold_files, error
 
 
 def submission_argument():
@@ -552,5 +549,6 @@ def pipeline_input():
     inputs = list(filter(lambda i: i != "", inputs))
     inputs = list(filter(lambda i: i != " ", inputs))
     return inputs
+
 
 

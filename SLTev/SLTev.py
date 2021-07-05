@@ -9,15 +9,16 @@ import git
 import pkg_resources
 from filelock import FileLock
 from sacremoses import MosesTokenizer
-from utilities import *
-from ASRev import *
-from evaluator import *
+
+from utilities import eprint, population, generate_index_files
+from utilities import split_submissions_gold_inputs, split_gold_inputs_submission_in_working_directory
+from utilities import remove_digits
 import ASReval
 import MTeval
 import SLTeval
 
 
-def main():
+def SLTev_argument_parser():
     parser = argparse.ArgumentParser(
         description="Evaluate outputs of SLT/MT/ASR systems in a reproducible way. Use custom inputs and references, or use inputs and references from https://github.com/ELITR/elitr-testset"
     )
@@ -69,22 +70,17 @@ def main():
         default="False",
     )
     args = parser.parse_args()
+    return args, parser
 
-    # -----------add SLTev home to the path
-    try:
-        sltev_home = pkg_resources.resource_filename("SLTev", "")
-    except:
-        sltev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
-    sys.path.insert(1, sltev_home)
 
-    # print SLTev version
+def print_SLTev_version(args, SLTev_home):
     if args.version != "False":
         try:
             __version__ = pkg_resources.get_distribution("SLTev").version
             eprint(__version__)
         except:
             try:
-                repo = git.Repo(os.path.split(sltev_home)[0])
+                repo = git.Repo(os.path.split(SLTev_home)[0])
                 commit_id = repo.head.commit
                 eprint("The commit id is: ", commit_id)
             except:
@@ -93,7 +89,8 @@ def main():
                 )
         sys.exit(1)
 
-    # sacremoses checking
+
+def moses_tokenizer_checking():
     try:
         tokenize = MosesTokenizer().tokenize
         tokens = tokenize("Hello World!")
@@ -108,9 +105,32 @@ def main():
         )
         sys.exit(1)
 
+
+def checking_correct_arguments(args, parser):
+    if args.e is None and args.g is None:
+        parser.print_help()
+        sys.exit(1)
+
+
+def make_output_directory(args):
+    output_dir = ""
+    if args.outdir is None:
+        if args.e is not None:
+            output_dir = args.e
+        else:
+            output_dir = "outdir"
+    else:
+        output_dir = args.outdir
+
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+    return output_dir
+
+
+def get_SLTev_commit_id(SLTev_home):
     SLTev_commit_id = ""
     try:
-        repo = git.Repo(os.path.split(sltev_home)[0])
+        repo = git.Repo(os.path.split(SLTev_home)[0])
         sha = repo.head.object.hexsha
         SLTev_commit_id = "SLTev_" + repo.git.rev_parse(sha, short=True) + "-"
     except:
@@ -120,108 +140,110 @@ def main():
             )
         except:
             SLTev_commit_id = "SLTev_NONE" + "-"
-    # -----------check output directory
-    if args.e is None and args.g is None:
-        parser.print_help()
-        sys.exit(1)
+    return SLTev_commit_id
 
-    output_dir = ""
-    if args.outdir is None:
-        if args.e is not None:
-            # default outdir value is taken from -e in evaluation mode
-            output_dir = args.e
-        else:
-            # for -g, the default should be "outdir"
-            output_dir = "outdir"
-    else:
-        output_dir = args.outdir
 
-    if not os.path.isdir(output_dir):
-        # make the directory if it doesn't exist
-        os.makedirs(output_dir, exist_ok=True)
-
-    # ----get commit id
-    elitr_path = args.elitr_testset
+def get_elitr_commit_id(elitr_path):
     try:
         repo = git.Repo(elitr_path)
-        commit_id = repo.head.commit
+        elitr_commit_id = repo.head.commit
     except:
-        commit_id = ""
+        elitr_commit_id = ""
+    return elitr_commit_id
 
-    if args.g != None:
-        git_path = "https://github.com/ELITR/elitr-testset.git"
-        if os.path.isdir(elitr_path):
-            try:
-                repo = git.Repo(elitr_path)
-                repo.remotes.origin.pull()
-                try:
-                    population(
-                        elitr_path, os.environ.copy()["ELITR_CONFIDENTIAL_PASSWORD"]
-                    )  # link population
-                except:
-                    eprint("ELITR_CONFIDENTIAL_PASSWORD=... was not used")
-                sha = repo.head.object.hexsha
-                commit_id = "elitrtestset_" + repo.git.rev_parse(sha, short=True)
-                eprint("elitr-testset pulled")
-            except:
-                eprint(
-                    "Pull from elitr-testset at " + elitr_path + " failed.\n"
-                    + "Is it a valid git clone? Do I have the git keys/password?\n"
-                    + "Test manually:\n  cd " + elitr_path + "; git pull"
-                )
-                sys.exit(1)
-        else:
-            try:
-                eprint("cloning elitr-testset repo to dir: ", elitr_path)
-                eprint("...this does take a while and needs a lot of disk space")
-                git.Repo.clone_from(git_path, elitr_path)
-                try:
-                    population(
-                        elitr_path, os.environ.copy()["ELITR_CONFIDENTIAL_PASSWORD"]
-                    )  # link population
-                except:
-                    eprint("ELITR_CONFIDENTIAL_PASSWORD=... was not used")
-                repo = git.Repo(elitr_path)
-                sha = repo.head.object.hexsha
-                commit_id = "elitrtestset_" + repo.git.rev_parse(sha, short=True)
-            except:
-                eprint(
-                    "cloning from elitr-testset failed, please check your internet conection"
-                )
-                sys.exit(1)
-        # ------check commit id
-        if args.commitid != "HEAD":
-            try:
-                repo = git.Repo(elitr_path)
-                repo.git.checkout(args.commitid)
-                eprint("checkout to ", args.commitid, " done.")
-            except:
-                eprint(args.commitid, " is not valid")
-        try:
-            eprint("elitr-testset commit id is: ", commit_id)
-            with FileLock(os.path.join(elitr_path, "SLTev.lock")):
-                indice_file_path = os.path.join(elitr_path, "indices", args.g)
-                populate(elitr_path, args.g, output_dir)
-        except:
-            eprint(
-                "Generating index ",
-                args.g,
-                " failed. Check ",
-                args.g,
-                " index, it does not seem to exist, also check ",
-                output_dir,
-                " for write permision",
-            )
+
+def do_population(elitr_path):
+    try:
+        population(
+            elitr_path, os.environ.copy()["ELITR_CONFIDENTIAL_PASSWORD"]
+        )  # link population
+    except:
+        eprint("ELITR_CONFIDENTIAL_PASSWORD=... was not used") 
+
+
+def pull_and_populate(elitr_path):
+    try:
+        repo = git.Repo(elitr_path)
+        repo.remotes.origin.pull()
+        do_population(elitr_path)
+        sha = repo.head.object.hexsha
+        elitr_commit_id = "elitrtestset_" + repo.git.rev_parse(sha, short=True)
+        eprint("elitr-testset pulled")
+        return elitr_commit_id
+    except:
+        eprint(
+            "Pull from elitr-testset at " + elitr_path + " failed.\n"
+            + "Is it a valid git clone? Do I have the git keys/password?\n"
+            + "Test manually:\n  cd " + elitr_path + "; git pull"
+        )
         sys.exit(1)
-    # ----checking working directory
-    working_dir = args.e
 
+
+def clone_and_populate(git_path, elitr_path):
+    try:
+        eprint("cloning elitr-testset repo to dir: ", elitr_path)
+        eprint("...this does take a while and needs a lot of disk space")
+        git.Repo.clone_from(git_path, elitr_path)
+        do_population(elitr_path)
+        repo = git.Repo(elitr_path)
+        sha = repo.head.object.hexsha
+        elitr_commit_id = "elitrtestset_" + repo.git.rev_parse(sha, short=True)
+        return elitr_commit_id
+    except:
+        eprint(
+            "cloning from elitr-testset failed, please check your internet conection"
+        )
+        sys.exit(1)
+
+
+def check_out(args, elitr_path):
+    try:
+        repo = git.Repo(elitr_path)
+        repo.git.checkout(args.commitid)
+        eprint("checkout to ", args.commitid, " done.")
+    except:
+        eprint(args.commitid, " is not valid")
+
+
+def extract_index_files(args, elitr_commit_id, elitr_path, output_dir):
+    try:
+        eprint("elitr-testset commit id is: ", elitr_commit_id)
+        with FileLock(os.path.join(elitr_path, "SLTev.lock")):
+            generate_index_files(elitr_path, args.g, output_dir)
+    except:
+        eprint(
+            "Generating index ",
+            args.g,
+            " failed. Check ",
+            args.g,
+            " index, it does not seem to exist, also check ",
+            output_dir,
+            " for write permision",
+        )
+
+
+def generate_files_from_index(args, elitr_path, output_dir):
+    git_path = "https://github.com/ELITR/elitr-testset.git"
+    elitr_commit_id = ""
+    if os.path.isdir(elitr_path): # if cloned 
+        elitr_commit_id = pull_and_populate(elitr_path)
+    else:
+        elitr_commit_id = clone_and_populate(git_path, elitr_path)
+    if args.commitid != "HEAD":
+        check_out(args, elitr_path)
+
+    extract_index_files(args, elitr_commit_id, elitr_path, output_dir) # extract index files
+
+
+def check_working_directory(working_dir):
     if os.path.isdir(working_dir):
         eprint("working directory is ", working_dir)
     else:
         eprint(working_dir, " does not exist.")
         sys.exit(1)
-    # ---make signature
+
+
+def make_signature(SLTev_commit_id, elitr_path):
     signature = SLTev_commit_id
     if os.path.isdir(elitr_path):
         try:
@@ -233,145 +255,187 @@ def main():
             signature = signature + "elitrtestset_NONE"
     else:
         signature = signature + "elitrtestset_NONE"
+    
+    return signature
 
-    """
-    Naming template:
-    - OSt
-    <file-name> . <language> . OSt
-    -OStt
-    <file-name> . <language> . OStt
-    -align
-    <file-name> . <source-lang> . <target-lang> . align
-    -ASR/SLT/MT
-    <file-name> . <source-lang> . <target-lang> . asr/slt/mt
-    """
 
-    submissions, input_files = split_submissions_inputs(working_dir)
-    orig_stdout = sys.stdout
-    if submissions == []:
+def asr_submission_evaluation(args, inputs_object):
+    if args.aggregate != "False":
+        print("Signature: ", inputs_object.get('signature'))
+        ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+    else:
+        out_name = (
+            os.path.join(
+                inputs_object.get('output_dir'),
+                os.path.split(inputs_object.get('submission_file'))[1]
+                )
+            + ".WER.out"
+            )
+        with open(out_name, "w") as f:
+            sys.stdout = f
+            print("Signature: ", inputs_object.get('signature'))
+            ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            sys.stdout = inputs_object.get('original_stdout')
+        eprint("Results saved in ", out_name)
+
+
+def asrt_submission_evaluation(args, inputs_object):
+    if args.aggregate != "False":
+        print("Signature: ", inputs_object.get('signature'))
+        ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+    else:
+        out_name = (
+            os.path.join(inputs_object.get('output_dir'), os.path.split(inputs_object.get('submission_file'))[1])
+            + ".BLEU.out"
+        )
+        with open(out_name, "w") as f:
+            sys.stdout = f
+            print("Signature: ", inputs_object.get('signature'))
+            ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            sys.stdout = inputs_object.get('original_stdout')
+        eprint("Results saved in ", out_name)
+
+
+def mt_submission_evaluation(args, inputs_object):
+    if args.aggregate != "False":
+        print("Signature: ", inputs_object.get('signature'))
+        MTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+    else:
+        out_name = (
+            os.path.join(inputs_object.get('output_dir'), os.path.split(inputs_object.get('submission_file'))[1])
+            + ".BLEU.out"
+        )
+        with open(out_name, "w") as f:
+            sys.stdout = f
+            print("Signature: ", inputs_object.get('signature'))
+            MTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            sys.stdout = inputs_object.get('original_stdout')
+        eprint("Results saved in ", out_name)
+
+
+def slt_submission_evaluation(args, inputs_object):
+    if args.aggregate != "False":
+        print("Signature: ", inputs_object.get('signature'))
+        SLTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+    else:
+        out_name = (
+            os.path.join(inputs_object.get('output_dir'), os.path.split(inputs_object.get('submission_file'))[1])
+            + ".BLEU.out"
+        )
+        with open(out_name, "w") as f:
+            sys.stdout = f
+            print("Signature: ", inputs_object.get('signature'))
+            SLTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            sys.stdout = inputs_object.get('original_stdout')
+        eprint("Results saved in ", out_name)
+
+
+def build_input_fils_and_file_formats(submission_file, gold_input_files):
+    status, references, ostt, aligns = split_gold_inputs_submission_in_working_directory(submission_file, gold_input_files)
+
+    input_files = [submission_file]
+    file_formats = [remove_digits(status)]
+
+    for reference_file in references:
+        input_files.append(reference_file)
+        if remove_digits(status) == "asr" or remove_digits(status) == "asrt":
+            file_formats.append("ost")
+        elif remove_digits(status) == "mt" or remove_digits(status) == "slt":
+            file_formats.append("ref")
+    if ostt != "":
+        input_files.append(ostt)
+        file_formats.append("ostt")
+
+    for align_file in aligns:
+        input_files.append(align_file)
+        file_formats.append("align")
+
+    return input_files, file_formats, status
+
+
+def generation(args, parser, output_dir):
+    # ----get commit id
+    elitr_path = args.elitr_testset
+    elitr_commit_id = get_elitr_commit_id(elitr_path)
+    if args.g :
+        generate_files_from_index(args, elitr_path, output_dir)
+        sys.exit(1)
+
+
+def submissions_evaluation(args, submission_object):
+    if submission_object.get('submissions') == []:
         eprint(
-            "No SLT/ASR/MT files in working directory ", working_dir, " for evaluatin"
+            "No SLT/ASR/MT files in working directory ", submission_object.get('working_dir'), " for evaluatin"
         )
-    for submission_file in submissions:
-
-        status, tt, ostt, align = SLTev_inputs_per_submission(
-            submission_file, input_files
-        )
-
-        # making inputs and file_formats
-        inputs = [submission_file]
-        file_formats = [remove_digits(status)]
-        for i in tt:
-            if remove_digits(status) == "asr" or remove_digits(status) == "asrt":
-                inputs.append(i)
-                file_formats.append("ost")
-            elif remove_digits(status) == "mt" or remove_digits(status) == "slt":
-                inputs.append(i)
-                file_formats.append("ref")
-
-        if ostt != "":
-            inputs.append(ostt)
-            file_formats.append("ostt")
-
-        for i in align:
-            inputs.append(i)
-            file_formats.append("align")
-
-        # checking tt counts
-        if tt == []:
-            eprint("Evaluation failed, ther is no tt files for the ", submission_file)
-            continue
+    for submission_file in submission_object.get('submissions'):
+        input_files, file_formats, status =  build_input_fils_and_file_formats(
+            submission_file, submission_object.get('gold_input_files')
+            )
+        inputs_object = {
+            'input_files': input_files,
+            'file_formats': file_formats,
+            'signature':submission_object.get('signature'),
+            'output_dir': submission_object.get('output_dir'),
+            'submission_file': submission_file,
+            'original_stdout': submission_object.get('original_stdout') 
+        }
         if remove_digits(status) == "asr":
-            if args.aggregate != "False":
-                print(
-                    "Evaluating the file ",
-                    submission_file,
-                    " in terms of  WER score against ",
-                    tt[0],
-                )
-                print("Signature: ", signature)
-                ASReval.main(inputs, file_formats, args.simple)
-            else:
-                out_name = (
-                    os.path.join(output_dir, os.path.split(submission_file)[1])
-                    + ".WER.out"
-                )
-                with open(out_name, "w") as f:
-                    sys.stdout = f
-                    print("Signature: ", signature)
-                    ASReval.main(inputs, file_formats, args.simple)
-                    sys.stdout = orig_stdout
-                eprint("Results saved in ", out_name)
-
-        if remove_digits(status) == "asrt":
-            if args.aggregate != "False":
-                print(
-                    "Evaluating the file ",
-                    submission_file,
-                    " in terms of translation quality against ",
-                    " ".join(tt),
-                )
-                print("Signature: ", signature)
-                ASReval.main(inputs, file_formats, args.simple)
-            else:
-                out_name = (
-                    os.path.join(output_dir, os.path.split(submission_file)[1])
-                    + ".BLEU.out"
-                )
-                with open(out_name, "w") as f:
-                    sys.stdout = f
-                    print("Signature: ", signature)
-                    ASReval.main(inputs, file_formats, args.simple)
-                    sys.stdout = orig_stdout
-                eprint("Results saved in ", out_name)
+            asr_submission_evaluation(args, inputs_object)
             continue
 
-        if remove_digits(status) == "mt":
-            if args.aggregate != "False":
-                print(
-                    "Evaluating the file ",
-                    submission_file,
-                    " in terms of translation quality against ",
-                    " ".join(tt),
-                )
-                print("Signature: ", signature)
-                MTeval.main(inputs, file_formats, args.simple)
-            else:
-                out_name = (
-                    os.path.join(output_dir, os.path.split(submission_file)[1])
-                    + ".BLEU.out"
-                )
-                with open(out_name, "w") as f:
-                    sys.stdout = f
-                    print("Signature: ", signature)
-                    MTeval.main(inputs, file_formats, args.simple)
-                    sys.stdout = orig_stdout
-                eprint("Results saved in ", out_name)
+        elif remove_digits(status) == "asrt":
+            asrt_submission_evaluation(args, inputs_object)
             continue
 
-        if remove_digits(status) == "slt":
-            if args.aggregate != "False":
-                print(
-                    "Evaluating the file ",
-                    submission_file,
-                    " in terms of translation quality against ",
-                    " ".join(tt),
-                )
-                print("Signature: ", signature)
-                SLTeval.main(inputs, file_formats, args.simple)
-            else:
-                out_name = (
-                    os.path.join(output_dir, os.path.split(submission_file)[1])
-                    + ".BLEU.out"
-                )
-                with open(out_name, "w") as f:
-                    sys.stdout = f
-                    print("Signature: ", signature)
-                    SLTeval.main(inputs, file_formats, args.simple)
-                    sys.stdout = orig_stdout
-                eprint("Results saved in ", out_name)
+        elif remove_digits(status) == "mt":
+            mt_submission_evaluation(args, inputs_object)
             continue
+
+        elif remove_digits(status) == "slt":
+            slt_submission_evaluation(args, inputs_object)
+            continue
+
+def main():
+    args, parser = SLTev_argument_parser()
+    # add SLTev home to the path
+    try:
+        SLTev_home = pkg_resources.resource_filename("SLTev", "")
+    except:
+        SLTev_home = os.path.dirname(os.path.realpath(sys.argv[0]))
+    sys.path.insert(1, SLTev_home)
+
+    # print SLTev version
+    print_SLTev_version(args, SLTev_home)
+
+    # sacremoses checking
+    moses_tokenizer_checking()
+
+    SLTev_commit_id = get_SLTev_commit_id(SLTev_home)
+    checking_correct_arguments(args, parser)
+    output_dir = make_output_directory(args) 
+
+    generation(args, parser, output_dir) # generation part
+
+    # evaluation part
+    elitr_path = args.elitr_testset
+    working_dir = args.e
+    check_working_directory(working_dir)
+    signature = make_signature(SLTev_commit_id, elitr_path)
+
+    submissions, gold_input_files = split_submissions_gold_inputs(working_dir)
+    original_stdout = sys.stdout
+
+    submission_object = {
+        'submissions': submissions,
+        'signature': signature,
+        'gold_input_files': gold_input_files,
+        'working_dir': working_dir,
+        'output_dir': output_dir,
+        'original_stdout': original_stdout
+        }
+    submissions_evaluation(args, submission_object)
 
 
 if __name__ == "__main__":
     main()
+
