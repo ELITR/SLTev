@@ -27,6 +27,18 @@ def print_headers():
         "A ... considering word alignment (by GIZA) to relax word delay (i.e. relaxing more than just linear delay calculation)"
     )
     eprint(
+        "docAsWhole ... concatenating all reference segments and candidate complete segments as two documents"
+    )
+    eprint(
+        "mwerSegmenter ... using mWER to resegment complete candidate segments according to reference segments"
+    )
+    eprint(
+        "span-START-END  ... the time span between START and END times (just tokens in the time-span considered)"
+    )
+    eprint(
+        "span* ... average of all time-spans"
+    )    
+    eprint(
         "------------------------------------------------------------------------------------------------------------"
     )
 
