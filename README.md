@@ -1,4 +1,34 @@
-# SLTev
+# SLTev 
+![PyPI version](https://img.shields.io/pypi/wheel/SLTev?label=%20PyPI)
+![python version](https://img.shields.io/pypi/pyversions/SLTev)
+![licence](https://img.shields.io/pypi/l/SLTev)
+
+
+SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language translation. 
+
+# Table of Contents
+1. [What is SLTev?](#SLTev)
+2. [Requirements](#Requirements)
+3. [File-Naming-Convention](#File-Naming-Convention)
+    1. [Golden Transcripts](#Golden-Transcripts)
+    2. [Word Alignment](#Word-Alignment)
+    3. [System Outputs from Translation](#System-Outputs-from-Translation)
+    4. [System Outputs from ASR](#System-Outputs-from-ASR)
+4. [Package Overview](#Package-Overview)
+5. [Evaluating](#Evaluating)
+6. [Evaluating on elitr-testset](#Evaluating-on-elitr-testset)
+7. [Evaluating with Your Custom Reference Files](#Evaluating-with-Your-Custom-Reference-Files)
+    1.  [Evaluating MT](#Evaluating-MT)
+    2.  [Evaluating SLT](#Evaluating-SLT)
+    3.  [Evaluating ASR](#Evaluating-ASR)
+    4.  [Evaluating ASRT](#Evaluating-ASRT)
+    5.  [Notes](#Notes)
+9. [Parsing index files](#Parsing-index-files)
+10. [Terminology and Abbreviations](#Terminology-and-Abbreviations)
+11. [CREDITS](#CREDITS)
+
+
+# SLTev <a name="SLTev"></a>
 
 SLTev is an open-source tool for assessing the quality of spoken language translation (SLT) in a comprehensive way. Based on timestamped golden transcript and reference translation into a target language, SLTev reports the quality, delay and stability of a given SLT candidate output.
 
@@ -7,7 +37,7 @@ SLTev can also evaluate the intermediate steps alone: the output of automatic sp
 You can see our short presentaion at ``EACL 2021 - System Demonstration`` here: https://slideslive.com/38954658  
 Full details in the paper (bibtex below): https://www.aclweb.org/anthology/2021.eacl-demos.9
 
-## Requirements
+## Requirements <a name="Requirements"></a>
 
 - python3.6 or higher
 - some pip-installed modules:
@@ -15,27 +45,27 @@ Full details in the paper (bibtex below): https://www.aclweb.org/anthology/2021.
   - gitpython, gitdir, filelock
 - mwerSegmenter 
 
-## File Naming Convention
+## File Naming Convention <a name="File-Naming-Convention"></a>
 
 Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
 
-### Golden Transcripts: ``.OSt``, ``.OStt``
+### Golden Transcripts: ``.OSt``, ``.OStt`` <a name="Golden-Transcripts"></a>
 - &lt;file-name&gt; . &lt;language&gt; . &lt;OSt/OStt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.OSt``, ``kaccNlwi6lUCEM.cs.OStt``
 
-### Word Alignment for Better Estimation: ``.align``
+### Word Alignment for Better Estimation: ``.align`` <a name="Word-Alignment"></a>
 - &lt;file-name&gt; . &lt;source-language&gt; . &lt;target-language&gt; . &lt;align&gt;
 - e.g. ``kaccNlwi6lUCEM.en.de.align``
 
-### System Outputs from Translation: ``.slt``, ``.mt``
+### System Outputs from Translation: ``.slt``, ``.mt`` <a name="System-Outputs-from-Translation"></a>
 - &lt;file-name&gt; . &lt;source-language&gt; . &lt;target-language&gt; . &lt;slt/mt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.de.slt``, ``kaccNlwi6lUCEM.cs.en.mt``
 
-### System Outputs from ASR: ``.asr``, ``.asrt``
+### System Outputs from ASR: ``.asr``, ``.asrt`` <a name="System-Outputs-from-ASR"></a>
 - &lt;file-name&gt; . &lt;source-language&gt; . &lt;source-language&gt; . &lt;asr/asrt&gt;
 - e.g. ``kaccNlwi6lUCEM.en.en.asr``
 
-## Installation
+## Installation <a name="Installation"></a>
 
 Install the Python module (Python 3 only)
    
@@ -49,19 +79,117 @@ Also, you can install from the source:
 python3 setup.py install
 ```
 
-## Package Overview
+## Package Overview <a name="Package-Overview"></a>
 
 - SLTev: Contains scripts for running SLTev
 - sample-data: Contains sample input and output files
 - test: Test files
 
-## Evaluating
+## Evaluating <a name="Evaluating"></a>
 
-SLTev scoring relies on reference outputs (golden transcript for ASR, reference translation for MT and SLT).
 
-You can run SLTev and provide it with your custom reference outputs, or you can pick the easier option: use our provided test set (``elitr-testset``) to evaluate your system on our inputs. The added benefit of ``elitr-testset`` scoring is that it makes your results comparable to others (subject to SLTev and test set versions, of course).
+![SLTev architecture](https://raw.githubusercontent.com/ELITR/SLTev/4a1c846c1d94bb49b92878cd452953c8e7633f30/docs/SLTev-elitr-testset-connection.svg)
 
-### Evaluating on ``elitr-testset``
+SLTev has four types of evaluating modules that each one of which supports multiple input and candidate files and calculates score types.
+
+In the following table, for each module, input, candidate, and score types are shown. 
+
+<table > 
+<thead>
+	<tr>
+		<th rowspan="2">Module</th>
+		<th colspan="4">Input types</th>
+		<th colspan="4">Candidate types</th>
+    <th colspan="4">Score types</th>
+	</tr>
+</thead>
+<tbody>
+	<tr >
+    <td> </td>
+    <td >OStt</td>
+    <td >OSt</td>
+    <td >Ref</td>
+    <td >Align</td>
+    <td >SLT</td>
+    <td >MT</td>
+    <td >ASRT</td>
+    <td >ASR</td>
+    <td >Delay</td>
+    <td >Quality</td>
+    <td >Flicker</td>
+    <td >WER</td>
+	</tr>
+  	<tr>
+    <td> SLTeval</td>
+    <td >X</td>
+    <td ></td>
+    <td >X</td>
+    <td >Optional</td>
+    <td >X</td>
+    <td ></td>
+    <td ></td>
+    <td ></td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td ></td>
+	</tr>
+    	<tr>
+    <td> MTeval</td>
+    <td ></td>
+    <td ></td>
+    <td >X</td>
+    <td ></td>
+    <td ></td>
+    <td >X</td>
+    <td ></td>
+    <td ></td>
+    <td ></td>
+    <td >X</td>
+    <td ></td>
+    <td ></td>
+	</tr>
+	<tr>
+    <td> ASReval</td>
+    <td >X</td>
+    <td >X</td>
+    <td ></td>
+    <td ></td>
+    <td ></td>
+    <td ></td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+	</tr>
+	<tr>
+    <td> SLTev -e</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >Optional</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+    <td >X</td>
+	</tr>
+
+  
+</tbody>
+</table>
+
+
+Moreover, SLTev works with elitr-testset and can automatically use the growing collection of input files of elitr-testset.
+Each index in elitr-testset has been created for a specific domain and purpose, containing the list of all relevant files in the **documents** directory in the elitr-testset. SLTev can generate a simple (flat) directory with all files belonging to an index, so that the user does not have to navigate the directory structure, using SLTev with the -g parameter. When SLTev is called this way for the first time, it clones elitr-testset repository to the local system and copies the desired files to the output directory. In subsequent calls, the local clone of the repository is used. After input files are generated, SLTev can evaluate user hypothesis files with generated input files by its modules.
+
+
+### Evaluating on ``elitr-testset`` <a name="Evaluating-on-elitr-testset"></a>
 
 SLTev works best if you want to evaluate your system on files provided in ``elitr-testset`` (https://github.com/ELITR/elitr-testset).
 
@@ -86,7 +214,7 @@ SLTev -e my-evaluation-run-1/
 # To reduce the number of scores, add --simple
 ```
 
-### Evaluating with Your Custom Reference Files
+### Evaluating with Your Custom Reference Files <a name="Evaluating-with-Your-Custom-Reference-Files"></a>
 
 In order to evaluate a hypothesis with custom files, you can use ``MTeval``, ``SLTeval``, ``ASReval`` commands as follow:
 Each one of them takes a list of input file paths (-i or --input) and a list of the format of the input files in orders (-f or --file-formats). The input file formats can be chosen from the following items:
@@ -108,7 +236,7 @@ B) SLTeval -i ostt_path ref_path slt_path -f ostt ref slt
 C) SLTeval -i ostt_path slt_path ref_path -f ostt slt ref
 
 
-#### Evaluating MT
+#### Evaluating MT <a name="Evaluating-MT"></a>
 
 To evaluate the output of a machine translation system without any timing information, use the following command.
 
@@ -140,7 +268,7 @@ tot      sacreBLEU     docAsAWhole            32.786
 avg      sacreBLEU     mwerSegmenter          25.850
 ```
 
-#### Evaluating SLT
+#### Evaluating SLT <a name="Evaluating-SLT"></a>
 
 Spoken language translation evaluates "machine translation in time". So a time-stamped MT output (``slt``) is compared with the reference translation (non-timed, ``ref``) and the timing of the golden transcript (``ostt``).
 
@@ -166,7 +294,7 @@ tot      sacreBLEU     docAsAWhole            32.786
 ```
 
 
-#### Evaluating ASR
+#### Evaluating ASR <a name="Evaluating-ASR"></a>
 
 In basic speech recognition evaluation, timing is ignored. For this type of evaluation, use the following command and provide ASR output (``asr``) and the golden transcript without timestamps (``ost``):
 
@@ -195,7 +323,7 @@ WM     0.323
 ```
 Here we learn that the WER score (lower is better) for this sample file varies between .265 and .323 depending on the pre-processing technique. In ASR research, the most common pre-processing strategy is what we call LPW, i.e. lowecase, remove punctuation and use mWERsegmenter to mimic the segmentation of the reference transcript. If we consider casing and punctuation (labelled WM), the score gets naturally worse.
 
-#### Evaluating ASR with timing (ASRT)
+#### Evaluating ASR with timing (ASRT)  <a name="Evaluating-ASRT"></a>
 
 ASRT is like SLT but in the source language, i.e. evaluating the time-stamped output of an ASR system (``asrt``) against the golden transcript which has to be provided twice: without timestamps (``ost``) and with timing and partial segments (``ostt``). All the files are in the same language and the ``ost`` file must have the exact same number of segments as there are "C"omplete segments in the ``ostt`` file.
 
@@ -207,27 +335,8 @@ Demo example:
 ``` 
 ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/sample.en.OStt -f asrt ost ostt
 ```
-#### Parsing index files
-See `SLTev/index_parser.py` for detailed description. Structure of the index file:
-```
-# SRC -> *.<EXTENSION>
-# REF -> *.<EXTENSION>
-# ALIGN -> *.<EXTENSION>
-PATH_TO_DIRECTORY
-PATH_TO_ANOTHER_DIRECTORY_WITH_SAME_EXTENSIONS
 
-# SRC -> *.<EXTENSION>
-# REF -> *.<EXTENSION>
-PATH_TO_DIRECTORY_WITH_DIFFERENT_EXTENSIONS
-```
-
-`SRC` and `REF` annotations are mandatory. Specifying a `SRC` annotation "clears" the rest of the annotations.
-
-Usage:
-```
-SLTIndexParser path_to_index_file path_to_dataset
-```
-#### Notes
+#### Notes <a name="Notes"></a>
 1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have them. 
 2. For using ``MTeval``, ``SLTeval``, ``ASReval`` commands, you do not need to follow naming templates, it is the ``-f`` parameter that specifies the use of the file.
 3. You can evaluate several hypotheses at once. Also, you can use short file formats. For example, the following commands are equal:
@@ -249,8 +358,28 @@ OR
 echo "file1 hypo1" |  MTeval -f ref mt
 ```
 
+## Parsing index files <a name="Parsing-index-files"></a>
+See `SLTev/index_parser.py` for detailed description. Structure of the index file:
+```
+# SRC -> *.<EXTENSION>
+# REF -> *.<EXTENSION>
+# ALIGN -> *.<EXTENSION>
+PATH_TO_DIRECTORY
+PATH_TO_ANOTHER_DIRECTORY_WITH_SAME_EXTENSIONS
 
-## Terminology and Abbreviations
+# SRC -> *.<EXTENSION>
+# REF -> *.<EXTENSION>
+PATH_TO_DIRECTORY_WITH_DIFFERENT_EXTENSIONS
+```
+
+`SRC` and `REF` annotations are mandatory. Specifying a `SRC` annotation "clears" the rest of the annotations.
+
+Usage:
+```
+SLTIndexParser path_to_index_file path_to_dataset
+```
+
+## Terminology and Abbreviations <a name="Terminology-and-Abbreviations"></a>
 
 * OSt  ... original speech manually transcribed (i.e. golden transcript)
 * OStt ... original speech manually transcribed with word-level timestamps
@@ -260,7 +389,7 @@ echo "file1 hypo1" |  MTeval -f ref mt
 * asrt ... the unrevised output of speech recognition system; timestamped at the word level
 
 
-## CREDITS
+## CREDITS <a name="CREDITS"></a>
 
 If you use SLTev, please cite the following:
 
