@@ -5,6 +5,7 @@ from utilities import eprint, split_gold_inputs_from_candidates, extract_gold_fi
 from utilities import check_empty_line, osst_checking, pipeline_input, get_SLTev_home_path
 from utilities import check_time_stamp_candiates_format, submission_argument, parity_checking_between_ostt_reference
 from evaluator import normal_timestamp_evaluation, simple_timestamp_evaluation
+from evaluator import normal_evaluation_without_parity
 from ASRev import simple_asr_evaluation, normal_asr_evaluation
 
 
@@ -57,27 +58,7 @@ def main(input_files=[], file_formats=[], simple="False"):
                 continue
             if osst_checking(gold_files["ostt"][0]) == 1: # OStt checking
                 continue
-            parity_state, error = parity_checking_between_ostt_reference(gold_files["ostt"][0], gold_files["ost"])
-            if parity_state == 0:
-                eprint(
-                    "Evaulation for ",
-                    candidate_file[0],
-                    " failed, the number of Complete lines (C) in ",
-                    gold_files["ostt"][0],
-                    " and ",
-                    " ".join(gold_files["ost"]),
-                    " are not equal",
-                )
-                eprint(error)
-                continue
 
-            _ = check_time_stamp_candiates_format(candidate_file[0]) # submission checking
-            print(
-                "Evaluating the file ",
-                candidate_file[0],
-                " in terms of translation quality against ",
-                " ".join(gold_files["ost"]),
-            )
 
             inputs_object = {
                 'ostt': gold_files["ostt"][0],
@@ -85,6 +66,23 @@ def main(input_files=[], file_formats=[], simple="False"):
                 'SLTev_home': SLTev_home,
                 'candidate': candidate_file[0]
             }
+
+            _ = check_time_stamp_candiates_format(candidate_file[0]) # submission checking
+
+            parity_state, error = parity_checking_between_ostt_reference(gold_files["ostt"][0], gold_files["ost"])
+            if parity_state == 0:
+                eprint(error)
+                normal_evaluation_without_parity(inputs_object)
+                continue
+
+            
+            print(
+                "Evaluating the file ",
+                candidate_file[0],
+                " in terms of translation quality against ",
+                " ".join(gold_files["ost"]),
+            )
+
             if simple == "False":
                 normal_timestamp_evaluation(inputs_object)
             else:

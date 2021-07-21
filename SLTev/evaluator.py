@@ -267,6 +267,44 @@ def time_span_bleu_score_evaluation(evaluation_object):
         except:
             pass
 
+
+def normal_evaluation_without_parity(inputs_object):
+    print_headers()
+    current_path = os.getcwd()
+    MovedWords = 1 # count of moving words to each side when we are using Time-based segmentation and word-based segmentation
+    references = read_references(inputs_object.get('references', []))
+    references_statistical_info(references) # print statistical info
+    average_refernces_token_count = get_average_references_token_count(references)
+    candidate_sentences = read_candidate_file(inputs_object.get('candidate'))
+
+    evaluation_object = {
+        'candidate_sentences': candidate_sentences,
+        'language': 'en',
+        'SLTev_home': inputs_object.get('SLTev_home'),
+        'current_path': current_path, 
+        'MovedWords': MovedWords,
+        'average_refernces_token_count': average_refernces_token_count,
+        'references': references,
+        'time_span': 3000
+        }
+
+    # bleu score evaluation
+    documantlevel_bleu_score_evaluation(references, candidate_sentences)
+    wordbased_segmenter_bleu_score_evaluation(evaluation_object)
+    
+    #flicker evaluation
+    print("tot      Flicker       count_changed_Tokens  ", int(calc_revise_count(candidate_sentences)))
+    print("tot      Flicker       count_changed_content ", int(calc_flicker_score(candidate_sentences)))
+    print(
+        "mean     flicker across sentences            ",
+        str("{0:.3f}".format(round(calc_average_flickers_per_sentence(candidate_sentences), 3))),
+        )
+    print(
+        "mean     flicker across whole documents      ",
+        str("{0:.3f}".format(round(calc_average_flickers_per_tokens(candidate_sentences), 3))),
+        )
+
+
 def simple_timestamp_evaluation(inputs_object):
     current_path = os.getcwd()
     MovedWords = 1 # count of moving words to each side when we are using Time-based segmentation and word-based segmentation

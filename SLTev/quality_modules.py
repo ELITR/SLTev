@@ -50,7 +50,7 @@ def calc_bleu_score_segmenterlevel(evaluation_object, temp_folder):
     segmenter_sentence, _ = quality_segmenter(evaluation_object, temp_folder)
     sys = [" ".join(i) for i in segmenter_sentence]
     refs = merge_references_sentences[:]
-    bleu_sacre = sacrebleu.corpus_bleu(sys, refs)
+    bleu_sacre = sacrebleu.corpus_bleu(sys, refs, force=True)
     sacre_bleu_score = bleu_sacre.score
     return sacre_bleu_score
 

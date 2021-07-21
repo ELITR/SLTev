@@ -265,4 +265,3 @@ def quality_segmenter(evaluation_object, temp_folder):
     os.chdir("..")
     shutil.rmtree(temp_folder)
     return candidate_segments, mWERQuality
-
