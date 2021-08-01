@@ -26,33 +26,6 @@ def text_preprocessing(text):
     return text
 
 
-def read_ost_asr_files(ost_file):
-    """
-    Read OStt or ost files
-
-    :param ost_file: the input OStt or OSt file path
-    :return sentences: the OSt sentences without time-stamps (just complete segments which tokenized by Moses tokenizer)
-    """
-
-    sentences = []
-    tokenize = MosesTokenizer().tokenize
-    with open(ost_file, "r", encoding="utf8") as in_file:
-        line = in_file.readline()
-        while line:
-            line = tokenize(line.strip())
-            if line == []:
-                line = in_file.readline()
-                continue
-            if line[0] != "P" and line[0] != "C":
-                sentences.append(line)
-            elif "C" == line[0]:
-                l = line[3:]
-                sentences.append(l)
-            line = in_file.readline()
-    sentences = list(filter(lambda a: a != [], sentences))
-    return sentences
-
-
 def docs_as_whole_evaluation(ost_sentences, asr_sentences):
     # concatenate ost_sentences to a document
     ost_concatenate_string = ""
@@ -161,8 +134,8 @@ def WER_by_mwersegmenter_with_moses_tokenizer(evaluation_object, temp_folder):
 
 
 def simple_asr_evaluation(inputs_object):
-    ost_sentences = read_ost_asr_files(inputs_object.get('ost'))
-    asr_sentences = read_ost_asr_files(inputs_object.get('asr'))
+    ost_sentences = inputs_object.get('ost')
+    asr_sentences = inputs_object.get('asr')
 
     evaluation_object = {
         'ost_sentences': ost_sentences,
@@ -182,8 +155,8 @@ def simple_asr_evaluation(inputs_object):
 
 def normal_asr_evaluation(inputs_object):
     print_headers()
-    ost_sentences = read_ost_asr_files(inputs_object.get('ost'))
-    asr_sentences = read_ost_asr_files(inputs_object.get('asr'))
+    ost_sentences = inputs_object.get('ost')
+    asr_sentences = inputs_object.get('asr')
 
     wer_score = docs_as_whole_evaluation(ost_sentences, asr_sentences)
     print("LPC   ", str("{0:.3f}".format(round(wer_score, 3))))
@@ -211,4 +184,5 @@ def normal_asr_evaluation(inputs_object):
         os.chdir(current_path)
         shutil.rmtree(temp_folder, ignore_errors=True)
         mwerSegmenter_error_message()
+
 

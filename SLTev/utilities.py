@@ -82,7 +82,7 @@ def chop_elitr_testset_prefix(path):
         return path
 
 
-def check_empty_line(file):
+def check_empty_line(file, split_token="###docSpliter###"):
     """
     check for empty lines
 
@@ -92,13 +92,15 @@ def check_empty_line(file):
     with open(file, "r", encoding="utf8") as f:
         lines = f.readlines()
         for i in range(len(lines)):
+            if lines[i].strip() == split_token:
+                continue
             if not lines[i].strip():
                 eprint("The file ", file, ", line ", i, " is empty. please remove it.")
                 return 1
     return 0
 
 
-def osst_checking(file):
+def osst_checking(file,  split_token="###docSpliter###"):
     """
     check OStt file for correct format and empty lines
 
@@ -108,6 +110,8 @@ def osst_checking(file):
     with open(file, "r", encoding="utf8") as f:
         lines = f.readlines()
         for i in range(len(lines)):
+            if lines[i].strip() == split_token:
+                continue
             if not lines[i].strip():
                 eprint("The file ", file, ", line ", i, " is empty. please remove it.")
                 return 1
@@ -187,7 +191,7 @@ def remove_digits(string):
     return result
 
 
-def check_time_stamp_candiates_format(in_file):
+def check_time_stamp_candiates_format(in_file, split_token="###docSpliter###"):
     """
     check timestamp candidate files
 
@@ -197,6 +201,8 @@ def check_time_stamp_candiates_format(in_file):
     lines = open(in_file, "r").readlines()
     state = 0
     for i in range(len(lines)):
+        if lines[i].strip() == split_token:
+            continue
         line = lines[i].strip().split(" ")
         if line == []:
             continue
@@ -515,6 +521,9 @@ def submission_argument():
         "-i", "--inputs", help="path of the input files", type=list, nargs="+"
     )
     parser.add_argument(
+        "--splitby", help="The split token (default is ###docSpliter###)", type=str, default="###docSpliter###",
+    )
+    parser.add_argument(
         "-f",
         "--file-formats",
         help="format of the input files in order, the format can be chosen from the following dictionary keys \n {source: source files, ref: reference, ostt: timestamped gold transcript, align: align files, \
@@ -529,6 +538,13 @@ def submission_argument():
         action="store_true",
         default="False",
     )
+    parser.add_argument(
+        "--docs",
+        help="evaluate as multi-docs",
+        action="store_true",
+        default="False",
+    )
+
     args = parser.parse_args()
     return args
 
@@ -549,6 +565,8 @@ def pipeline_input():
     inputs = list(filter(lambda i: i != "", inputs))
     inputs = list(filter(lambda i: i != " ", inputs))
     return inputs
+
+
 
 
 

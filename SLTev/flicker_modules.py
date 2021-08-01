@@ -119,3 +119,4 @@ def calc_average_flickers_per_tokens(candidate_sentences):
 
     return float(flicker_size) / complet_token_count
 
+

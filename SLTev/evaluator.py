@@ -10,9 +10,8 @@ from flicker_modules import calc_revise_count, calc_flicker_score
 from flicker_modules import calc_average_flickers_per_sentence, calc_average_flickers_per_tokens
 from quality_modules import calc_bleu_score_documentlevel, calc_bleu_score_segmenterlevel
 from quality_modules import calc_bleu_score_timespanlevel
-from files_modules import read_reference_file, read_candidate_file
-from files_modules import read_ostt_file, read_alignment_file
 from utilities import mwerSegmenter_error_message, eprint
+from files_modules import read_alignment_file
 
 
 def print_headers():
@@ -41,13 +40,6 @@ def print_headers():
     eprint(
         "------------------------------------------------------------------------------------------------------------"
     )
-
-
-def read_references(reference_files_paths):
-    references = []
-    for reference_path in reference_files_paths:
-        references.append(read_reference_file(reference_path))
-    return references
 
 
 def get_average_references_token_count(references):
@@ -272,10 +264,10 @@ def normal_evaluation_without_parity(inputs_object):
     print_headers()
     current_path = os.getcwd()
     MovedWords = 1 # count of moving words to each side when we are using Time-based segmentation and word-based segmentation
-    references = read_references(inputs_object.get('references', []))
+    references = inputs_object.get('references')
     references_statistical_info(references) # print statistical info
     average_refernces_token_count = get_average_references_token_count(references)
-    candidate_sentences = read_candidate_file(inputs_object.get('candidate'))
+    candidate_sentences = inputs_object.get('candidate')
 
     evaluation_object = {
         'candidate_sentences': candidate_sentences,
@@ -308,11 +300,11 @@ def normal_evaluation_without_parity(inputs_object):
 def simple_timestamp_evaluation(inputs_object):
     current_path = os.getcwd()
     MovedWords = 1 # count of moving words to each side when we are using Time-based segmentation and word-based segmentation
-    references = read_references(inputs_object.get('references', []))
+    references = inputs_object.get('references')
     references_statistical_info(references) # print statistical info
     average_refernces_token_count = get_average_references_token_count(references)
-    candidate_sentences = read_candidate_file(inputs_object.get('candidate'))
-    OStt_sentences = read_ostt_file(inputs_object.get('ostt'))
+    candidate_sentences = inputs_object.get('candidate')
+    OStt_sentences = inputs_object.get('ostt')
     # delay evaluation
     Ts = []
     for reference in references:
@@ -341,11 +333,11 @@ def normal_timestamp_evaluation(inputs_object):
     print_headers()
     current_path = os.getcwd()
     MovedWords = 1 # count of moving words to each side when we are using Time-based segmentation and word-based segmentation
-    references = read_references(inputs_object.get('references', []))
+    references = inputs_object.get('references')
     references_statistical_info(references) # print statistical info
     average_refernces_token_count = get_average_references_token_count(references)
-    candidate_sentences = read_candidate_file(inputs_object.get('candidate'))
-    OStt_sentences = read_ostt_file(inputs_object.get('ostt'))
+    candidate_sentences = inputs_object.get('candidate')
+    OStt_sentences = inputs_object.get('ostt')
     print_ostt_duration(OStt_sentences)
     Ts = []
     for reference in references:
@@ -393,11 +385,12 @@ def normal_timestamp_evaluation(inputs_object):
         str("{0:.3f}".format(round(calc_average_flickers_per_tokens(candidate_sentences), 3))),
         )
 
+
 def simple_mt_evaluation(inputs_object):
     current_path = os.getcwd()
-    references = read_references(inputs_object.get('references', []))
+    references = inputs_object.get('references')
     average_refernces_token_count = get_average_references_token_count(references)
-    mt_sentences = read_candidate_file(inputs_object.get('mt'))
+    mt_sentences = inputs_object.get('mt')
 
     evaluation_object = {
         'candidate_sentences': mt_sentences,
@@ -412,13 +405,14 @@ def simple_mt_evaluation(inputs_object):
     # bleu score evaluation
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
 
+
 def normal_mt_evaluation(inputs_object):
     print_headers()
     current_path = os.getcwd()
-    references = read_references(inputs_object.get('references', []))
+    references = inputs_object.get('references')
     references_statistical_info(references) # print statistical info
     average_refernces_token_count = get_average_references_token_count(references)
-    mt_sentences = read_candidate_file(inputs_object.get('mt'))
+    mt_sentences = inputs_object.get('mt')
 
     evaluation_object = {
         'candidate_sentences': mt_sentences,
@@ -433,6 +427,7 @@ def normal_mt_evaluation(inputs_object):
     # bleu score evaluation
     documantlevel_bleu_score_evaluation(references, mt_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
+
 
 
 

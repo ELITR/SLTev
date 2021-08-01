@@ -47,6 +47,9 @@ def SLTev_argument_parser():
         type=str,
     )
     parser.add_argument(
+        "--splitby", help="The split token (default is ###docSpliter###)", type=str, default="###docSpliter###",
+    )
+    parser.add_argument(
         "-T",
         "--elitr-testset",
         metavar="DIR",
@@ -62,6 +65,12 @@ def SLTev_argument_parser():
         help="use elitr-testset at commit COMMITID",
         default="HEAD",
         type=str,
+    )
+    parser.add_argument(
+        "--docs",
+        help="evaluate as multi-docs",
+        action="store_true",
+        default="False",
     )
     parser.add_argument(
         "--version",
@@ -260,9 +269,14 @@ def make_signature(SLTev_commit_id, elitr_path):
 
 
 def asr_submission_evaluation(args, inputs_object):
+    arguments = {
+        "docs": args.docs,
+        'simple': args.simple,
+        'splitby': args.splitby,
+    }
     if args.aggregate != "False":
         print("Signature: ", inputs_object.get('signature'))
-        ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+        ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
     else:
         out_name = (
             os.path.join(
@@ -274,15 +288,20 @@ def asr_submission_evaluation(args, inputs_object):
         with open(out_name, "w") as f:
             sys.stdout = f
             print("Signature: ", inputs_object.get('signature'))
-            ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
             sys.stdout = inputs_object.get('original_stdout')
         eprint("Results saved in ", out_name)
 
 
 def asrt_submission_evaluation(args, inputs_object):
+    arguments = {
+        "docs": args.docs,
+        'simple': args.simple,
+        'splitby': args.splitby,
+    }
     if args.aggregate != "False":
         print("Signature: ", inputs_object.get('signature'))
-        ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+        ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
     else:
         out_name = (
             os.path.join(inputs_object.get('output_dir'), os.path.split(inputs_object.get('submission_file'))[1])
@@ -291,15 +310,20 @@ def asrt_submission_evaluation(args, inputs_object):
         with open(out_name, "w") as f:
             sys.stdout = f
             print("Signature: ", inputs_object.get('signature'))
-            ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            ASReval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
             sys.stdout = inputs_object.get('original_stdout')
         eprint("Results saved in ", out_name)
 
 
 def mt_submission_evaluation(args, inputs_object):
+    arguments = {
+        "docs": args.docs,
+        'simple': args.simple,
+        'splitby': args.splitby,
+    }
     if args.aggregate != "False":
         print("Signature: ", inputs_object.get('signature'))
-        MTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+        MTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
     else:
         out_name = (
             os.path.join(inputs_object.get('output_dir'), os.path.split(inputs_object.get('submission_file'))[1])
@@ -308,15 +332,21 @@ def mt_submission_evaluation(args, inputs_object):
         with open(out_name, "w") as f:
             sys.stdout = f
             print("Signature: ", inputs_object.get('signature'))
-            MTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            MTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
             sys.stdout = inputs_object.get('original_stdout')
         eprint("Results saved in ", out_name)
 
 
 def slt_submission_evaluation(args, inputs_object):
+
+    arguments = {
+        "docs": args.docs,
+        'simple': args.simple,
+        'splitby': args.splitby,
+    }
     if args.aggregate != "False":
         print("Signature: ", inputs_object.get('signature'))
-        SLTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+        SLTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
     else:
         out_name = (
             os.path.join(inputs_object.get('output_dir'), os.path.split(inputs_object.get('submission_file'))[1])
@@ -325,7 +355,7 @@ def slt_submission_evaluation(args, inputs_object):
         with open(out_name, "w") as f:
             sys.stdout = f
             print("Signature: ", inputs_object.get('signature'))
-            SLTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), args.simple)
+            SLTeval.main(inputs_object.get('input_files'), inputs_object.get('file_formats'), arguments)
             sys.stdout = inputs_object.get('original_stdout')
         eprint("Results saved in ", out_name)
 
@@ -438,4 +468,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
