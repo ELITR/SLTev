@@ -22,7 +22,8 @@ SLTev is a tool for comprehensive evaluation of (simultaneous) spoken language t
     2.  [Evaluating SLT](#Evaluating-SLT)
     3.  [Evaluating ASR](#Evaluating-ASR)
     4.  [Evaluating ASRT](#Evaluating-ASRT)
-    5.  [Notes](#Notes)
+    5.  [Multi-docs Evaluation](#Multi-docs)
+    6.  [Notes](#Notes)
 9. [Parsing index files](#Parsing-index-files)
 10. [Terminology and Abbreviations](#Terminology-and-Abbreviations)
 11. [CREDITS](#CREDITS)
@@ -335,6 +336,18 @@ Demo example:
 ``` 
 ASReval -i sample-data/sample.en.en.asrt sample-data/sample.en.OSt sample-data/sample.en.OStt -f asrt ost ostt
 ```
+
+#### Multi-docs Evaluation <a name="Multi-docs"></a>
+
+If you have a file with multiple documents, you can use SLTev modules with ``--docs`` parameter for evaluation. You need to add a separation token to the input and candidate files to separate documents (default is ``###docSpliter###``). Please notice that all input and candidate files must contain the separation token and the number of documents must be equal. Also, the language of each document in a multi-docs file should be equal. 
+
+```
+SLTeval/ASReval/MTeval -i file1 file2 ... -f file1_format file2_format ... --docs
+# To reduce the number of scores, add --simple 
+# To use multi-docs evaluation, add --docs
+# To use your separation token, add --splitby "YOURTOKEN" (default is "###docSpliter###")
+``` 
+
 
 #### Notes <a name="Notes"></a>
 1. *.asrt and *.slt files have timestamps and, *.mt and *.asr do not have them. 
