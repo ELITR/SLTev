@@ -179,7 +179,7 @@ def normal_asr_evaluation(inputs_object):
     try:
         temp_folder = os.path.join(".", str(uuid.uuid4()))
         wer_score = WER_by_mwersegmenter_with_moses_tokenizer(evaluation_object, temp_folder)
-        print("LPW   ", str("{0:.3f}".format(round(wer_score, 3))))
+        print("LPM   ", str("{0:.3f}".format(round(wer_score, 3))))
     except:
         os.chdir(current_path)
         shutil.rmtree(temp_folder, ignore_errors=True)

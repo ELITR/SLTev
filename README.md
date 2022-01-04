@@ -48,7 +48,7 @@ Full details in the paper (bibtex below): https://www.aclweb.org/anthology/2021.
 
 ## File Naming Convention <a name="File-Naming-Convention"></a>
 
-Depending on whether your system produces (spoken language) translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
+Depending on whether your system produces spoken language translation (SLT), or just the speech recognition (ASR), you should use the following naming template of your input and output files.
 
 ### Golden Transcripts: ``.OSt``, ``.OStt`` <a name="Golden-Transcripts"></a>
 - &lt;file-name&gt; . &lt;language&gt; . &lt;OSt/OStt&gt;
@@ -91,7 +91,7 @@ python3 setup.py install
 
 ![SLTev architecture](https://raw.githubusercontent.com/ELITR/SLTev/4a1c846c1d94bb49b92878cd452953c8e7633f30/docs/SLTev-elitr-testset-connection.svg)
 
-SLTev has four types of evaluating modules that each one of which supports multiple input and candidate files and calculates score types.
+SLTev has four types of evaluating modules, and each of the modules supports multiple input and candidate files and calculates score types.
 
 In the following table, for each module, input, candidate, and score types are shown. 
 
@@ -228,7 +228,7 @@ Each one of them takes a list of input file paths (-i or --input) and a list of 
 * asrt: timestamped ASR hypothesis, with partial outputs
 * asr: finalized ASR hypothesis (i.e. one segment per line; segmentation can differ from the golden one)
 
-Please note that candidate files must be at the **before** or **after** of their input files. In the following examples, A and B are correct and C is not.
+Please note that candidate files must be **before** or **after** their input files. In the following examples, A and B are correct and C is not.
 
 A) SLTeval -i slt_pth ostt_path ref_path -f slt ostt ref 
 
