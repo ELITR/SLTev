@@ -251,7 +251,7 @@ Demo example:
 ```
 git clone https://github.com/ELITR/SLTev.git
 cd SLTev
-MTeval -i sample-data/sample.en.cs.mt sample-data/sample.cs.OSt -f mt ref
+MTeval -i sample-data/sample.en.cs.mt sample-data/sample.en.OSt sample-data/sample.cs.OSt -f mt src ref
 ``` 
 Should give you output like this:
 ```
@@ -267,6 +267,7 @@ avg      TokenCount    reference*             37
 avg      SentenceCount reference*             4
 tot      sacreBLEU     docAsAWhole            32.786
 avg      sacreBLEU     mwerSegmenter          25.850
+tot      COMET         docAsWhole             0.770
 ```
 
 #### Evaluating SLT <a name="Evaluating-SLT"></a>
@@ -280,7 +281,7 @@ SLTeval -i file1 file2 ... -f file1_format file2_format ...
 Demo example: 
 ```
 # get sample-data as in the MT example above
-SLTeval -i sample-data/sample.en.cs.slt sample-data/sample.cs.OSt sample-data/sample.en.OStt -f slt ref ostt
+SLTeval -i sample-data/sample.en.cs.slt sample-data/sample.en.OSt sample-data/sample.cs.OSt sample-data/sample.en.OStt -f slt src ref ostt
 ```
 Should give you:
 ```
@@ -292,6 +293,7 @@ tot      Flicker       count_changed_content  23
 ...
 tot      sacreBLEU     docAsAWhole            32.786
 ...
+tot      COMET         docAsWhole             0.770
 ```
 
 

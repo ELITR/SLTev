@@ -97,6 +97,7 @@ def main(input_files=[], file_formats=[], arguments={}):
                 'references': read_references(gold_files["ref"]),
                 'candidate': read_candidate_file(candidate_file[0]),
                 'align': gold_files["align"],
+                'src': read_references(gold_files["src"]),
                 'SLTev_home':  sltev_home,
             }
 

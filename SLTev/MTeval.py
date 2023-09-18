@@ -82,6 +82,7 @@ def main(inputs=[], file_formats=[], arguments={}):
             evaluation_object = {
                 'references': read_references(gold_files["ref"]),
                 'mt': read_candidate_file(candidate_file[0]), 
+                'src': read_references(gold_files["src"]),
                 'SLTev_home':  sltev_home,
             }
 
