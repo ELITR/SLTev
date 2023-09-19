@@ -193,4 +193,4 @@ def calculate_comet_score(sources, candidates, references=None):
     model_path = download_model(model_name)
     model = load_from_checkpoint(model_path)
     model_output = model.predict(data, batch_size=8, gpus=0)
-    return model_output['system_score']
+    return model_output['system_score'] * 100
