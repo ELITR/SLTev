@@ -391,11 +391,12 @@ def normal_timestamp_evaluation(inputs_object):
         )
 
 def comet_score_evaluation(src_file, mt_sentences, references):
-    comet_score = calculate_comet_score(src_file, mt_sentences, references)
-    print(
-        "tot      COMET         docAsWhole            ",
-        str("{0:.3f}".format(round(comet_score, 3))),
-    )
+    comet_score, success = calculate_comet_score(src_file, mt_sentences, references)
+    if success:
+        print(
+            "tot      COMET         docAsWhole            ",
+            str("{0:.3f}".format(round(comet_score, 3))),
+        )
 
 def simple_mt_evaluation(inputs_object):
     current_path = os.getcwd()
