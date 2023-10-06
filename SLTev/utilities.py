@@ -467,8 +467,7 @@ def extract_mt_gold_files_for_candidate(candidate_file, gold_inputs):
     try:
         gold_files["src"] = gold_inputs["src"]
     except:
-        eprint( "evaluation failed, the source file does not exist for ", candidate_file[0])
-        error = 1
+        gold_files["src"] = ""
     return gold_files, error 
 
 
@@ -492,8 +491,7 @@ def extract_slt_gold_files_for_candidate(candidate_file, gold_inputs):
     try:
         gold_files["src"] = gold_inputs["src"]
     except:
-        eprint( "evaluation failed, the reference file does not exist for ", candidate_file[0])
-        error = 1
+        gold_files["src"] = ""
     return gold_files, error 
 
 

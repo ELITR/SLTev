@@ -189,7 +189,6 @@ def calculate_comet_score(sources, candidates, references=None):
         ref = [" ".join(i) for i in merge_references_sentences]
         mt = [" ".join(merge_mt_sentences[:])]
         src = [" ".join(i) for i in merge_src_sentences]
-        # data = [{'src': src, 'mt': mt, 'ref': ref}]
         data = [{'src': x[0], 'mt': x[1], 'ref': x[2]} for x in zip(src, mt, ref)]
 
         model_path = download_model(model_name)

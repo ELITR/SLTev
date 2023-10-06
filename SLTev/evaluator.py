@@ -285,7 +285,8 @@ def normal_evaluation_without_parity(inputs_object):
     # bleu score evaluation
     documantlevel_bleu_score_evaluation(references, candidate_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
-    comet_score_evaluation(src_file, mt_sentences, references)
+    if src_file != '' and src_file != []:
+        comet_score_evaluation(src_file, mt_sentences, references)
     
     #flicker evaluation
     print("tot      Flicker       count_changed_Tokens  ", int(calc_revise_count(candidate_sentences)))
@@ -377,7 +378,8 @@ def normal_timestamp_evaluation(inputs_object):
     documantlevel_bleu_score_evaluation(references, candidate_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
     time_span_bleu_score_evaluation(evaluation_object)
-    comet_score_evaluation(src_file, candidate_sentences, references)
+    if src_file != '' and src_file != []:
+        comet_score_evaluation(src_file, candidate_sentences, references)
     #flicker evaluation
     print("tot      Flicker       count_changed_Tokens  ", int(calc_revise_count(candidate_sentences)))
     print("tot      Flicker       count_changed_content ", int(calc_flicker_score(candidate_sentences)))
@@ -440,7 +442,8 @@ def normal_mt_evaluation(inputs_object):
     # bleu score evaluation
     documantlevel_bleu_score_evaluation(references, mt_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
-    comet_score_evaluation(src_file, mt_sentences, references)
+    if src_file != '' and src_file != []:
+        comet_score_evaluation(src_file, mt_sentences, references)
 
 
 
