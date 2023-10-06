@@ -9,7 +9,7 @@ from delay_modules import word_based_evaluation, get_timestamps_table
 from flicker_modules import calc_revise_count, calc_flicker_score
 from flicker_modules import calc_average_flickers_per_sentence, calc_average_flickers_per_tokens
 from quality_modules import calc_bleu_score_documentlevel, calc_bleu_score_segmenterlevel
-from quality_modules import calc_bleu_score_timespanlevel
+from quality_modules import calc_bleu_score_timespanlevel, calculate_comet_score
 from utilities import mwerSegmenter_error_message, eprint
 from files_modules import read_alignment_file
 
@@ -268,6 +268,8 @@ def normal_evaluation_without_parity(inputs_object):
     references_statistical_info(references) # print statistical info
     average_refernces_token_count = get_average_references_token_count(references)
     candidate_sentences = inputs_object.get('candidate')
+    mt_sentences = inputs_object.get('mt')
+    src_file = inputs_object.get('src')
 
     evaluation_object = {
         'candidate_sentences': candidate_sentences,
@@ -283,6 +285,8 @@ def normal_evaluation_without_parity(inputs_object):
     # bleu score evaluation
     documantlevel_bleu_score_evaluation(references, candidate_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
+    if src_file != '' and src_file != []:
+        comet_score_evaluation(src_file, mt_sentences, references)
     
     #flicker evaluation
     print("tot      Flicker       count_changed_Tokens  ", int(calc_revise_count(candidate_sentences)))
@@ -338,6 +342,7 @@ def normal_timestamp_evaluation(inputs_object):
     average_refernces_token_count = get_average_references_token_count(references)
     candidate_sentences = inputs_object.get('candidate')
     OStt_sentences = inputs_object.get('ostt')
+    src_file = inputs_object.get('src')
     print_ostt_duration(OStt_sentences)
     Ts = []
     for reference in references:
@@ -373,6 +378,8 @@ def normal_timestamp_evaluation(inputs_object):
     documantlevel_bleu_score_evaluation(references, candidate_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
     time_span_bleu_score_evaluation(evaluation_object)
+    if src_file != '' and src_file != []:
+        comet_score_evaluation(src_file, candidate_sentences, references)
     #flicker evaluation
     print("tot      Flicker       count_changed_Tokens  ", int(calc_revise_count(candidate_sentences)))
     print("tot      Flicker       count_changed_content ", int(calc_flicker_score(candidate_sentences)))
@@ -385,6 +392,13 @@ def normal_timestamp_evaluation(inputs_object):
         str("{0:.3f}".format(round(calc_average_flickers_per_tokens(candidate_sentences), 3))),
         )
 
+def comet_score_evaluation(src_file, mt_sentences, references):
+    comet_score, success = calculate_comet_score(src_file, mt_sentences, references)
+    if success:
+        print(
+            "tot      COMET         docAsWhole            ",
+            str("{0:.3f}".format(round(comet_score, 3))),
+        )
 
 def simple_mt_evaluation(inputs_object):
     current_path = os.getcwd()
@@ -413,6 +427,7 @@ def normal_mt_evaluation(inputs_object):
     references_statistical_info(references) # print statistical info
     average_refernces_token_count = get_average_references_token_count(references)
     mt_sentences = inputs_object.get('mt')
+    src_file = inputs_object.get('src')
 
     evaluation_object = {
         'candidate_sentences': mt_sentences,
@@ -427,6 +442,8 @@ def normal_mt_evaluation(inputs_object):
     # bleu score evaluation
     documantlevel_bleu_score_evaluation(references, mt_sentences)
     wordbased_segmenter_bleu_score_evaluation(evaluation_object)
+    if src_file != '' and src_file != []:
+        comet_score_evaluation(src_file, mt_sentences, references)
 
 
 

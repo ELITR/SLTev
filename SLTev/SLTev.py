@@ -361,7 +361,7 @@ def slt_submission_evaluation(args, inputs_object):
 
 
 def build_input_fils_and_file_formats(submission_file, gold_input_files):
-    status, references, ostt, aligns = split_gold_inputs_submission_in_working_directory(submission_file, gold_input_files)
+    status, src, references, ostt, aligns = split_gold_inputs_submission_in_working_directory(submission_file, gold_input_files)
 
     input_files = [submission_file]
     file_formats = [remove_digits(status)]
@@ -375,6 +375,9 @@ def build_input_fils_and_file_formats(submission_file, gold_input_files):
     if ostt != "":
         input_files.append(ostt)
         file_formats.append("ostt")
+    if src != "":
+        input_files.append(src)
+        file_formats.append("src")
 
     for align_file in aligns:
         input_files.append(align_file)

@@ -168,7 +168,8 @@ def main(input_files=[], file_formats=[], arguments={}):
                 'ostt': read_ostt_file(gold_files["ostt"][0]),
                 'references': read_references(gold_files["ost"]),
                 'SLTev_home': SLTev_home,
-                'candidate': read_candidate_file(candidate_file[0])
+                'candidate': read_candidate_file(candidate_file[0]),
+                'src': read_references(gold_files["ost"])
             }
 
             _ = check_time_stamp_candiates_format(candidate_file[0], split_token) # submission checking

@@ -32,6 +32,7 @@ setup(
         "jiwer",
         "filelock",
         "pytest",
+        "unbabel-comet"
     ],
     url="https://github.com/ELITR/SLTev.git",
     classifiers=[

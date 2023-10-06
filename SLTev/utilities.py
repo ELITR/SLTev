@@ -281,7 +281,7 @@ def split_gold_inputs_submission_in_working_directory(submission_file, gold_inpu
     :return tt, ostt, align: OSt, OStt, align files  according to the submission file
     """
 
-    status, ostt = "", ""
+    status, ostt, src = "", "", ""
     references, aligns = list(), list()
 
     submission_file_name = os.path.split(submission_file)[1]
@@ -302,6 +302,11 @@ def split_gold_inputs_submission_in_working_directory(submission_file, gold_inpu
             references.append(file)
         elif (
             ".".join(input_name[:-1]) + "." + remove_digits(input_name[-1])
+            == submission_file_name_without_prefix + "." + source_lang + ".OSt"
+        ):
+            src = file
+        elif (
+            ".".join(input_name[:-1]) + "." + remove_digits(input_name[-1])
             == submission_file_name_without_prefix + "." + source_lang + ".OStt"
         ):
             ostt = file
@@ -310,7 +315,7 @@ def split_gold_inputs_submission_in_working_directory(submission_file, gold_inpu
             == submission_file_name_without_prefix + "." + source_lang + "." + target_lang + ".align"
         ):
             aligns.append(file)
-    return status, references, ostt, aligns
+    return status, src, references, ostt, aligns
 
 
 def mwerSegmenter_error_message():
@@ -459,6 +464,10 @@ def extract_mt_gold_files_for_candidate(candidate_file, gold_inputs):
     except:
         eprint( "evaluation failed, the reference file does not exist for ", candidate_file[0])
         error = 1
+    try:
+        gold_files["src"] = gold_inputs["src"]
+    except:
+        gold_files["src"] = ""
     return gold_files, error 
 
 
@@ -479,6 +488,10 @@ def extract_slt_gold_files_for_candidate(candidate_file, gold_inputs):
         gold_files["align"] = gold_inputs["align"]
     except:
         gold_files["align"] = []
+    try:
+        gold_files["src"] = gold_inputs["src"]
+    except:
+        gold_files["src"] = ""
     return gold_files, error 
 
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import sacrebleu
+from comet import download_model, load_from_checkpoint
 from files_modules import quality_segmenter
+from utilities import eprint
 
 
 def calc_bleu_score_documentlevel(references, candiate_sentences):
@@ -162,3 +164,37 @@ def calc_bleu_score_timespanlevel(evaluation_object):
     )
     return bleu_scores, avg_SacreBleu
 
+def calculate_comet_score(sources, candidates, references=None):
+    try:
+        model_name = "Unbabel/wmt22-comet-da"
+        merge_mt_sentences = []
+        for i in range(len(candidates)):
+            mt = candidates[i][-1][3:-1]
+            merge_mt_sentences += mt
+
+        merge_references_sentences = []
+        for ref in references:
+            l = []
+            for sentence in ref:
+                l.append(" ".join(sentence[:-1]))
+            merge_references_sentences.append(l)
+
+        merge_src_sentences = []
+        for src in sources:
+            l = []
+            for sentence in src:
+                l.append(" ".join(sentence[:-1]))
+            merge_src_sentences.append(l)
+
+        ref = [" ".join(i) for i in merge_references_sentences]
+        mt = [" ".join(merge_mt_sentences[:])]
+        src = [" ".join(i) for i in merge_src_sentences]
+        data = [{'src': x[0], 'mt': x[1], 'ref': x[2]} for x in zip(src, mt, ref)]
+
+        model_path = download_model(model_name)
+        model = load_from_checkpoint(model_path)
+        model_output = model.predict(data, batch_size=8, gpus=0)
+        return model_output['system_score'] * 100, True
+    except:
+        eprint("Unable to calculate COMET score since there is no internet connection to download the model.")
+        return 0, False

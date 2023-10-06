@@ -6,3 +6,4 @@ gitdir
 jiwer
 filelock
 pytest
+unbabel-comet==2.0.2

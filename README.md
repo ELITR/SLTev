@@ -269,6 +269,16 @@ tot      sacreBLEU     docAsAWhole            32.786
 avg      sacreBLEU     mwerSegmenter          25.850
 ```
 
+If you want to calculate the COMET score as well, you need to include the ost file in the source language as src as shown below:
+'''
+MTeval -i sample-data/sample.en.cs.mt sample-data/sample.en.OSt sample-data/sample.cs.OSt -f mt src ref
+'''
+This would add an additional line in the output reporting the COMET score:
+'''
+tot      COMET         docAsWhole             0.770
+'''
+This is optional.
+
 #### Evaluating SLT <a name="Evaluating-SLT"></a>
 
 Spoken language translation evaluates "machine translation in time". So a time-stamped MT output (``slt``) is compared with the reference translation (non-timed, ``ref``) and the timing of the golden transcript (``ostt``).
@@ -293,6 +303,7 @@ tot      Flicker       count_changed_content  23
 tot      sacreBLEU     docAsAWhole            32.786
 ...
 ```
+Similar to MTeval, to calculate COMET score, you need to include the ost file in the source language.
 
 
 #### Evaluating ASR <a name="Evaluating-ASR"></a>
@@ -391,6 +402,9 @@ Usage:
 ```
 SLTIndexParser path_to_index_file path_to_dataset
 ```
+
+5. It must be noted that a stable internet connection is necessary in order to download the COMET model to the local
+system to calculate the COMET score.
 
 ## Terminology and Abbreviations <a name="Terminology-and-Abbreviations"></a>
 
